@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LINE ID + 遊戲名字 共用系統</title>
+  <title>KP台灣民眾黨 黨員查詢系統</title>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -55,17 +55,43 @@
       border-bottom: 1px solid #ddd;
       padding: 8px 0;
     }
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .item-text {
+      flex: 1;
+      min-width: 0;
+    }
+    /* 遊戲名字：放上面 & 大一點 */
     .item-main {
       font-weight: bold;
+      font-size: 16px;
       margin-bottom: 2px;
+      word-break: break-all;
     }
+    /* LINE ID：放第二行 */
     .item-sub {
       font-size: 14px;
       margin-bottom: 2px;
+      word-break: break-all;
     }
     .item-time {
       font-size: 12px;
       color: #666;
+    }
+    .delete-btn {
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 4px;
+      border: 1px solid #c00;
+      background: #ffe5e5;
+      white-space: nowrap;
+    }
+    .delete-btn:active {
+      transform: scale(0.96);
     }
     .empty-text {
       color: #888;
@@ -139,9 +165,8 @@
     <div id="listContainer"></div>
   </div>
 
-  <!-- Firebase 模組 + Firestore（安全版） -->
+  <!-- Firebase 模組 + Firestore（含刪除 + 防惡意輸入） -->
   <script type="module">
-    // 載入 Firebase 模組（使用 12.6.0）
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
       getFirestore,
@@ -150,10 +175,12 @@
       getDocs,
       query,
       where,
-      updateDoc
+      updateDoc,
+      deleteDoc,
+      doc
     } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-    // 你的 Firebase 設定
+    // Firebase 設定
     const firebaseConfig = {
       apiKey: "AIzaSyAtaboHWv60PRfwY5qwhOeECq-U_2mDi5M",
       authDomain: "linename-76527.firebaseapp.com",
@@ -163,12 +190,11 @@
       appId: "1:403725086740:web:6b8b09e8b2e64008fab701"
     };
 
-    // 初始化 Firebase & Firestore
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const colRef = collection(db, "line_game_records");
 
-    // ------- 防惡意輸入：清洗 & 驗證 --------
+    // 防惡意輸入
     function cleanInput(str, fieldName, maxLen = 30) {
       const s = (str || "").trim();
 
@@ -178,14 +204,13 @@
       if (s.length > maxLen) {
         throw new Error(fieldName + " 太長了，最多 " + maxLen + " 個字");
       }
-      // 禁止 < 和 >
       if (/[<>]/.test(s)) {
         throw new Error(fieldName + " 不能包含 < 或 > 這類符號");
       }
       return s;
     }
 
-    // ------- 時間格式 --------
+    // 時間格式
     function formatTime(timestamp) {
       const d = new Date(timestamp);
       const y = d.getFullYear();
@@ -196,7 +221,7 @@
       return `${y}/${m}/${day} ${hh}:${mm}`;
     }
 
-    // ------- 安全顯示列表（用 textContent，避免 XSS） --------
+    // 顯示列表：遊戲名在上、LINE ID 在下，每筆有刪除按鈕
     function renderList(list, titleText) {
       const container = document.getElementById('listContainer');
       const title = document.getElementById('listTitle');
@@ -210,38 +235,58 @@
       }
 
       list.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'item';
+        const wrapper = document.createElement('div');
+        wrapper.className = 'item';
 
+        const header = document.createElement('div');
+        header.className = 'item-header';
+
+        const textPart = document.createElement('div');
+        textPart.className = 'item-text';
+
+        // 遊戲名字（大一點、在上面）
         const mainDiv = document.createElement('div');
         mainDiv.className = 'item-main';
-        mainDiv.textContent = 'LINE ID：' + item.lineId;
+        mainDiv.textContent = '遊戲名字：' + item.gameName;
 
+        // LINE ID（第二行）
         const subDiv = document.createElement('div');
         subDiv.className = 'item-sub';
-        subDiv.textContent = '遊戲名字：' + item.gameName;
+        subDiv.textContent = 'LINE ID：' + item.lineId;
 
         const timeDiv = document.createElement('div');
         timeDiv.className = 'item-time';
         timeDiv.textContent = '建立時間：' + formatTime(item.createdAt);
 
-        div.appendChild(mainDiv);
-        div.appendChild(subDiv);
-        div.appendChild(timeDiv);
+        textPart.appendChild(mainDiv);
+        textPart.appendChild(subDiv);
+        textPart.appendChild(timeDiv);
 
-        container.appendChild(div);
+        // 刪除按鈕
+        const delBtn = document.createElement('button');
+        delBtn.className = 'delete-btn';
+        delBtn.textContent = '刪除';
+        delBtn.onclick = () => {
+          deleteRecord(item.id);
+        };
+
+        header.appendChild(textPart);
+        header.appendChild(delBtn);
+
+        wrapper.appendChild(header);
+        container.appendChild(wrapper);
       });
     }
 
-    // ------- 讀取全部 --------
+    // 讀取全部
     async function loadAll() {
       try {
         const snap = await getDocs(colRef);
         const list = [];
-        snap.forEach(doc => {
-          const data = doc.data();
+        snap.forEach(d => {
+          const data = d.data();
           list.push({
-            id: doc.id,
+            id: d.id,
             lineId: data.lineId || "",
             gameName: data.gameName || "",
             createdAt: data.createdAt || 0
@@ -256,7 +301,7 @@
       }
     }
 
-    // ------- 儲存新資料（有防惡意輸入） --------
+    // 儲存（限制長度 14）
     async function saveRecord() {
       const lineInput = document.getElementById('lineInput');
       const gameInput = document.getElementById('gameInput');
@@ -280,7 +325,7 @@
       }
     }
 
-    // ------- 查詢（可只填一個欄位） --------
+    // 查詢
     async function searchRecords() {
       const rawLine = document.getElementById('lineInput').value;
       const rawGame = document.getElementById('gameInput').value;
@@ -309,10 +354,10 @@
 
         const snap = await getDocs(qRef);
         const list = [];
-        snap.forEach(doc => {
-          const data = doc.data();
+        snap.forEach(d => {
+          const data = d.data();
           list.push({
-            id: doc.id,
+            id: d.id,
             lineId: data.lineId || "",
             gameName: data.gameName || "",
             createdAt: data.createdAt || 0
@@ -331,7 +376,7 @@
       }
     }
 
-    // ------- 更改 LINE ID --------
+    // 更改 LINE ID
     async function updateLineId() {
       const oldLineRaw = document.getElementById('oldLineInput').value;
       const newLineRaw = document.getElementById('newLineInput').value;
@@ -350,8 +395,8 @@
 
         let count = 0;
         const promises = [];
-        snap.forEach(doc => {
-          promises.push(updateDoc(doc.ref, { lineId: newLine }));
+        snap.forEach(d => {
+          promises.push(updateDoc(d.ref, { lineId: newLine }));
           count++;
         });
 
@@ -368,7 +413,7 @@
       }
     }
 
-    // ------- 更改遊戲名字 --------
+    // 更改遊戲名字
     async function updateGameName() {
       const oldGameRaw = document.getElementById('oldGameInput').value;
       const newGameRaw = document.getElementById('newGameInput').value;
@@ -387,8 +432,8 @@
 
         let count = 0;
         const promises = [];
-        snap.forEach(doc => {
-          promises.push(updateDoc(doc.ref, { gameName: newGame }));
+        snap.forEach(d => {
+          promises.push(updateDoc(d.ref, { gameName: newGame }));
           count++;
         });
 
@@ -405,12 +450,29 @@
       }
     }
 
+    // 刪除單一筆資料
+    async function deleteRecord(id) {
+      if (!id) return;
+      const ok = confirm("確定要刪除這一筆資料嗎？");
+      if (!ok) return;
+
+      try {
+        const ref = doc(db, "line_game_records", id);
+        await deleteDoc(ref);
+        await loadAll();
+      } catch (e) {
+        console.error(e);
+        alert("刪除失敗，請稍後再試。");
+      }
+    }
+
     // 將函式掛到 window，讓 HTML 按鈕可以用
     window.loadAll = loadAll;
     window.saveRecord = saveRecord;
     window.searchRecords = searchRecords;
     window.updateLineId = updateLineId;
     window.updateGameName = updateGameName;
+    window.deleteRecord = deleteRecord;
 
     // 一開始載入全部資料
     window.addEventListener("load", loadAll);

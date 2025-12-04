@@ -55,16 +55,6 @@
       border-bottom: 1px solid #ddd;
       padding: 8px 0;
     }
-    .item-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-    .item-text {
-      flex: 1;
-      min-width: 0;
-    }
     /* 遊戲名字：放上面 & 大一點 */
     .item-main {
       font-weight: bold;
@@ -81,17 +71,6 @@
     .item-time {
       font-size: 12px;
       color: #666;
-    }
-    .delete-btn {
-      padding: 4px 8px;
-      font-size: 12px;
-      border-radius: 4px;
-      border: 1px solid #c00;
-      background: #ffe5e5;
-      white-space: nowrap;
-    }
-    .delete-btn:active {
-      transform: scale(0.96);
     }
     .empty-text {
       color: #888;
@@ -165,7 +144,7 @@
     <div id="listContainer"></div>
   </div>
 
-  <!-- Firebase 模組 + Firestore（含刪除 + 防惡意輸入） -->
+  <!-- Firebase 模組 + Firestore（無刪除版） -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
@@ -175,9 +154,7 @@
       getDocs,
       query,
       where,
-      updateDoc,
-      deleteDoc,
-      doc
+      updateDoc
     } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
     // Firebase 設定
@@ -221,7 +198,7 @@
       return `${y}/${m}/${day} ${hh}:${mm}`;
     }
 
-    // 顯示列表：遊戲名在上、LINE ID 在下，每筆有刪除按鈕
+    // 顯示列表：遊戲名在上、LINE ID 在下
     function renderList(list, titleText) {
       const container = document.getElementById('listContainer');
       const title = document.getElementById('listTitle');
@@ -235,21 +212,13 @@
       }
 
       list.forEach(item => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'item';
+        const div = document.createElement('div');
+        div.className = 'item';
 
-        const header = document.createElement('div');
-        header.className = 'item-header';
-
-        const textPart = document.createElement('div');
-        textPart.className = 'item-text';
-
-        // 遊戲名字（大一點、在上面）
         const mainDiv = document.createElement('div');
         mainDiv.className = 'item-main';
         mainDiv.textContent = '遊戲名字：' + item.gameName;
 
-        // LINE ID（第二行）
         const subDiv = document.createElement('div');
         subDiv.className = 'item-sub';
         subDiv.textContent = 'LINE ID：' + item.lineId;
@@ -258,23 +227,11 @@
         timeDiv.className = 'item-time';
         timeDiv.textContent = '建立時間：' + formatTime(item.createdAt);
 
-        textPart.appendChild(mainDiv);
-        textPart.appendChild(subDiv);
-        textPart.appendChild(timeDiv);
+        div.appendChild(mainDiv);
+        div.appendChild(subDiv);
+        div.appendChild(timeDiv);
 
-        // 刪除按鈕
-        const delBtn = document.createElement('button');
-        delBtn.className = 'delete-btn';
-        delBtn.textContent = '刪除';
-        delBtn.onclick = () => {
-          deleteRecord(item.id);
-        };
-
-        header.appendChild(textPart);
-        header.appendChild(delBtn);
-
-        wrapper.appendChild(header);
-        container.appendChild(wrapper);
+        container.appendChild(div);
       });
     }
 
@@ -450,29 +407,12 @@
       }
     }
 
-    // 刪除單一筆資料
-    async function deleteRecord(id) {
-      if (!id) return;
-      const ok = confirm("確定要刪除這一筆資料嗎？");
-      if (!ok) return;
-
-      try {
-        const ref = doc(db, "line_game_records", id);
-        await deleteDoc(ref);
-        await loadAll();
-      } catch (e) {
-        console.error(e);
-        alert("刪除失敗，請稍後再試。");
-      }
-    }
-
-    // 將函式掛到 window，讓 HTML 按鈕可以用
+    // 將函式掛到 window
     window.loadAll = loadAll;
     window.saveRecord = saveRecord;
     window.searchRecords = searchRecords;
     window.updateLineId = updateLineId;
     window.updateGameName = updateGameName;
-    window.deleteRecord = deleteRecord;
 
     // 一開始載入全部資料
     window.addEventListener("load", loadAll);

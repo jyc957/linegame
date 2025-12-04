@@ -107,11 +107,11 @@
     <!-- 更改 LINE ID -->
     <label>
       舊 LINE ID：
-      <input id="oldLineInput" type="text" placeholder="要被更改掉的 LINE ID" />
+      <input id="oldLineInput" type="text" placeholder="舊 LINE ID" />
     </label>
     <label>
       新 LINE ID：
-      <input id="newLineInput" type="text" placeholder="新的 LINE ID" />
+      <input id="newLineInput" type="text" placeholder="新 LINE ID" />
     </label>
     <button onclick="updateLineId()">更改 LINE ID</button>
 
@@ -120,11 +120,11 @@
     <!-- 更改 遊戲名字 -->
     <label>
       舊遊戲名字：
-      <input id="oldGameInput" type="text" placeholder="要被更改掉的遊戲名字" />
+      <input id="oldGameInput" type="text" placeholder="舊遊戲名字" />
     </label>
     <label>
       新遊戲名字：
-      <input id="newGameInput" type="text" placeholder="新的遊戲名字" />
+      <input id="newGameInput" type="text" placeholder="新遊戲名字" />
     </label>
     <button onclick="updateGameName()">更改遊戲名字</button>
 
@@ -262,8 +262,8 @@
       const gameInput = document.getElementById('gameInput');
 
       try {
-        const lineId = cleanInput(lineInput.value, "LINE ID", 30);
-        const gameName = cleanInput(gameInput.value, "遊戲名字", 30);
+        const lineId = cleanInput(lineInput.value, "LINE ID", 14);
+        const gameName = cleanInput(gameInput.value, "遊戲名字", 14);
 
         await addDoc(colRef, {
           lineId,

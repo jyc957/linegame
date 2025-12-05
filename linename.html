@@ -113,36 +113,43 @@
 
   <!-- 更改資料 -->
   <div class="section">
-    <h2>更改資料</h2>
+   <h2 style="display:flex; justify-content:space-between; align-items:center;">
+    更改資料
+     <button id="toggleEdit" style="font-size:12px; padding:4px 8px;">展開</button>
+   </h2>
+
+  <!-- 可折疊內容 -->
+   <div id="editPanel" style="display:none; margin-top:10px;">
 
     <!-- 更改 LINE ID -->
-    <label>
+     <label>
       舊 LINE ID：
-      <input id="oldLineInput" type="text" placeholder="舊 LINE ID" />
-    </label>
-    <label>
+       <input id="oldLineInput" type="text" placeholder="舊 LINE ID" />
+     </label>
+     <label>
       新 LINE ID：
-      <input id="newLineInput" type="text" placeholder="新 LINE ID" />
-    </label>
-    <button onclick="updateLineId()">更改 LINE ID</button>
+       <input id="newLineInput" type="text" placeholder="新 LINE ID" />
+     </label>
+     <button onclick="updateLineId()">更改 LINE ID</button>
 
-    <hr style="margin:12px 0; border:none; border-top:1px solid #ddd;">
+     <hr style="margin:12px 0; border:none; border-top:1px solid #ddd;">
 
-    <!-- 更改 遊戲名字 -->
-    <label>
+    <!-- 更改遊戲名字 -->
+     <label>
       舊遊戲名字：
-      <input id="oldGameInput" type="text" placeholder="舊遊戲名字" />
-    </label>
-    <label>
+       <input id="oldGameInput" type="text" placeholder="舊遊戲名字" />
+     </label>
+     <label>
       新遊戲名字：
-      <input id="newGameInput" type="text" placeholder="新遊戲名字" />
-    </label>
-    <button onclick="updateGameName()">更改遊戲名字</button>
+       <input id="newGameInput" type="text" placeholder="新遊戲名字" />
+     </label>
+     <button onclick="updateGameName()">更改遊戲名字</button>
 
-    <small>
-      ● 更改是「全部符合的都一起改」，例如有多筆一樣的舊名字，會全部更新。<br>
-    </small>
-  </div>
+     <small>
+       ● 更改是「全部符合的都一起改」，例如有多筆一樣的舊名字，會全部更新。
+     </small>
+   </div>
+ </div>
 
   <!-- 顯示結果 -->
   <div class="section">
@@ -240,6 +247,21 @@
         container.appendChild(div);
       });
     }
+    // 折疊控制：展開 / 收合
+  window.addEventListener("load", () => {
+    const btn = document.getElementById("toggleEdit");
+    const panel = document.getElementById("editPanel");
+
+    btn.addEventListener("click", () => {
+      if (panel.style.display === "none") {
+        panel.style.display = "block";
+        btn.textContent = "收合";
+      } else {
+        panel.style.display = "none";
+        btn.textContent = "展開";
+      }
+    });
+  });
 
     // 讀取全部
     async function loadAll() {

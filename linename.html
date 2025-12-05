@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>☆KP台灣民眾黨 黨員查詢系統☆</title>
+  <title>KP台灣民眾黨 黨員查詢系統</title>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -177,7 +177,7 @@
     const colRef = collection(db, "line_game_records");
 
     // 防惡意輸入
-    function cleanInput(str, fieldName, maxLen = 30) {
+    function cleanInput(str, fieldName, maxLen = 14) {
       const s = (str || "").trim();
 
       if (!s) {
@@ -256,7 +256,7 @@
         });
 
         list.sort((a, b) => b.createdAt - a.createdAt);
-        renderList(list, "全部資料（最新在上面）");
+        renderList(list, "全部黨員資料");
       } catch (e) {
         console.error(e);
         alert("讀取資料失敗，請稍後再試。");

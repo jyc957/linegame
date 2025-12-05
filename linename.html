@@ -288,55 +288,60 @@
     }
 
     // 查詢
-    async function searchRecords() {
-      const rawLine = document.getElementById('lineInput').value;
-      const rawGame = document.getElementById('gameInput').value;
+    // 查詢（模糊查詢版：包含就算符合）
+async function searchRecords() {
+  const rawLine = document.getElementById('lineInput').value;
+  const rawGame = document.getElementById('gameInput').value;
 
-      const line = rawLine.trim();
-      const game = rawGame.trim();
+  const line = rawLine.trim().toLowerCase();
+  const game = rawGame.trim().toLowerCase();
 
-      if (!line && !game) {
-        alert('若要查詢，請至少輸入 LINE ID 或遊戲名字其中一個。');
-        return;
+  if (!line && !game) {
+    alert('若要查詢，請至少輸入 LINE ID 或遊戲名字其中一個。');
+    return;
+  }
+
+  try {
+    // 1. 先把全部資料抓回來
+    const snap = await getDocs(colRef);
+    const list = [];
+
+    snap.forEach(d => {
+      const data = d.data();
+      const lineId = (data.lineId || "").toLowerCase();
+      const gameName = (data.gameName || "").toLowerCase();
+
+      // 2. 用「包含」來判斷是否符合
+      //   如果有輸入 line，就要求 lineId 要包含 line
+      if (line && !lineId.includes(line)) {
+        return; // 不符合，跳過
+      }
+      //   如果有輸入 game，就要求 gameName 要包含 game
+      if (game && !gameName.includes(game)) {
+        return; // 不符合，跳過
       }
 
-      try {
-        let qRef;
+      // 符合條件才放進 list
+      list.push({
+        id: d.id,
+        lineId: data.lineId || "",
+        gameName: data.gameName || "",
+        createdAt: data.createdAt || 0
+      });
+    });
 
-        if (line && game) {
-          qRef = query(colRef,
-            where("lineId", "==", line),
-            where("gameName", "==", game)
-          );
-        } else if (line) {
-          qRef = query(colRef, where("lineId", "==", line));
-        } else {
-          qRef = query(colRef, where("gameName", "==", game));
-        }
+    // 3. 排序 + 顯示
+    list.sort((a, b) => b.createdAt - a.createdAt);
+    renderList(list, "模糊查詢結果");
 
-        const snap = await getDocs(qRef);
-        const list = [];
-        snap.forEach(d => {
-          const data = d.data();
-          list.push({
-            id: d.id,
-            lineId: data.lineId || "",
-            gameName: data.gameName || "",
-            createdAt: data.createdAt || 0
-          });
-        });
-
-        list.sort((a, b) => b.createdAt - a.createdAt);
-        renderList(list, "查詢結果");
-
-        if (list.length === 0) {
-          alert("查無符合條件的資料。");
-        }
-      } catch (e) {
-        console.error(e);
-        alert("查詢失敗，請稍後再試。");
-      }
+    if (list.length === 0) {
+      alert("查無符合條件的資料（模糊查詢）。");
     }
+  } catch (e) {
+    console.error(e);
+    alert("查詢失敗，請稍後再試。");
+  }
+}
 
     // 更改 LINE ID
     async function updateLineId() {

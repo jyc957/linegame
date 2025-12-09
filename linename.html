@@ -82,6 +82,27 @@
       color: #777;
       font-size: 12px;
     }
+
+    /* 🔽 折疊區塊動畫：預設收起來，高度 0，有 transition */
+    #editPanel {
+      max-height: 0;
+      overflow: hidden;
+      margin-top: 10px;
+      transition: max-height 0.5s ease;
+    }
+    /* 展開時加上 open 類別：max-height 拉大，會有 smooth 展開效果 */
+    #editPanel.open {
+      max-height: 600px; /* 依內容高度調整，600px 夠你這一段用了 */
+    }
+
+    /* 「展開/收合」按鈕微調，讓它更像小標籤 */
+    #toggleEdit {
+      margin-top: 0;
+      margin-left: 8px;
+      padding: 4px 10px;
+      font-size: 12px;
+      border-width: 2px;
+    }
   </style>
 </head>
 <body>
@@ -108,16 +129,15 @@
            ● 顯示全部：顯示所有黨員名單</small>
   </div>
 
-  <!-- 更改資料（可折疊） -->
+  <!-- 更改資料（可折疊 + icon + 動畫） -->
   <div class="section">
     <h2 style="display:flex; justify-content:flex-start; align-items:center;">
-      更改資料
-      <button id="toggleEdit" style="font-size:12px; padding:4px 8px;">展開</button>
+      <span style="margin-top:-3px;">更改資料</span>
+      <button id="toggleEdit">▸ 展開</button>
     </h2>
 
     <!-- 可折疊內容 -->
-    <div id="editPanel" style="display:none; margin-top:10px;">
-
+    <div id="editPanel">
       <!-- 更改 LINE ID -->
       <label>
         舊 LINE ID：
@@ -199,8 +219,8 @@
 
     // 時間格式
     function formatTime(timestamp) {
-      const d = new Date(timestamp);
       if (!timestamp) return "未紀錄";
+      const d = new Date(timestamp);
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
@@ -246,18 +266,21 @@
       });
     }
 
-    // 折疊控制：展開 / 收合
+    // 折疊控制：展開 / 收合（含 icon & 動畫）
     window.addEventListener("load", () => {
       const btn = document.getElementById("toggleEdit");
       const panel = document.getElementById("editPanel");
 
+      // 一開始確保是收起來的狀態
+      panel.classList.remove('open');
+      btn.textContent = '▸ 展開';
+
       btn.addEventListener("click", () => {
-        if (panel.style.display === "none") {
-          panel.style.display = "block";
-          btn.textContent = "收合";
+        const isOpen = panel.classList.toggle('open');
+        if (isOpen) {
+          btn.textContent = '▾ 收合';
         } else {
-          panel.style.display = "none";
-          btn.textContent = "展開";
+          btn.textContent = '▸ 展開';
         }
       });
     });

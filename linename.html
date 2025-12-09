@@ -128,6 +128,39 @@
     }
   </style>
 </head>
+<!-- 自訂大型白底彈窗 -->
+<div id="alertBox" style="
+  display:none;
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,0.45);
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+">
+  <div style="
+    background:white;
+    width:80%;
+    max-width:330px;
+    padding:22px;
+    border-radius:14px;
+    text-align:center;
+    box-shadow:0 6px 18px rgba(0,0,0,0.25);
+  ">
+    <h3 style="margin:0; font-size:20px; font-weight:bold;">⚠ 系統訊息</h3>
+    <p id="alertText" style="font-size:16px; margin-top:12px;">內容</p>
+    <button onclick="closeAlert()" style="
+      margin-top:18px;
+      padding:10px 16px;
+      font-size:15px;
+      font-weight:bold;
+      border-radius:8px;
+      border:2px solid #2091c6;
+      background:#70cce1;
+    ">確定</button>
+  </div>
+</div>
 
 <body>
 
@@ -422,6 +455,16 @@
     window.loadAll = loadAll;
 
     loadAll();
+    // 自訂型彈窗（取代 alert）
+window.showAlert = function(msg) {
+  document.getElementById("alertText").textContent = msg;
+  document.getElementById("alertBox").style.display = "flex";
+};
+
+window.closeAlert = function() {
+  document.getElementById("alertBox").style.display = "none";
+};
+
   </script>
 
 </body>

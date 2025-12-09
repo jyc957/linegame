@@ -10,6 +10,7 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       margin: 0;
       padding: 16px;
+      box-sizing: border-box;
       background: #70cce1;
     }
 
@@ -25,8 +26,6 @@
       font-weight: bold;
       margin: 0;
       padding: 0;
-      display: flex;
-      align-items: center;
     }
 
     .section {
@@ -34,7 +33,7 @@
       padding: 12px;
       border-radius: 8px;
       background: #ffffff;
-      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+      box-shadow: 0 0 4px rgba(0,0,0,0.05);
     }
 
     label {
@@ -51,43 +50,55 @@
       box-sizing: border-box;
     }
 
-    /* 統一所有按鈕格式 */
     button {
       margin-top: 10px;
       margin-right: 6px;
-      padding: 8px 14px;
+      padding: 8px 12px;
       font-size: 14px;
       font-weight: bold;
       border-radius: 6px;
       border: 3px solid #2091c6;
       background: #70cce1;
-      color: #000;
-      transition: 0.25s;
-    }
-
-    button:hover {
-      background: #8ed7ee;
+      color: black;
     }
 
     button:active {
-      background: #1d2267;
-      border-color: #13204d;
-      color: white;
-      transform: scale(0.96);
+      background: #2276bd;
+      transform: scale(0.97);
     }
 
-    /* 折疊區塊動畫 */
-    .collapse-content,
-    #editPanel {
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* 折疊區塊動畫：新增/查詢 */
+    .collapse-content {
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.5s ease;
       margin-top: 10px;
     }
 
-    .collapse-content.open,
+    .collapse-content.open {
+      max-height: 500px;
+    }
+
+    /* 更改資料折疊 */
+    #editPanel {
+      max-height: 0;
+      overflow: hidden;
+      margin-top: 10px;
+      transition: max-height 0.5s ease;
+    }
+
     #editPanel.open {
       max-height: 600px;
+    }
+
+    #toggleEdit, #toggleAdd {
+      margin-left: 10px;
     }
 
     .item {
@@ -98,10 +109,12 @@
     .item-main {
       font-weight: bold;
       font-size: 16px;
+      margin-bottom: 2px;
     }
 
     .item-sub {
       font-size: 14px;
+      margin-bottom: 2px;
     }
 
     .item-time {
@@ -113,36 +126,6 @@
       font-size: 14px;
       color: #888;
     }
-
-    /* 自訂訊息框（alert 替代） */
-    #alertBox {
-      display:none;
-      position:fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
-      background:rgba(0,0,0,0.45);
-      justify-content:center;
-      align-items:center;
-      z-index:999;
-    }
-
-    #alertInner {
-      background:white;
-      padding:20px;
-      width:80%;
-      max-width:300px;
-      border-radius:12px;
-      text-align:center;
-      box-shadow:0 0 10px rgba(0,0,0,0.4);
-      animation: popup 0.25s ease;
-    }
-
-    @keyframes popup {
-      from { transform: scale(0.7); opacity: 0; }
-      to   { transform: scale(1); opacity: 1; }
-    }
   </style>
 </head>
 
@@ -150,68 +133,81 @@
 
   <h1>KP台灣民眾黨 黨員查詢系統</h1>
 
+<!-- 新增 / 查詢（可折疊） -->
+<div class="section">
+  <div class="top-bar" style="display:flex; align-items:center; justify-content:flex-start; gap:10px;">
+    <h2 style="margin-right:10px;">新增 / 查詢</h2>
 
-  <!-- 新增 / 查詢 -->
-  <div class="section">
-    <div style="display:flex; align-items:center; gap:10px;">
-      <h2>新增 / 查詢</h2>
-      <button id="toggleAdd">▼ 展開</button>
-      <button onclick="loadAll()">顯示全部</button>
-    </div>
+    <!-- 展開按鈕：字變大 -->
+    <button id="toggleAdd">▼ 展開</button>
 
-    <small>● 顯示全部：顯示所有黨員名單</small>
-
-    <div id="addPanel" class="collapse-content">
-      <label>LINE ID：
-        <input id="lineInput" type="text" placeholder="例：jason😈🐺🛠😺" />
-      </label>
-
-      <label>遊戲名字：
-        <input id="gameInput" type="text" placeholder="例：ᴷᴾღ帥帥哥" />
-      </label>
-
-      <button onclick="saveRecord()">儲存</button>
-      <button onclick="searchRecords()">查詢</button>
-
-      <small>
-        ● 儲存：新增一筆新資料<br>
-        ● 查詢：支援模糊搜尋
-      </small>
-    </div>
+    <!-- 顯示全部 放在旁邊 -->
+    <button onclick="loadAll()">顯示全部</button>
   </div>
+  <small>
+  ● 顯示全部:直接顯示所有名單
+  </small>
 
 
-  <!-- 更改資料 -->
+  <div id="addPanel" class="collapse-content">
+    <label>
+      LINE ID：
+      <input id="lineInput" type="text" placeholder="例：jason😈🐺🛠😺" />
+    </label>
+
+    <label>
+      遊戲名字：
+      <input id="gameInput" type="text" placeholder="例：ᴷᴾღ帥帥哥" />
+    </label>
+
+    <button onclick="saveRecord()">儲存</button>
+    <button onclick="searchRecords()">查詢</button>
+
+    <small><br>
+      ● 儲存：新增一筆新資料<br>
+      ● 查詢：可輸入部分文字做模糊搜尋
+    </small>
+  </div>
+</div>
+
+
+  <!-- 更改資料（可折疊） -->
   <div class="section">
-    <h2>更改資料 <button id="toggleEdit">▼ 展開</button></h2>
+    <h2 style="display:flex; align-items:center;">
+      <span style="margin-top:7px;">更改資料</span>
+      <button id="toggleEdit">▼ 展開</button>
+    </h2>
 
     <div id="editPanel">
+      <!-- 更改 LINE ID -->
       <label>舊 LINE ID：
-        <input id="oldLineInput" type="text">
+        <input id="oldLineInput" type="text" placeholder="舊 LINE ID">
       </label>
 
       <label>新 LINE ID：
-        <input id="newLineInput" type="text">
+        <input id="newLineInput" type="text" placeholder="新 LINE ID">
       </label>
 
       <button onclick="updateLineId()">更改 LINE ID</button>
 
       <hr>
 
+      <!-- 更改 遊戲名字 -->
       <label>舊遊戲名字：
-        <input id="oldGameInput" type="text">
+        <input id="oldGameInput" type="text" placeholder="舊遊戲名字">
       </label>
 
       <label>新遊戲名字：
-        <input id="newGameInput" type="text">
+        <input id="newGameInput" type="text" placeholder="新遊戲名字">
       </label>
 
       <button onclick="updateGameName()">更改遊戲名字</button>
 
-      <small>● 若有多筆相同舊名稱，會全部一起修改</small>
+      <small>
+        ● 若有多筆相同舊名稱，會全部一起修改
+      </small>
     </div>
   </div>
-
 
   <!-- 顯示結果 -->
   <div class="section">
@@ -220,208 +216,213 @@
   </div>
 
 
-  <!-- 自訂訊息框 -->
-  <div id="alertBox">
-    <div id="alertInner">
-      <h3>⚠ 系統訊息</h3>
-      <p id="alertText">訊息</p>
-      <button onclick="closeAlert()">關閉</button>
-    </div>
-  </div>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import {
-  getFirestore, collection, addDoc, getDocs,
-  query, where, updateDoc
-} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+  <!-- Firebase + Firestore -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc,
+      getDocs, query, where, updateDoc
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAtaboHWv60PRfwY5qwhOeECq-U_2mDi5M",
-  authDomain: "linename-76527.firebaseapp.com",
-  projectId: "linename-76527",
-  storageBucket: "linename-76527.firebasestorage.app",
-  messagingSenderId: "403725086740",
-  appId: "1:403725086740:web:6b8b09e8b2e64008fab701"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyAtaboHWv60PRfwY5qwhOeECq-U_2mDi5M",
+      authDomain: "linename-76527.firebaseapp.com",
+      projectId: "linename-76527",
+      storageBucket: "linename-76527.firebasestorage.app",
+      messagingSenderId: "403725086740",
+      appId: "1:403725086740:web:6b8b09e8b2e64008fab701"
+    };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const colRef = collection(db, "line_game_records");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const colRef = collection(db, "line_game_records");
 
 
-/* ---------------- 自訂 alert ---------------- */
-function showAlert(msg) {
-  document.getElementById("alertText").textContent = msg;
-  document.getElementById("alertBox").style.display = "flex";
-}
+    /* -------------------- 工具 -------------------- */
+    function cleanInput(str, fieldName, maxLen = 14) {
+      const s = (str || "").trim();
+      if (!s) throw new Error(fieldName + " 不能空白");
+      if (s.length > maxLen) throw new Error(fieldName + " 最多 " + maxLen + " 個字");
+      if (/[<>]/.test(s)) throw new Error(fieldName + " 不能包含 < >");
+      return s;
+    }
 
-function closeAlert() {
-  document.getElementById("alertBox").style.display = "none";
-}
+    function formatTime(ts) {
+      if (!ts) return "未紀錄";
+      const d = new Date(ts);
+      return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}
+              ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    }
 
+    function renderList(list, titleText) {
+      const box = document.getElementById("listContainer");
+      document.getElementById("listTitle").textContent = titleText;
+      box.innerHTML = "";
 
-/* ---------------- 工具 ---------------- */
-function cleanInput(str, name, max = 14) {
-  const s = (str || "").trim();
-  if (!s) showAlert(name + " 不能空白");
-  if (!s) throw "stop";
-  if (s.length > max) {
-    showAlert(name + " 最多 " + max + " 字");
-    throw "stop";
-  }
-  return s;
-}
+      if (!list.length) {
+        box.innerHTML = `<div class="empty-text">沒有資料。</div>`;
+        return;
+      }
 
-function formatTime(t) {
-  if (!t) return "未紀錄";
-  const d = new Date(t);
-  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}
-          ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-}
+      list.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
 
-function renderList(list, title) {
-  document.getElementById("listTitle").textContent = title;
-  const box = document.getElementById("listContainer");
-  box.innerHTML = "";
-
-  if (!list.length) {
-    box.innerHTML = `<div class="empty-text">目前沒有資料。</div>`;
-    return;
-  }
-
-  list.forEach(item => {
-    box.innerHTML += `
-      <div class="item">
-        <div class="item-main">遊戲名字：${item.gameName}</div>
-        <div class="item-sub">LINE ID：${item.lineId}</div>
-        <div class="item-time">修改時間：${formatTime(item.updatedAt)}</div>
-      </div>`;
-  });
-}
+        div.innerHTML = `
+          <div class="item-main">遊戲名字：${item.gameName}</div>
+          <div class="item-sub">LINE ID：${item.lineId}</div>
+          <div class="item-time">修改時間：${formatTime(item.updatedAt)}</div>
+        `;
+        box.appendChild(div);
+      });
+    }
 
 
-/* ---------------- 折疊 ---------------- */
-window.addEventListener("load", () => {
+    /* -------------------- 折疊控制 -------------------- */
+    window.addEventListener("load", () => {
+      const addBtn = document.getElementById("toggleAdd");
+      const addPanel = document.getElementById("addPanel");
 
-  const addBtn = document.getElementById("toggleAdd");
-  const addPanel = document.getElementById("addPanel");
+      addBtn.addEventListener("click", () => {
+        const open = addPanel.classList.toggle("open");
+        addBtn.textContent = open ? "▲ 收合" : "▼ 展開";
+      });
 
-  addBtn.addEventListener("click", () => {
-    const open = addPanel.classList.toggle("open");
-    addBtn.textContent = open ? "▲ 收合" : "▼ 展開";
-  });
+      const editBtn = document.getElementById("toggleEdit");
+      const editPanel = document.getElementById("editPanel");
 
-  const editBtn = document.getElementById("toggleEdit");
-  const editPanel = document.getElementById("editPanel");
-
-  editBtn.addEventListener("click", () => {
-    const open = editPanel.classList.toggle("open");
-    editBtn.textContent = open ? "▲ 收合" : "▼ 展開";
-  });
-
-});
-
-
-/* ---------------- Firestore 功能 ---------------- */
-
-async function loadAll() {
-  const snap = await getDocs(colRef);
-  const list = [];
-  snap.forEach(doc => {
-    const d = doc.data();
-    list.push({
-      id: doc.id,
-      lineId: d.lineId,
-      gameName: d.gameName,
-      updatedAt: d.updatedAt || d.createdAt
+      editBtn.addEventListener("click", () => {
+        const open = editPanel.classList.toggle("open");
+        editBtn.textContent = open ? "▲ 收合" : "▼ 展開";
+      });
     });
-  });
-  list.sort((a,b)=> b.updatedAt - a.updatedAt);
-  renderList(list, "全部資料（依修改時間）");
-}
 
-async function saveRecord() {
-  try {
-    const line = cleanInput(document.getElementById("lineInput").value, "LINE ID");
-    const game = cleanInput(document.getElementById("gameInput").value, "遊戲名字");
-    const now = Date.now();
-    await addDoc(colRef, {
-      lineId: line,
-      gameName: game,
-      createdAt: now,
-      updatedAt: now
-    });
+
+    /* -------------------- Firestore 功能 -------------------- */
+
+    async function loadAll() {
+      const snap = await getDocs(colRef);
+      const list = [];
+
+      snap.forEach(doc => {
+        const d = doc.data();
+        list.push({
+          id: doc.id,
+          lineId: d.lineId,
+          gameName: d.gameName,
+          updatedAt: d.updatedAt || d.createdAt
+        });
+      });
+
+      list.sort((a, b) => b.updatedAt - a.updatedAt);
+      renderList(list, "全部資料（依修改時間）");
+    }
+
+
+    async function saveRecord() {
+      try {
+        const line = cleanInput(document.getElementById("lineInput").value, "LINE ID");
+        const game = cleanInput(document.getElementById("gameInput").value, "遊戲名字");
+        const now = Date.now();
+
+        await addDoc(colRef, {
+          lineId: line,
+          gameName: game,
+          createdAt: now,
+          updatedAt: now
+        });
+
+        document.getElementById("lineInput").value = "";
+        document.getElementById("gameInput").value = "";
+        loadAll();
+
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+
+    async function searchRecords() {
+      const line = document.getElementById("lineInput").value.trim().toLowerCase();
+      const game = document.getElementById("gameInput").value.trim().toLowerCase();
+
+      if (!line && !game) return alert("請至少輸入一項查詢");
+
+      const snap = await getDocs(colRef);
+      const list = [];
+
+      snap.forEach(doc => {
+        const d = doc.data();
+        const lineId = d.lineId.toLowerCase();
+        const gameName = d.gameName.toLowerCase();
+        const time = d.updatedAt || d.createdAt;
+
+        if (line && !lineId.includes(line)) return;
+        if (game && !gameName.includes(game)) return;
+
+        list.push({
+          id: doc.id,
+          lineId: d.lineId,
+          gameName: d.gameName,
+          updatedAt: time
+        });
+      });
+
+      list.sort((a, b) => b.updatedAt - a.updatedAt);
+      renderList(list, "搜尋結果");
+    }
+
+
+    async function updateLineId() {
+      try {
+        const oldLine = cleanInput(document.getElementById("oldLineInput").value, "舊 LINE ID", 30);
+        const newLine = cleanInput(document.getElementById("newLineInput").value, "新 LINE ID", 30);
+
+        const q = query(colRef, where("lineId", "==", oldLine));
+        const snap = await getDocs(q);
+        if (snap.empty) return alert("找不到該 LINE ID");
+
+        const now = Date.now();
+        snap.forEach(doc => updateDoc(doc.ref, { lineId: newLine, updatedAt: now }));
+
+        alert("修改成功！");
+        loadAll();
+
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+
+    async function updateGameName() {
+      try {
+        const oldGame = cleanInput(document.getElementById("oldGameInput").value, "舊遊戲名字", 30);
+        const newGame = cleanInput(document.getElementById("newGameInput").value, "新遊戲名字", 30);
+
+        const q = query(colRef, where("gameName", "==", oldGame));
+        const snap = await getDocs(q);
+        if (snap.empty) return alert("找不到該遊戲名字");
+
+        const now = Date.now();
+        snap.forEach(doc => updateDoc(doc.ref, { gameName: newGame, updatedAt: now }));
+
+        alert("修改完成！");
+        loadAll();
+
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+
+    window.saveRecord = saveRecord;
+    window.searchRecords = searchRecords;
+    window.updateLineId = updateLineId;
+    window.updateGameName = updateGameName;
+    window.loadAll = loadAll;
+
     loadAll();
-  } catch(e) {}
-}
-
-async function searchRecords() {
-  const line = document.getElementById("lineInput").value.trim().toLowerCase();
-  const game = document.getElementById("gameInput").value.trim().toLowerCase();
-
-  if (!line && !game) return showAlert("請至少輸入一項查詢");
-
-  const snap = await getDocs(colRef);
-  const list = [];
-
-  snap.forEach(doc => {
-    const d = doc.data();
-    const A = d.lineId.toLowerCase();
-    const B = d.gameName.toLowerCase();
-    const t = d.updatedAt || d.createdAt;
-
-    if (line && !A.includes(line)) return;
-    if (game && !B.includes(game)) return;
-
-    list.push({ id: doc.id, lineId: d.lineId, gameName: d.gameName, updatedAt: t });
-  });
-
-  renderList(list, "查詢結果");
-}
-
-async function updateLineId() {
-  try {
-    const oldL = cleanInput(document.getElementById("oldLineInput").value, "舊 LINE ID", 30);
-    const newL = cleanInput(document.getElementById("newLineInput").value, "新 LINE ID", 30);
-
-    const q = query(colRef, where("lineId", "==", oldL));
-    const snap = await getDocs(q);
-    if (snap.empty) return showAlert("找不到該 LINE ID");
-
-    const now = Date.now();
-    snap.forEach(doc => updateDoc(doc.ref, { lineId:newL, updatedAt:now }));
-
-    showAlert("LINE ID 已成功修改！");
-    loadAll();
-  } catch (e) {}
-}
-
-async function updateGameName() {
-  try {
-    const oldG = cleanInput(document.getElementById("oldGameInput").value, "舊遊戲名字", 30);
-    const newG = cleanInput(document.getElementById("newGameInput").value, "新遊戲名字", 30);
-
-    const q = query(colRef, where("gameName", "==", oldG));
-    const snap = await getDocs(q);
-    if (snap.empty) return showAlert("找不到該遊戲名字");
-
-    const now = Date.now();
-    snap.forEach(doc => updateDoc(doc.ref, { gameName:newG, updatedAt:now }));
-
-    showAlert("遊戲名字已成功修改！");
-    loadAll();
-  } catch (e) {}
-}
-
-window.loadAll = loadAll;
-window.saveRecord = saveRecord;
-window.searchRecords = searchRecords;
-window.updateLineId = updateLineId;
-window.updateGameName = updateGameName;
-
-loadAll();
-
-</script>
+  </script>
 
 </body>
 </html>

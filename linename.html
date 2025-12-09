@@ -48,7 +48,6 @@
       font-size: 14px;
       font-weight: bold;
       border-radius: 6px;
-      /* 邊框顏色改成跟背景一樣 */
       border: 3px solid #2091c6;
       background: #70cce1;
       color: black;
@@ -60,14 +59,12 @@
       border-bottom: 1px solid #ddd;
       padding: 8px 0;
     }
-    /* 遊戲名字：放上面 & 大一點 */
     .item-main {
       font-weight: bold;
       font-size: 16px;
       margin-bottom: 2px;
       word-break: break-all;
     }
-    /* LINE ID：放第二行 */
     .item-sub {
       font-size: 14px;
       margin-bottom: 2px;
@@ -111,45 +108,45 @@
            ● 顯示全部：顯示所有黨員名單</small>
   </div>
 
-  <!-- 更改資料 -->
+  <!-- 更改資料（可折疊） -->
   <div class="section">
-   <h2 style="display:flex; justify-content:space-between; align-items:center;">
-    更改資料
-     <button id="toggleEdit" style="font-size:12px; padding:4px 8px;">展開</button>
-   </h2>
+    <h2 style="display:flex; justify-content:space-between; align-items:center;">
+      更改資料
+      <button id="toggleEdit" style="font-size:12px; padding:4px 8px;">展開</button>
+    </h2>
 
-  <!-- 可折疊內容 -->
-   <div id="editPanel" style="display:none; margin-top:10px;">
+    <!-- 可折疊內容 -->
+    <div id="editPanel" style="display:none; margin-top:10px;">
 
-    <!-- 更改 LINE ID -->
-     <label>
-      舊 LINE ID：
-       <input id="oldLineInput" type="text" placeholder="舊 LINE ID" />
-     </label>
-     <label>
-      新 LINE ID：
-       <input id="newLineInput" type="text" placeholder="新 LINE ID" />
-     </label>
-     <button onclick="updateLineId()">更改 LINE ID</button>
+      <!-- 更改 LINE ID -->
+      <label>
+        舊 LINE ID：
+        <input id="oldLineInput" type="text" placeholder="舊 LINE ID" />
+      </label>
+      <label>
+        新 LINE ID：
+        <input id="newLineInput" type="text" placeholder="新 LINE ID" />
+      </label>
+      <button onclick="updateLineId()">更改 LINE ID</button>
 
-     <hr style="margin:12px 0; border:none; border-top:1px solid #ddd;">
+      <hr style="margin:12px 0; border:none; border-top:1px solid #ddd;">
 
-    <!-- 更改遊戲名字 -->
-     <label>
-      舊遊戲名字：
-       <input id="oldGameInput" type="text" placeholder="舊遊戲名字" />
-     </label>
-     <label>
-      新遊戲名字：
-       <input id="newGameInput" type="text" placeholder="新遊戲名字" />
-     </label>
-     <button onclick="updateGameName()">更改遊戲名字</button>
+      <!-- 更改 遊戲名字 -->
+      <label>
+        舊遊戲名字：
+        <input id="oldGameInput" type="text" placeholder="舊遊戲名字" />
+      </label>
+      <label>
+        新遊戲名字：
+        <input id="newGameInput" type="text" placeholder="新遊戲名字" />
+      </label>
+      <button onclick="updateGameName()">更改遊戲名字</button>
 
-     <small>
-       ● 更改是「全部符合的都一起改」，例如有多筆一樣的舊名字，會全部更新。
-     </small>
-   </div>
- </div>
+      <small>
+        ● 更改是「全部符合的都一起改」，例如有多筆一樣的舊名字，會全部更新。
+      </small>
+    </div>
+  </div>
 
   <!-- 顯示結果 -->
   <div class="section">
@@ -157,7 +154,7 @@
     <div id="listContainer"></div>
   </div>
 
-  <!-- Firebase 模組 + Firestore（無刪除版） -->
+  <!-- Firebase 模組 + Firestore -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
@@ -203,6 +200,7 @@
     // 時間格式
     function formatTime(timestamp) {
       const d = new Date(timestamp);
+      if (!timestamp) return "未紀錄";
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
@@ -211,7 +209,7 @@
       return `${y}/${m}/${day} ${hh}:${mm}`;
     }
 
-    // 顯示列表：遊戲名在上、LINE ID 在下
+    // 顯示列表：遊戲名在上、LINE ID 在下（用最後修改時間）
     function renderList(list, titleText) {
       const container = document.getElementById('listContainer');
       const title = document.getElementById('listTitle');
@@ -238,7 +236,7 @@
 
         const timeDiv = document.createElement('div');
         timeDiv.className = 'item-time';
-        timeDiv.textContent = '建立時間：' + formatTime(item.createdAt);
+        timeDiv.textContent = '修改時間：' + formatTime(item.updatedAt);
 
         div.appendChild(mainDiv);
         div.appendChild(subDiv);
@@ -247,46 +245,48 @@
         container.appendChild(div);
       });
     }
+
     // 折疊控制：展開 / 收合
-  window.addEventListener("load", () => {
-    const btn = document.getElementById("toggleEdit");
-    const panel = document.getElementById("editPanel");
+    window.addEventListener("load", () => {
+      const btn = document.getElementById("toggleEdit");
+      const panel = document.getElementById("editPanel");
 
-    btn.addEventListener("click", () => {
-      if (panel.style.display === "none") {
-        panel.style.display = "block";
-        btn.textContent = "收合";
-      } else {
-        panel.style.display = "none";
-        btn.textContent = "展開";
-      }
+      btn.addEventListener("click", () => {
+        if (panel.style.display === "none") {
+          panel.style.display = "block";
+          btn.textContent = "收合";
+        } else {
+          panel.style.display = "none";
+          btn.textContent = "展開";
+        }
+      });
     });
-  });
 
-    // 讀取全部
+    // 讀取全部（用 updatedAt 優先，沒有就用 createdAt）
     async function loadAll() {
       try {
         const snap = await getDocs(colRef);
         const list = [];
         snap.forEach(d => {
           const data = d.data();
+          const time = data.updatedAt || data.createdAt || 0;
           list.push({
             id: d.id,
             lineId: data.lineId || "",
             gameName: data.gameName || "",
-            createdAt: data.createdAt || 0
+            updatedAt: time
           });
         });
 
-        list.sort((a, b) => b.createdAt - a.createdAt);
-        renderList(list, "全部黨員資料");
+        list.sort((a, b) => b.updatedAt - a.updatedAt);
+        renderList(list, "全部黨員資料（依修改時間）");
       } catch (e) {
         console.error(e);
         alert("讀取資料失敗，請稍後再試。");
       }
     }
 
-    // 儲存（限制長度 14）
+    // 儲存（限制長度 14，建立 + 修改時間都記錄）
     async function saveRecord() {
       const lineInput = document.getElementById('lineInput');
       const gameInput = document.getElementById('gameInput');
@@ -295,78 +295,70 @@
         const lineId = cleanInput(lineInput.value, "LINE ID", 14);
         const gameName = cleanInput(gameInput.value, "遊戲名字", 14);
 
+        const now = Date.now();
         await addDoc(colRef, {
           lineId,
           gameName,
-          createdAt: Date.now()
+          createdAt: now,
+          updatedAt: now
         });
 
         lineInput.value = "";
         gameInput.value = "";
         await loadAll();
       } catch (e) {
-        alert(e.message || "儲存失敗，請稍後再試。");
+        alert(e.message || "儲存失敗，請稍後再試。空白請重新輸入或請勿超過14個字。");
         console.error(e);
       }
     }
 
-    // 查詢
-    // 查詢（模糊查詢版：包含就算符合）
-async function searchRecords() {
-  const rawLine = document.getElementById('lineInput').value;
-  const rawGame = document.getElementById('gameInput').value;
+    // 查詢（模糊查詢：包含就算符合，用最後修改時間）
+    async function searchRecords() {
+      const rawLine = document.getElementById('lineInput').value;
+      const rawGame = document.getElementById('gameInput').value;
 
-  const line = rawLine.trim().toLowerCase();
-  const game = rawGame.trim().toLowerCase();
+      const line = rawLine.trim().toLowerCase();
+      const game = rawGame.trim().toLowerCase();
 
-  if (!line && !game) {
-    alert('若要查詢，請至少輸入 LINE ID 或遊戲名字其中一個。');
-    return;
-  }
-
-  try {
-    // 1. 先把全部資料抓回來
-    const snap = await getDocs(colRef);
-    const list = [];
-
-    snap.forEach(d => {
-      const data = d.data();
-      const lineId = (data.lineId || "").toLowerCase();
-      const gameName = (data.gameName || "").toLowerCase();
-
-      // 2. 用「包含」來判斷是否符合
-      //   如果有輸入 line，就要求 lineId 要包含 line
-      if (line && !lineId.includes(line)) {
-        return; // 不符合，跳過
-      }
-      //   如果有輸入 game，就要求 gameName 要包含 game
-      if (game && !gameName.includes(game)) {
-        return; // 不符合，跳過
+      if (!line && !game) {
+        alert('若要查詢，請至少輸入 LINE ID 或遊戲名字其中一個。');
+        return;
       }
 
-      // 符合條件才放進 list
-      list.push({
-        id: d.id,
-        lineId: data.lineId || "",
-        gameName: data.gameName || "",
-        createdAt: data.createdAt || 0
-      });
-    });
+      try {
+        const snap = await getDocs(colRef);
+        const list = [];
 
-    // 3. 排序 + 顯示
-    list.sort((a, b) => b.createdAt - a.createdAt);
-    renderList(list, "模糊查詢結果");
+        snap.forEach(d => {
+          const data = d.data();
+          const lineId = (data.lineId || "").toLowerCase();
+          const gameName = (data.gameName || "").toLowerCase();
+          const time = data.updatedAt || data.createdAt || 0;
 
-    if (list.length === 0) {
-      alert("查無符合條件的資料（模糊查詢）。");
+          if (line && !lineId.includes(line)) return;
+          if (game && !gameName.includes(game)) return;
+
+          list.push({
+            id: d.id,
+            lineId: data.lineId || "",
+            gameName: data.gameName || "",
+            updatedAt: time
+          });
+        });
+
+        list.sort((a, b) => b.updatedAt - a.updatedAt);
+        renderList(list, "模糊查詢結果（依修改時間）");
+
+        if (list.length === 0) {
+          alert("查無符合條件的資料（模糊查詢）。");
+        }
+      } catch (e) {
+        console.error(e);
+        alert("查詢失敗，請稍後再試。");
+      }
     }
-  } catch (e) {
-    console.error(e);
-    alert("查詢失敗，請稍後再試。");
-  }
-}
 
-    // 更改 LINE ID
+    // 更改 LINE ID（更新 updatedAt）
     async function updateLineId() {
       const oldLineRaw = document.getElementById('oldLineInput').value;
       const newLineRaw = document.getElementById('newLineInput').value;
@@ -383,10 +375,14 @@ async function searchRecords() {
           return;
         }
 
+        const now = Date.now();
         let count = 0;
         const promises = [];
         snap.forEach(d => {
-          promises.push(updateDoc(d.ref, { lineId: newLine }));
+          promises.push(updateDoc(d.ref, {
+            lineId: newLine,
+            updatedAt: now
+          }));
           count++;
         });
 
@@ -403,7 +399,7 @@ async function searchRecords() {
       }
     }
 
-    // 更改遊戲名字
+    // 更改遊戲名字（更新 updatedAt）
     async function updateGameName() {
       const oldGameRaw = document.getElementById('oldGameInput').value;
       const newGameRaw = document.getElementById('newGameInput').value;
@@ -420,10 +416,14 @@ async function searchRecords() {
           return;
         }
 
+        const now = Date.now();
         let count = 0;
         const promises = [];
         snap.forEach(d => {
-          promises.push(updateDoc(d.ref, { gameName: newGame }));
+          promises.push(updateDoc(d.ref, {
+            gameName: newGame,
+            updatedAt: now
+          }));
           count++;
         });
 

@@ -162,10 +162,12 @@
 
     <button onclick="saveRecord()">儲存</button>
     <button onclick="searchRecords()">查詢</button>
+    <button onclick="clearInputs()">清除</button>
 
     <small><br>
       ● 儲存：新增一筆新資料<br>
-      ● 查詢：可輸入部分文字做模糊搜尋
+      ● 查詢：可輸入部分文字做模糊搜尋<br>
+      ● 清除：將輸入框內的文字刪除
     </small>
   </div>
 </div>
@@ -218,6 +220,12 @@
 
   <!-- Firebase + Firestore -->
   <script type="module">
+    window.clearInputs = function () {
+      document.getElementById("lineInput").value = "";
+      document.getElementById("gameInput").value = "";
+
+      showAlert("已清除輸入內容！");
+    };
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
       getFirestore, collection, addDoc,

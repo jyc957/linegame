@@ -97,7 +97,7 @@
 
     /* 「展開/收合」按鈕微調，讓它更像小標籤 */
     #toggleEdit {
-      margin-top: 0;
+      margin-top: 3px;
       margin-left: 8px;
       padding: 4px 10px;
       font-size: 12px;
@@ -132,8 +132,8 @@
   <!-- 更改資料（可折疊 + icon + 動畫） -->
   <div class="section">
     <h2 style="display:flex; justify-content:flex-start; align-items:center;">
-      <span style="margin-top:3px;">更改資料</span>
-      <button id="toggleEdit">▸ 展開</button>
+      <span style="margin-top:4px;">更改資料</span>
+      <button id="toggleEdit">▾ 展開</button>
     </h2>
 
     <!-- 可折疊內容 -->
@@ -273,14 +273,14 @@
 
       // 一開始確保是收起來的狀態
       panel.classList.remove('open');
-      btn.textContent = '▸ 展開';
+      btn.textContent = '▾ 展開';
 
       btn.addEventListener("click", () => {
         const isOpen = panel.classList.toggle('open');
         if (isOpen) {
-          btn.textContent = '▾ 收合';
+          btn.textContent = '▴ 收合';
         } else {
-          btn.textContent = '▸ 展開';
+          btn.textContent = ' ▾展開';
         }
       });
     });

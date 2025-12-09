@@ -141,10 +141,10 @@
     <h2 style="margin-right:10px;">新增 / 查詢</h2>
 
     <!-- 展開按鈕：字變大 -->
-    <button id="toggleAdd" style="font-size:14px; padding:8px 12px;">▾ 展開</button>
+    <button id="toggleAdd">▾ 展開</button>
 
     <!-- 顯示全部 放在旁邊 -->
-    <button onclick="loadAll()" style="font-size:14px;">顯示全部</button>
+    <button onclick="loadAll()">顯示全部</button>
   </div>
   <small>
   ● 顯示全部:直接顯示所有名單
@@ -287,7 +287,7 @@
 
       addBtn.addEventListener("click", () => {
         const open = addPanel.classList.toggle("open");
-        addBtn.textContent = open ? "▴ 收合" : "▾ 展開";
+        addBtn.textContent = open ? "▲ 收合" : "▼ 展開";
       });
 
       const editBtn = document.getElementById("toggleEdit");
@@ -295,7 +295,7 @@
 
       editBtn.addEventListener("click", () => {
         const open = editPanel.classList.toggle("open");
-        editBtn.textContent = open ? "▴ 收合" : "▾ 展開";
+        editBtn.textContent = open ? "▲ 收合" : "▼ 展開";
       });
     });
 
@@ -371,7 +371,7 @@
       });
 
       list.sort((a, b) => b.updatedAt - a.updatedAt);
-      renderList(list, "模糊搜尋結果");
+      renderList(list, "搜尋結果");
     }
 
 

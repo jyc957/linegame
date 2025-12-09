@@ -135,36 +135,39 @@
 
   <h1>KP台灣民眾黨 黨員查詢系統</h1>
 
-  <!-- 新增 / 查詢（可折疊） -->
-  <div class="section">
-    <div class="top-bar">
-      <h2>新增 / 查詢</h2>
-      <div>
-        <button id="toggleAdd">▾ 展開</button>
-        <button onclick="loadAll()">顯示全部</button>
-      </div>
-    </div>
+<!-- 新增 / 查詢（可折疊） -->
+<div class="section">
+  <div class="top-bar" style="display:flex; align-items:center; justify-content:flex-start; gap:10px;">
+    <h2 style="margin-right:10px;">新增 / 查詢</h2>
 
-    <div id="addPanel" class="collapse-content">
-      <label>
-        LINE ID：
-        <input id="lineInput" type="text" placeholder="例：jason😈🐺🛠😺" />
-      </label>
+    <!-- 展開按鈕：字變大 -->
+    <button id="toggleAdd" style="font-size:16px; padding:4px 10px;">▾ 展開</button>
 
-      <label>
-        遊戲名字：
-        <input id="gameInput" type="text" placeholder="例：ᴷᴾღ帥帥哥" />
-      </label>
-
-      <button onclick="saveRecord()">儲存</button>
-      <button onclick="searchRecords()">查詢</button>
-
-      <small>
-        ● 儲存：新增一筆新資料<br>
-        ● 查詢：可輸入部分文字做模糊搜尋
-      </small>
-    </div>
+    <!-- 顯示全部 放在旁邊 -->
+    <button onclick="loadAll()" style="font-size:14px;">顯示全部</button>
   </div>
+
+  <div id="addPanel" class="collapse-content">
+    <label>
+      LINE ID：
+      <input id="lineInput" type="text" placeholder="例：jason😈🐺🛠😺" />
+    </label>
+
+    <label>
+      遊戲名字：
+      <input id="gameInput" type="text" placeholder="例：ᴷᴾღ帥帥哥" />
+    </label>
+
+    <button onclick="saveRecord()">儲存</button>
+    <button onclick="searchRecords()">查詢</button>
+
+    <small>
+      ● 儲存：新增一筆新資料<br>
+      ● 查詢：可輸入部分文字做模糊搜尋
+    </small>
+  </div>
+</div>
+
 
   <!-- 更改資料（可折疊） -->
   <div class="section">

@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KP台灣民眾黨 黨員查詢系統</title>
+
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -12,16 +13,21 @@
       box-sizing: border-box;
       background: #70cce1;
     }
+
     h1 {
       font-size: 27px;
       font-weight: bold;
-      margin-bottom: 8px;
+      margin-bottom: 16px;
       text-align: center;
     }
+
     h2 {
-      font-size: 16px;
-      margin: 0 0 8px;
+      font-size: 17px;
+      font-weight: bold;
+      margin: 0;
+      padding: 0;
     }
+
     .section {
       margin-bottom: 16px;
       padding: 12px;
@@ -29,18 +35,21 @@
       background: #ffffff;
       box-shadow: 0 0 4px rgba(0,0,0,0.05);
     }
+
     label {
       display: block;
       margin-top: 8px;
       font-size: 14px;
     }
+
     input {
       width: 100%;
-      box-sizing: border-box;
       padding: 8px;
       margin-top: 4px;
       font-size: 14px;
+      box-sizing: border-box;
     }
+
     button {
       margin-top: 10px;
       margin-right: 6px;
@@ -52,118 +61,145 @@
       background: #70cce1;
       color: black;
     }
+
     button:active {
       transform: scale(0.97);
     }
-    .item {
-      border-bottom: 1px solid #ddd;
-      padding: 8px 0;
-    }
-    .item-main {
-      font-weight: bold;
-      font-size: 16px;
-      margin-bottom: 2px;
-      word-break: break-all;
-    }
-    .item-sub {
-      font-size: 14px;
-      margin-bottom: 2px;
-      word-break: break-all;
-    }
-    .item-time {
-      font-size: 12px;
-      color: #666;
-    }
-    .empty-text {
-      color: #888;
-      font-size: 14px;
-    }
-    small {
-      color: #777;
-      font-size: 12px;
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    /* 🔽 折疊區塊動畫：預設收起來，高度 0，有 transition */
+    /* 折疊區塊動畫：新增/查詢 */
+    .collapse-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
+      margin-top: 10px;
+    }
+
+    .collapse-content.open {
+      max-height: 500px;
+    }
+
+    /* 更改資料折疊 */
     #editPanel {
       max-height: 0;
       overflow: hidden;
       margin-top: 10px;
       transition: max-height 0.5s ease;
     }
-    /* 展開時加上 open 類別：max-height 拉大，會有 smooth 展開效果 */
+
     #editPanel.open {
-      max-height: 600px; /* 依內容高度調整，600px 夠你這一段用了 */
+      max-height: 600px;
     }
 
-    /* 「展開/收合」按鈕微調，讓它更像小標籤 */
-    #toggleEdit {
-      margin-top: 5px;
-      margin-left: 8px;
+    #toggleEdit, #toggleAdd {
+      margin-left: 10px;
       padding: 4px 10px;
       font-size: 12px;
       border-width: 2px;
     }
+
+    .item {
+      border-bottom: 1px solid #ddd;
+      padding: 8px 0;
+    }
+
+    .item-main {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 2px;
+    }
+
+    .item-sub {
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .item-time {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .empty-text {
+      font-size: 14px;
+      color: #888;
+    }
   </style>
 </head>
+
 <body>
+
   <h1>KP台灣民眾黨 黨員查詢系統</h1>
 
-  <!-- 新增 / 查詢 -->
+  <!-- 新增 / 查詢（可折疊） -->
   <div class="section">
-    <h2>新增 / 查詢</h2>
-    <label>
-      LINE ID：
-      <input id="lineInput" type="text" placeholder="例：jason😈🐺🛠😺" />
-    </label>
-    <label>
-      遊戲名字：
-      <input id="gameInput" type="text" placeholder="例：ᴷᴾღ帥帥哥" />
-    </label>
-    <div>
+    <div class="top-bar">
+      <h2>新增 / 查詢</h2>
+      <div>
+        <button id="toggleAdd">▾ 展開</button>
+        <button onclick="loadAll()">顯示全部</button>
+      </div>
+    </div>
+
+    <div id="addPanel" class="collapse-content">
+      <label>
+        LINE ID：
+        <input id="lineInput" type="text" placeholder="例：jason😈🐺🛠😺" />
+      </label>
+
+      <label>
+        遊戲名字：
+        <input id="gameInput" type="text" placeholder="例：ᴷᴾღ帥帥哥" />
+      </label>
+
       <button onclick="saveRecord()">儲存</button>
       <button onclick="searchRecords()">查詢</button>
-      <button onclick="loadAll()">顯示全部</button>
+
+      <small>
+        ● 儲存：新增一筆新資料<br>
+        ● 查詢：可輸入部分文字做模糊搜尋
+      </small>
     </div>
-    <small>● 儲存：新增一筆新資料<br>
-           ● 查詢：可只填一字 會跳出所有相關名單<br>
-           ● 顯示全部：顯示所有黨員名單</small>
   </div>
 
-  <!-- 更改資料（可折疊 + icon + 動畫） -->
+  <!-- 更改資料（可折疊） -->
   <div class="section">
-    <h2 style="display:flex; justify-content:flex-start; align-items:center;">
-      <span style="margin-top:5px;">更改資料</span>
+    <h2 style="display:flex; align-items:center;">
+      <span>更改資料</span>
       <button id="toggleEdit">▾ 展開</button>
     </h2>
 
-    <!-- 可折疊內容 -->
     <div id="editPanel">
       <!-- 更改 LINE ID -->
-      <label>
-        舊 LINE ID：
-        <input id="oldLineInput" type="text" placeholder="舊 LINE ID" />
+      <label>舊 LINE ID：
+        <input id="oldLineInput" type="text" placeholder="舊 LINE ID">
       </label>
-      <label>
-        新 LINE ID：
-        <input id="newLineInput" type="text" placeholder="新 LINE ID" />
+
+      <label>新 LINE ID：
+        <input id="newLineInput" type="text" placeholder="新 LINE ID">
       </label>
+
       <button onclick="updateLineId()">更改 LINE ID</button>
 
-      <hr style="margin:12px 0; border:none; border-top:1px solid #ddd;">
+      <hr>
 
       <!-- 更改 遊戲名字 -->
-      <label>
-        舊遊戲名字：
-        <input id="oldGameInput" type="text" placeholder="舊遊戲名字" />
+      <label>舊遊戲名字：
+        <input id="oldGameInput" type="text" placeholder="舊遊戲名字">
       </label>
-      <label>
-        新遊戲名字：
-        <input id="newGameInput" type="text" placeholder="新遊戲名字" />
+
+      <label>新遊戲名字：
+        <input id="newGameInput" type="text" placeholder="新遊戲名字">
       </label>
+
       <button onclick="updateGameName()">更改遊戲名字</button>
 
       <small>
-        ● 更改是「全部符合的都一起改」，例如有多筆一樣的舊名字，會全部更新。
+        ● 若有多筆相同舊名稱，會全部一起修改
       </small>
     </div>
   </div>
@@ -174,20 +210,15 @@
     <div id="listContainer"></div>
   </div>
 
-  <!-- Firebase 模組 + Firestore -->
+
+  <!-- Firebase + Firestore -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
-      getFirestore,
-      collection,
-      addDoc,
-      getDocs,
-      query,
-      where,
-      updateDoc
+      getFirestore, collection, addDoc,
+      getDocs, query, where, updateDoc
     } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-    // Firebase 設定
     const firebaseConfig = {
       apiKey: "AIzaSyAtaboHWv60PRfwY5qwhOeECq-U_2mDi5M",
       authDomain: "linename-76527.firebaseapp.com",
@@ -201,277 +232,192 @@
     const db = getFirestore(app);
     const colRef = collection(db, "line_game_records");
 
-    // 防惡意輸入
+
+    /* -------------------- 工具 -------------------- */
     function cleanInput(str, fieldName, maxLen = 14) {
       const s = (str || "").trim();
-
-      if (!s) {
-        throw new Error(fieldName + " 不能是空白");
-      }
-      if (s.length > maxLen) {
-        throw new Error(fieldName + " 太長了，最多 " + maxLen + " 個字");
-      }
-      if (/[<>]/.test(s)) {
-        throw new Error(fieldName + " 不能包含 < 或 > 這類符號");
-      }
+      if (!s) throw new Error(fieldName + " 不能空白");
+      if (s.length > maxLen) throw new Error(fieldName + " 最多 " + maxLen + " 個字");
+      if (/[<>]/.test(s)) throw new Error(fieldName + " 不能包含 < >");
       return s;
     }
 
-    // 時間格式
-    function formatTime(timestamp) {
-      if (!timestamp) return "未紀錄";
-      const d = new Date(timestamp);
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      const hh = String(d.getHours()).padStart(2, '0');
-      const mm = String(d.getMinutes()).padStart(2, '0');
-      return `${y}/${m}/${day} ${hh}:${mm}`;
+    function formatTime(ts) {
+      if (!ts) return "未紀錄";
+      const d = new Date(ts);
+      return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}
+              ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     }
 
-    // 顯示列表：遊戲名在上、LINE ID 在下（用最後修改時間）
     function renderList(list, titleText) {
-      const container = document.getElementById('listContainer');
-      const title = document.getElementById('listTitle');
+      const box = document.getElementById("listContainer");
+      document.getElementById("listTitle").textContent = titleText;
+      box.innerHTML = "";
 
-      title.textContent = titleText || '目前資料';
-      container.innerHTML = '';
-
-      if (!list || list.length === 0) {
-        container.innerHTML = '<div class="empty-text">目前沒有資料。</div>';
+      if (!list.length) {
+        box.innerHTML = `<div class="empty-text">沒有資料。</div>`;
         return;
       }
 
       list.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'item';
+        const div = document.createElement("div");
+        div.className = "item";
 
-        const mainDiv = document.createElement('div');
-        mainDiv.className = 'item-main';
-        mainDiv.textContent = '遊戲名字：' + item.gameName;
-
-        const subDiv = document.createElement('div');
-        subDiv.className = 'item-sub';
-        subDiv.textContent = 'LINE ID：' + item.lineId;
-
-        const timeDiv = document.createElement('div');
-        timeDiv.className = 'item-time';
-        timeDiv.textContent = '修改時間：' + formatTime(item.updatedAt);
-
-        div.appendChild(mainDiv);
-        div.appendChild(subDiv);
-        div.appendChild(timeDiv);
-
-        container.appendChild(div);
+        div.innerHTML = `
+          <div class="item-main">遊戲名字：${item.gameName}</div>
+          <div class="item-sub">LINE ID：${item.lineId}</div>
+          <div class="item-time">修改時間：${formatTime(item.updatedAt)}</div>
+        `;
+        box.appendChild(div);
       });
     }
 
-    // 折疊控制：展開 / 收合（含 icon & 動畫）
+
+    /* -------------------- 折疊控制 -------------------- */
     window.addEventListener("load", () => {
-      const btn = document.getElementById("toggleEdit");
-      const panel = document.getElementById("editPanel");
+      const addBtn = document.getElementById("toggleAdd");
+      const addPanel = document.getElementById("addPanel");
 
-      // 一開始確保是收起來的狀態
-      panel.classList.remove('open');
-      btn.textContent = '▾ 展開';
+      addBtn.addEventListener("click", () => {
+        const open = addPanel.classList.toggle("open");
+        addBtn.textContent = open ? "▴ 收合" : "▾ 展開";
+      });
 
-      btn.addEventListener("click", () => {
-        const isOpen = panel.classList.toggle('open');
-        if (isOpen) {
-          btn.textContent = '▴ 收合';
-        } else {
-          btn.textContent = ' ▾展開';
-        }
+      const editBtn = document.getElementById("toggleEdit");
+      const editPanel = document.getElementById("editPanel");
+
+      editBtn.addEventListener("click", () => {
+        const open = editPanel.classList.toggle("open");
+        editBtn.textContent = open ? "▴ 收合" : "▾ 展開";
       });
     });
 
-    // 讀取全部（用 updatedAt 優先，沒有就用 createdAt）
-    async function loadAll() {
-      try {
-        const snap = await getDocs(colRef);
-        const list = [];
-        snap.forEach(d => {
-          const data = d.data();
-          const time = data.updatedAt || data.createdAt || 0;
-          list.push({
-            id: d.id,
-            lineId: data.lineId || "",
-            gameName: data.gameName || "",
-            updatedAt: time
-          });
-        });
 
-        list.sort((a, b) => b.updatedAt - a.updatedAt);
-        renderList(list, "全部黨員資料（依修改時間）");
-      } catch (e) {
-        console.error(e);
-        alert("讀取資料失敗，請稍後再試。");
-      }
+    /* -------------------- Firestore 功能 -------------------- */
+
+    async function loadAll() {
+      const snap = await getDocs(colRef);
+      const list = [];
+
+      snap.forEach(doc => {
+        const d = doc.data();
+        list.push({
+          id: doc.id,
+          lineId: d.lineId,
+          gameName: d.gameName,
+          updatedAt: d.updatedAt || d.createdAt
+        });
+      });
+
+      list.sort((a, b) => b.updatedAt - a.updatedAt);
+      renderList(list, "全部資料（依修改時間）");
     }
 
-    // 儲存（限制長度 14，建立 + 修改時間都記錄）
+
     async function saveRecord() {
-      const lineInput = document.getElementById('lineInput');
-      const gameInput = document.getElementById('gameInput');
-
       try {
-        const lineId = cleanInput(lineInput.value, "LINE ID", 14);
-        const gameName = cleanInput(gameInput.value, "遊戲名字", 14);
-
+        const line = cleanInput(document.getElementById("lineInput").value, "LINE ID");
+        const game = cleanInput(document.getElementById("gameInput").value, "遊戲名字");
         const now = Date.now();
+
         await addDoc(colRef, {
-          lineId,
-          gameName,
+          lineId: line,
+          gameName: game,
           createdAt: now,
           updatedAt: now
         });
 
-        lineInput.value = "";
-        gameInput.value = "";
-        await loadAll();
+        document.getElementById("lineInput").value = "";
+        document.getElementById("gameInput").value = "";
+        loadAll();
+
       } catch (e) {
-        alert(e.message || "儲存失敗，請稍後再試。空白請重新輸入或請勿超過14個字。");
-        console.error(e);
+        alert(e.message);
       }
     }
 
-    // 查詢（模糊查詢：包含就算符合，用最後修改時間）
+
     async function searchRecords() {
-      const rawLine = document.getElementById('lineInput').value;
-      const rawGame = document.getElementById('gameInput').value;
+      const line = document.getElementById("lineInput").value.trim().toLowerCase();
+      const game = document.getElementById("gameInput").value.trim().toLowerCase();
 
-      const line = rawLine.trim().toLowerCase();
-      const game = rawGame.trim().toLowerCase();
+      if (!line && !game) return alert("請至少輸入一項查詢");
 
-      if (!line && !game) {
-        alert('若要查詢，請至少輸入 LINE ID 或遊戲名字其中一個。');
-        return;
-      }
+      const snap = await getDocs(colRef);
+      const list = [];
 
-      try {
-        const snap = await getDocs(colRef);
-        const list = [];
+      snap.forEach(doc => {
+        const d = doc.data();
+        const lineId = d.lineId.toLowerCase();
+        const gameName = d.gameName.toLowerCase();
+        const time = d.updatedAt || d.createdAt;
 
-        snap.forEach(d => {
-          const data = d.data();
-          const lineId = (data.lineId || "").toLowerCase();
-          const gameName = (data.gameName || "").toLowerCase();
-          const time = data.updatedAt || data.createdAt || 0;
+        if (line && !lineId.includes(line)) return;
+        if (game && !gameName.includes(game)) return;
 
-          if (line && !lineId.includes(line)) return;
-          if (game && !gameName.includes(game)) return;
-
-          list.push({
-            id: d.id,
-            lineId: data.lineId || "",
-            gameName: data.gameName || "",
-            updatedAt: time
-          });
+        list.push({
+          id: doc.id,
+          lineId: d.lineId,
+          gameName: d.gameName,
+          updatedAt: time
         });
+      });
 
-        list.sort((a, b) => b.updatedAt - a.updatedAt);
-        renderList(list, "模糊查詢結果（依修改時間）");
-
-        if (list.length === 0) {
-          alert("查無符合條件的資料（模糊查詢）。");
-        }
-      } catch (e) {
-        console.error(e);
-        alert("查詢失敗，請稍後再試。");
-      }
+      list.sort((a, b) => b.updatedAt - a.updatedAt);
+      renderList(list, "模糊搜尋結果");
     }
 
-    // 更改 LINE ID（更新 updatedAt）
+
     async function updateLineId() {
-      const oldLineRaw = document.getElementById('oldLineInput').value;
-      const newLineRaw = document.getElementById('newLineInput').value;
-
       try {
-        const oldLine = cleanInput(oldLineRaw, "舊 LINE ID", 30);
-        const newLine = cleanInput(newLineRaw, "新 LINE ID", 30);
+        const oldLine = cleanInput(document.getElementById("oldLineInput").value, "舊 LINE ID", 30);
+        const newLine = cleanInput(document.getElementById("newLineInput").value, "新 LINE ID", 30);
 
-        const qRef = query(colRef, where("lineId", "==", oldLine));
-        const snap = await getDocs(qRef);
-
-        if (snap.empty) {
-          alert("找不到符合「舊 LINE ID」的資料。");
-          return;
-        }
+        const q = query(colRef, where("lineId", "==", oldLine));
+        const snap = await getDocs(q);
+        if (snap.empty) return alert("找不到該 LINE ID");
 
         const now = Date.now();
-        let count = 0;
-        const promises = [];
-        snap.forEach(d => {
-          promises.push(updateDoc(d.ref, {
-            lineId: newLine,
-            updatedAt: now
-          }));
-          count++;
-        });
+        snap.forEach(doc => updateDoc(doc.ref, { lineId: newLine, updatedAt: now }));
 
-        await Promise.all(promises);
-        alert(`已更改 LINE ID，共 ${count} 筆。`);
+        alert("修改成功！");
+        loadAll();
 
-        document.getElementById('oldLineInput').value = '';
-        document.getElementById('newLineInput').value = '';
-
-        await loadAll();
       } catch (e) {
-        alert(e.message || "更改失敗，請稍後再試。");
-        console.error(e);
+        alert(e.message);
       }
     }
 
-    // 更改遊戲名字（更新 updatedAt）
+
     async function updateGameName() {
-      const oldGameRaw = document.getElementById('oldGameInput').value;
-      const newGameRaw = document.getElementById('newGameInput').value;
-
       try {
-        const oldGame = cleanInput(oldGameRaw, "舊遊戲名字", 30);
-        const newGame = cleanInput(newGameRaw, "新遊戲名字", 30);
+        const oldGame = cleanInput(document.getElementById("oldGameInput").value, "舊遊戲名字", 30);
+        const newGame = cleanInput(document.getElementById("newGameInput").value, "新遊戲名字", 30);
 
-        const qRef = query(colRef, where("gameName", "==", oldGame));
-        const snap = await getDocs(qRef);
-
-        if (snap.empty) {
-          alert("找不到符合「舊遊戲名字」的資料。");
-          return;
-        }
+        const q = query(colRef, where("gameName", "==", oldGame));
+        const snap = await getDocs(q);
+        if (snap.empty) return alert("找不到該遊戲名字");
 
         const now = Date.now();
-        let count = 0;
-        const promises = [];
-        snap.forEach(d => {
-          promises.push(updateDoc(d.ref, {
-            gameName: newGame,
-            updatedAt: now
-          }));
-          count++;
-        });
+        snap.forEach(doc => updateDoc(doc.ref, { gameName: newGame, updatedAt: now }));
 
-        await Promise.all(promises);
-        alert(`已更改遊戲名字，共 ${count} 筆。`);
+        alert("修改完成！");
+        loadAll();
 
-        document.getElementById('oldGameInput').value = '';
-        document.getElementById('newGameInput').value = '';
-
-        await loadAll();
       } catch (e) {
-        alert(e.message || "更改失敗，請稍後再試。");
-        console.error(e);
+        alert(e.message);
       }
     }
 
-    // 將函式掛到 window
-    window.loadAll = loadAll;
+
     window.saveRecord = saveRecord;
     window.searchRecords = searchRecords;
     window.updateLineId = updateLineId;
     window.updateGameName = updateGameName;
+    window.loadAll = loadAll;
 
-    // 一開始載入全部資料
-    window.addEventListener("load", loadAll);
+    loadAll();
   </script>
+
 </body>
 </html>

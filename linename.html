@@ -141,11 +141,15 @@
     <h2 style="margin-right:10px;">新增 / 查詢</h2>
 
     <!-- 展開按鈕：字變大 -->
-    <button id="toggleAdd" style="font-size:16px; padding:4px 10px;">▾ 展開</button>
+    <button id="toggleAdd" style="font-size:14px; padding:8px 12px;">▾ 展開</button>
 
     <!-- 顯示全部 放在旁邊 -->
     <button onclick="loadAll()" style="font-size:14px;">顯示全部</button>
   </div>
+  <small>
+  ● 顯示全部:直接顯示所有名單
+  </small>
+
 
   <div id="addPanel" class="collapse-content">
     <label>
@@ -161,7 +165,7 @@
     <button onclick="saveRecord()">儲存</button>
     <button onclick="searchRecords()">查詢</button>
 
-    <small>
+    <small><br>
       ● 儲存：新增一筆新資料<br>
       ● 查詢：可輸入部分文字做模糊搜尋
     </small>
@@ -172,7 +176,7 @@
   <!-- 更改資料（可折疊） -->
   <div class="section">
     <h2 style="display:flex; align-items:center;">
-      <span style="margin-top:5px;">更改資料</span>
+      <span style="margin-top:7px;">更改資料</span>
       <button id="toggleEdit">▾ 展開</button>
     </h2>
 

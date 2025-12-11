@@ -133,45 +133,43 @@
 
   <h1>KP台灣民眾黨 黨員查詢系統</h1>
 
-<!-- 新增 / 查詢（可折疊） -->
-<div class="section">
-  <div class="top-bar" style="display:flex; align-items:center; justify-content:flex-start; gap:10px;">
-    <h2 style="margin-right:10px;">新增 / 查詢</h2>
+  <!-- 新增 / 查詢（可折疊） -->
+  <div class="section">
+    <div class="top-bar" style="display:flex; align-items:center; justify-content:flex-start; gap:10px;">
+      <h2 style="margin-right:10px;">新增 / 查詢</h2>
 
-    <!-- 展開按鈕：字變大 -->
-    <button id="toggleAdd">▼ 展開</button>
+      <!-- 展開按鈕 -->
+      <button id="toggleAdd">▼ 展開</button>
 
-    <!-- 顯示全部 放在旁邊 -->
-    <button onclick="loadAll()">顯示全部</button>
-  </div>
-  <small>
-  ● 顯示全部:直接顯示所有名單
-  </small>
-
-
-  <div id="addPanel" class="collapse-content">
-    <label>
-      LINE ID：
-      <input id="lineInput" type="text" placeholder="例：jason😈🐺🛠😺" />
-    </label>
-
-    <label>
-      遊戲名字：
-      <input id="gameInput" type="text" placeholder="例：ᴷᴾღ帥帥哥" />
-    </label>
-
-    <button onclick="saveRecord()">儲存</button>
-    <button onclick="searchRecords()">查詢</button>
-    <button onclick="clearInputs()">清除</button>
-
-    <small><br>
-      ● 儲存：新增一筆新資料<br>
-      ● 查詢：可輸入部分文字做模糊搜尋<br>
-      ● 清除：將輸入框內的文字刪除
+      <!-- 顯示全部 放在旁邊 -->
+      <button onclick="loadAll()">顯示全部</button>
+    </div>
+    <small>
+      ● 顯示全部: 直接顯示所有名單
     </small>
-  </div>
-</div>
 
+    <div id="addPanel" class="collapse-content">
+      <label>
+        LINE ID：
+        <input id="lineInput" type="text" placeholder="例：jason😈🐺🛠😺" />
+      </label>
+
+      <label>
+        遊戲名字：
+        <input id="gameInput" type="text" placeholder="例：ᴷᴾღ帥帥哥" />
+      </label>
+
+      <button onclick="saveRecord()">儲存</button>
+      <button onclick="searchRecords()">查詢</button>
+      <button onclick="clearInputs()">清除</button>
+
+      <small><br>
+        ● 儲存：新增一筆新資料<br>
+        ● 查詢：可輸入部分文字做模糊搜尋<br>
+        ● 清除：將輸入框內的文字刪除
+      </small>
+    </div>
+  </div>
 
   <!-- 更改資料（可折疊） -->
   <div class="section">
@@ -214,18 +212,13 @@
   <!-- 顯示結果 -->
   <div class="section">
     <h2 id="listTitle">目前資料(無)</h2>
+    <!-- 這裡顯示「共 XX 筆資料」 -->
+    <div id="resultCount" style="font-size:13px; color:#555; margin-top:4px;"></div>
     <div id="listContainer"></div>
   </div>
 
-
   <!-- Firebase + Firestore -->
   <script type="module">
-    window.clearInputs = function () {
-      document.getElementById("lineInput").value = "";
-      document.getElementById("gameInput").value = "";
-
-      showAlert("已清除輸入內容！");
-    };
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
       getFirestore, collection, addDoc,
@@ -245,7 +238,6 @@
     const db = getFirestore(app);
     const colRef = collection(db, "line_game_records");
 
-
     /* -------------------- 工具 -------------------- */
     function cleanInput(str, fieldName, maxLen = 14) {
       const s = (str || "").trim();
@@ -262,10 +254,19 @@
               ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     }
 
+    // 這裡順便更新「共 XX 筆資料」
     function renderList(list, titleText) {
       const box = document.getElementById("listContainer");
-      document.getElementById("listTitle").textContent = titleText;
+      const title = document.getElementById("listTitle");
+      const countBox = document.getElementById("resultCount");
+
+      title.textContent = titleText || "目前資料";
       box.innerHTML = "";
+
+      // 顯示筆數
+      if (countBox) {
+        countBox.textContent = `共 ${list.length} 筆資料`;
+      }
 
       if (!list.length) {
         box.innerHTML = `<div class="empty-text">沒有資料。</div>`;
@@ -285,6 +286,12 @@
       });
     }
 
+    /* -------------------- 清除輸入 -------------------- */
+    function clearInputs() {
+      document.getElementById("lineInput").value = "";
+      document.getElementById("gameInput").value = "";
+      alert("已清除輸入內容！");
+    }
 
     /* -------------------- 折疊控制 -------------------- */
     window.addEventListener("load", () => {
@@ -305,7 +312,6 @@
       });
     });
 
-
     /* -------------------- Firestore 功能 -------------------- */
 
     async function loadAll() {
@@ -325,7 +331,6 @@
       list.sort((a, b) => b.updatedAt - a.updatedAt);
       renderList(list, "全部資料（依修改時間）");
     }
-
 
     async function saveRecord() {
       try {
@@ -349,12 +354,14 @@
       }
     }
 
-
     async function searchRecords() {
       const line = document.getElementById("lineInput").value.trim().toLowerCase();
       const game = document.getElementById("gameInput").value.trim().toLowerCase();
 
-      if (!line && !game) return alert("請至少輸入一項查詢");
+      if (!line && !game) {
+        alert("請至少輸入一項查詢");
+        return;
+      }
 
       const snap = await getDocs(colRef);
       const list = [];
@@ -380,7 +387,6 @@
       renderList(list, "搜尋結果");
     }
 
-
     async function updateLineId() {
       try {
         const oldLine = cleanInput(document.getElementById("oldLineInput").value, "舊 LINE ID", 30);
@@ -388,7 +394,10 @@
 
         const q = query(colRef, where("lineId", "==", oldLine));
         const snap = await getDocs(q);
-        if (snap.empty) return alert("找不到該 LINE ID");
+        if (snap.empty) {
+          alert("找不到該 LINE ID");
+          return;
+        }
 
         const now = Date.now();
         snap.forEach(doc => updateDoc(doc.ref, { lineId: newLine, updatedAt: now }));
@@ -401,7 +410,6 @@
       }
     }
 
-
     async function updateGameName() {
       try {
         const oldGame = cleanInput(document.getElementById("oldGameInput").value, "舊遊戲名字", 30);
@@ -409,7 +417,10 @@
 
         const q = query(colRef, where("gameName", "==", oldGame));
         const snap = await getDocs(q);
-        if (snap.empty) return alert("找不到該遊戲名字");
+        if (snap.empty) {
+          alert("找不到該遊戲名字");
+          return;
+        }
 
         const now = Date.now();
         snap.forEach(doc => updateDoc(doc.ref, { gameName: newGame, updatedAt: now }));
@@ -422,13 +433,13 @@
       }
     }
 
-
+    // 讓 HTML 上的 onclick 可以用這些函式
     window.saveRecord = saveRecord;
     window.searchRecords = searchRecords;
     window.updateLineId = updateLineId;
     window.updateGameName = updateGameName;
     window.loadAll = loadAll;
-
+    window.clearInputs = clearInputs;
   </script>
 
 </body>

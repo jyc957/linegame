@@ -224,6 +224,7 @@
       getFirestore, collection, addDoc,
       getDocs, query, where, updateDoc
     } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAtaboHWv60PRfwY5qwhOeECq-U_2mDi5M",
@@ -237,6 +238,12 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const colRef = collection(db, "line_game_records");
+    // 匿名登入，讓 Firestore 規則允許新增
+    const auth = getAuth(app);
+    signInAnonymously(auth).catch(err => {
+      console.error(err);
+      alert("登入失敗，請重新整理頁面");
+    });
 
     /* -------------------- 工具 -------------------- */
     function cleanInput(str, fieldName, maxLen = 14) {

@@ -407,25 +407,22 @@
     if (snap.empty) return alert("找不到該 LINE ID");
 
     const now = Date.now();
-    snap.forEach(doc => updateDoc(doc.ref, { lineId: newLine, updatedAt: now }));
+    const tasks = [];
+    snap.forEach(docSnap => {
+      tasks.push(updateDoc(docSnap.ref, { lineId: newLine, updatedAt: now }));
+    });
+
+    await Promise.all(tasks); // ✅ 等真的寫完
 
     // ✅ 成功後清空輸入框
     oldLineEl.value = "";
     newLineEl.value = "";
 
-    alert("修改成功！");
-    loadAll();
-
-    // （可選）成功後自動收合面板
-    const editBtn = document.getElementById("toggleEdit");
-    const editPanel = document.getElementById("editPanel");
-    if (editPanel && editPanel.classList.contains("open")) {
-      editPanel.classList.remove("open");
-      if (editBtn) editBtn.textContent = "▼ 展開";
-    }
-
+    alert(`修改成功！（共 ${tasks.length} 筆）`);
+    await loadAll();
   } catch (e) {
-    alert(e.message);
+    console.error(e);
+    alert("修改失敗：" + (e?.message || "未知錯誤"));
   }
 }
 
@@ -442,29 +439,24 @@ async function updateGameName() {
     if (snap.empty) return alert("找不到該遊戲名字");
 
     const now = Date.now();
-    snap.forEach(doc => updateDoc(doc.ref, { gameName: newGame, updatedAt: now }));
+    const tasks = [];
+    snap.forEach(docSnap => {
+      tasks.push(updateDoc(docSnap.ref, { gameName: newGame, updatedAt: now }));
+    });
+
+    await Promise.all(tasks); // ✅ 等真的寫完
 
     // ✅ 成功後清空輸入框
     oldGameEl.value = "";
     newGameEl.value = "";
 
-    alert("修改完成！");
-    loadAll();
-
-    // （可選）成功後自動收合面板
-    const editBtn = document.getElementById("toggleEdit");
-    const editPanel = document.getElementById("editPanel");
-    if (editPanel && editPanel.classList.contains("open")) {
-      editPanel.classList.remove("open");
-      if (editBtn) editBtn.textContent = "▼ 展開";
-    }
-
+    alert(`修改完成！（共 ${tasks.length} 筆）`);
+    await loadAll();
   } catch (e) {
-    alert(e.message);
+    console.error(e);
+    alert("修改失敗：" + (e?.message || "未知錯誤"));
   }
 }
-    }
-
     // 讓 HTML 上的 onclick 可以用這些函式
     window.saveRecord = saveRecord;
     window.searchRecords = searchRecords;

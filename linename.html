@@ -395,49 +395,74 @@
     }
 
     async function updateLineId() {
-      try {
-        const oldLine = cleanInput(document.getElementById("oldLineInput").value, "舊 LINE ID", 30);
-        const newLine = cleanInput(document.getElementById("newLineInput").value, "新 LINE ID", 30);
+  try {
+    const oldLineEl = document.getElementById("oldLineInput");
+    const newLineEl = document.getElementById("newLineInput");
 
-        const q = query(colRef, where("lineId", "==", oldLine));
-        const snap = await getDocs(q);
-        if (snap.empty) {
-          alert("找不到該 LINE ID");
-          return;
-        }
+    const oldLine = cleanInput(oldLineEl.value, "舊 LINE ID", 30);
+    const newLine = cleanInput(newLineEl.value, "新 LINE ID", 30);
 
-        const now = Date.now();
-        snap.forEach(doc => updateDoc(doc.ref, { lineId: newLine, updatedAt: now }));
+    const q = query(colRef, where("lineId", "==", oldLine));
+    const snap = await getDocs(q);
+    if (snap.empty) return alert("找不到該 LINE ID");
 
-        alert("修改成功！");
-        loadAll();
+    const now = Date.now();
+    snap.forEach(doc => updateDoc(doc.ref, { lineId: newLine, updatedAt: now }));
 
-      } catch (e) {
-        alert(e.message);
-      }
+    // ✅ 成功後清空輸入框
+    oldLineEl.value = "";
+    newLineEl.value = "";
+
+    alert("修改成功！");
+    loadAll();
+
+    // （可選）成功後自動收合面板
+    const editBtn = document.getElementById("toggleEdit");
+    const editPanel = document.getElementById("editPanel");
+    if (editPanel && editPanel.classList.contains("open")) {
+      editPanel.classList.remove("open");
+      if (editBtn) editBtn.textContent = "▼ 展開";
     }
 
-    async function updateGameName() {
-      try {
-        const oldGame = cleanInput(document.getElementById("oldGameInput").value, "舊遊戲名字", 30);
-        const newGame = cleanInput(document.getElementById("newGameInput").value, "新遊戲名字", 30);
+  } catch (e) {
+    alert(e.message);
+  }
+}
 
-        const q = query(colRef, where("gameName", "==", oldGame));
-        const snap = await getDocs(q);
-        if (snap.empty) {
-          alert("找不到該遊戲名字");
-          return;
-        }
+async function updateGameName() {
+  try {
+    const oldGameEl = document.getElementById("oldGameInput");
+    const newGameEl = document.getElementById("newGameInput");
 
-        const now = Date.now();
-        snap.forEach(doc => updateDoc(doc.ref, { gameName: newGame, updatedAt: now }));
+    const oldGame = cleanInput(oldGameEl.value, "舊遊戲名字", 30);
+    const newGame = cleanInput(newGameEl.value, "新遊戲名字", 30);
 
-        alert("修改完成！");
-        loadAll();
+    const q = query(colRef, where("gameName", "==", oldGame));
+    const snap = await getDocs(q);
+    if (snap.empty) return alert("找不到該遊戲名字");
 
-      } catch (e) {
-        alert(e.message);
-      }
+    const now = Date.now();
+    snap.forEach(doc => updateDoc(doc.ref, { gameName: newGame, updatedAt: now }));
+
+    // ✅ 成功後清空輸入框
+    oldGameEl.value = "";
+    newGameEl.value = "";
+
+    alert("修改完成！");
+    loadAll();
+
+    // （可選）成功後自動收合面板
+    const editBtn = document.getElementById("toggleEdit");
+    const editPanel = document.getElementById("editPanel");
+    if (editPanel && editPanel.classList.contains("open")) {
+      editPanel.classList.remove("open");
+      if (editBtn) editBtn.textContent = "▼ 展開";
+    }
+
+  } catch (e) {
+    alert(e.message);
+  }
+}
     }
 
     // 讓 HTML 上的 onclick 可以用這些函式

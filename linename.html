@@ -216,6 +216,9 @@
     <div id="resultCount" style="font-size:13px; color:#555; margin-top:4px;"></div>
     <div id="listContainer"></div>
   </div>
+  <div style="text-align:center; font-size:12px; color:#555; margin-top:12px;">
+  今日瀏覽人次：<span id="todayCount">載入中...</span>
+  </div>
 
   <!-- Firebase + Firestore -->
   <script type="module">
@@ -318,6 +321,43 @@
         editBtn.textContent = open ? "▲ 收合" : "▼ 展開";
       });
     });
+    // ===== 今日瀏覽人次（每日刷新）=====
+      import { doc, getDoc, setDoc, updateDoc, increment } 
+      from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+      async function updateTodayViewCount() {
+         const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+         const storageKey = "viewed_" + today;
+
+        const countSpan = document.getElementById("todayCount");
+        const docRef = doc(db, "daily_views", today);
+
+  // 先讀目前人次
+        const snap = await getDoc(docRef);
+
+  // 如果今天這個人還沒算過 → +1
+        if (!localStorage.getItem(storageKey)) {
+          if (snap.exists()) {
+            await updateDoc(docRef, {
+              count: increment(1)
+            });
+          } else {
+            await setDoc(docRef, {
+              count: 1
+            });
+          }
+          localStorage.setItem(storageKey, "1");
+        }
+
+        // 再讀一次顯示用
+        const newSnap = await getDoc(docRef);
+        countSpan.textContent = newSnap.exists()
+          ? newSnap.data().count
+          : "0";
+      }
+
+// 頁面載入時執行
+      updateTodayViewCount();
 
     /* -------------------- Firestore 功能 -------------------- */
 

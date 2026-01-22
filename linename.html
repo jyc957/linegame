@@ -60,6 +60,7 @@
       border: 3px solid #2091c6;
       background: #70cce1;
       color: black;
+      cursor: pointer;
     }
 
     button:active {
@@ -75,7 +76,7 @@
       flex-wrap: wrap;
     }
 
-    /* 折疊區塊動畫（新增/查詢） */
+    /* 折疊區塊動畫（通用） */
     .collapse-content {
       max-height: 0;
       overflow: hidden;
@@ -83,7 +84,7 @@
       margin-top: 10px;
     }
     .collapse-content.open {
-      max-height: 600px;
+      max-height: 2000px; /* 給大一點避免內容多被截 */
     }
 
     /* 更改資料折疊 */
@@ -94,10 +95,10 @@
       transition: max-height 0.5s ease;
     }
     #editPanel.open {
-      max-height: 700px;
+      max-height: 1200px;
     }
 
-    #toggleEdit, #toggleAdd {
+    #toggleEdit, #toggleAdd, #toggleTraining {
       margin-left: 10px;
     }
 
@@ -129,39 +130,46 @@
       color: #888;
       padding: 6px 0;
     }
-/* ===== 技巧教學：收合內容區 ===== */
-#trainingPanel {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.5s ease;
-  margin-top: 10px;
-}
-#trainingPanel.open {
-  max-height: 2000px; /* 影片多就拉大一點 */
-}
 
-/* 技巧教學內部排版（白底區塊內） */
-.training-wrap {
-  padding-top: 8px;
-}
-.training-wrap h3 {
-  font-size: 16px;
-  font-weight: bold;
-  margin: 14px 0 8px;
-}
-.training-video {
-  width: 100%;
-  max-width: 480px;
-  border-radius: 12px;
-  margin-top: 8px;
-  display: block;
-}
-.training-text {
-  font-size: 14px;
-  color: #555;
-  margin-top: 6px;
-  line-height: 1.5;
-}
+    /* ===== 技巧訓練區塊 ===== */
+    .training-wrap {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .training-group h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .training-item {
+      margin-bottom: 14px;
+    }
+
+    .training-text {
+      font-size: 14px;
+      color: #222;
+      margin: 8px 0;
+      line-height: 1.45;
+      white-space: pre-line;
+    }
+
+    video.training-video {
+      width: 100%;
+      border-radius: 10px;
+      background: #000;
+      display: block;
+      max-height: 360px;
+    }
+
+    .muted-note {
+      font-size: 12px;
+      color: #555;
+      margin-top: 4px;
+    }
   </style>
 </head>
 
@@ -247,59 +255,72 @@
     <div id="resultCount" style="font-size:13px; color:#555; margin-top:4px;"></div>
     <div id="listContainer"></div>
   </div>
-  <!-- ===== 技巧訓練 ===== -->
-<div class="training-section">
-<!-- ===== 技巧教學（白底可收合） ===== -->
-<div class="section">
-  <div class="top-bar" style="display:flex; align-items:center; justify-content:flex-start; gap:10px;">
-    <h2 style="margin-right:10px;">技巧教學</h2>
-    <button id="toggleTraining">▼ 展開</button>
-  </div>
-  <small>● 展開後才載入影片（加快首次開啟速度）</small>
 
-  <!-- 可折疊內容 -->
-  <div id="trainingPanel">
-    <div class="training-wrap">
+  <!-- 技巧教學（白底 + 可收折 + 滑到自動播放） -->
+  <div class="section">
+    <div class="top-bar">
+      <h2 style="margin-right:10px;">技巧訓練</h2>
+      <button id="toggleTraining">▼ 展開</button>
+    </div>
+    <small>● 展開後才載入影片（加快首次開啟速度）</small>
 
-      <!-- 簡單 -->
-      <h3>簡單</h3>
-      <div class="training-text">
-        順勢：起飄前方向鍵先按
-        入彎角度、速度、集氣量會比同時按更好
+    <div id="trainingPanel" class="collapse-content">
+      <div class="training-wrap">
+
+        <!-- =========================
+             ✅【新增教學區塊】複製這一整段 .training-group
+             改 h3 標題、影片檔名、文字即可
+        ========================== -->
+        <div class="training-group">
+          <h3>（內文小標題1）簡單</h3>
+
+          <!-- ✅【新增一支影片+文字】複製這一段 .training-item -->
+          <div class="training-item">
+            <div class="training-text">說明文字：這裡放你的技巧說明（可多行）。</div>
+            <video class="training-video lazy-video"
+              data-src="shunshi.mp4"
+              muted loop playsinline
+              preload="none"></video>
+            <div class="muted-note">※ 手機瀏覽器通常需要「靜音」才能自動播放（所以我已經設為 muted）</div>
+          </div>
+
+          <!-- ✅【新增一支影片+文字】再複製一段即可 -->
+          <div class="training-item">
+            <div class="training-text">說明文字：第二個例子。</div>
+            <video class="training-video lazy-video"
+              data-src="hs.mp4"
+              muted loop playsinline
+              preload="none"></video>
+          </div>
+        </div>
+
+        <div class="training-group">
+          <h3>（內文小標題2）中等</h3>
+
+          <div class="training-item">
+            <div class="training-text">說明文字：中等技巧說明。</div>
+            <video class="training-video lazy-video"
+              data-src="lws.mp4"
+              muted loop playsinline
+              preload="none"></video>
+          </div>
+        </div>
+
+        <div class="training-group">
+          <h3>（內文小標題3）困難</h3>
+
+          <div class="training-item">
+            <div class="training-text">說明文字：困難技巧說明。</div>
+            <video class="training-video lazy-video"
+              data-src="ex.mp4"
+              muted loop playsinline
+              preload="none"></video>
+          </div>
+        </div>
+
       </div>
-      <video class="training-video lazy-video"
-             data-src="shunshi.mp4"
-             autoplay muted loop playsinline
-             preload="none"></video>
-      
-
-      <video class="training-video lazy-video"
-             data-src="hs.mp4"
-             autoplay muted loop playsinline
-             preload="none"></video>
-      <div class="training-text">第二個範例，示範常見錯誤與修正方式。</div>
-
-      <!-- 中等 -->
-      <h3>中等</h3>
-
-      <video class="training-video lazy-video"
-             data-src="lws.mp4"
-             autoplay muted loop playsinline
-             preload="none"></video>
-      <div class="training-text">需要反應速度與時機判斷。</div>
-
-      <!-- 困難 -->
-      <h3>困難</h3>
-
-      <video class="training-video lazy-video"
-             data-src="wfbc.mp4"
-             autoplay muted loop playsinline
-             preload="none"></video>
-      <div class="training-text">高階技巧，建議熟練後再嘗試。</div>
-
     </div>
   </div>
-</div>
 
   <!-- 今日瀏覽人次（頁面最底下小字） -->
   <div style="text-align:center; font-size:12px; color:#555; margin-top:12px;">
@@ -327,7 +348,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 你的名單資料表
+    // 名單資料表
     const colRef = collection(db, "line_game_records");
 
     /* -------------------- 工具 -------------------- */
@@ -390,25 +411,6 @@
       });
     }
 
-    /* -------------------- 折疊控制 -------------------- */
-    window.addEventListener("load", () => {
-      const addBtn = document.getElementById("toggleAdd");
-      const addPanel = document.getElementById("addPanel");
-
-      addBtn.addEventListener("click", () => {
-        const open = addPanel.classList.toggle("open");
-        addBtn.textContent = open ? "▲ 收合" : "▼ 展開";
-      });
-
-      const editBtn = document.getElementById("toggleEdit");
-      const editPanel = document.getElementById("editPanel");
-
-      editBtn.addEventListener("click", () => {
-        const open = editPanel.classList.toggle("open");
-        editBtn.textContent = open ? "▲ 收合" : "▼ 展開";
-      });
-    });
-
     /* -------------------- Firestore 功能 -------------------- */
     async function loadAll() {
       try {
@@ -453,7 +455,7 @@
         document.getElementById("lineInput").value = "";
         document.getElementById("gameInput").value = "";
 
-        // 儲存完直接顯示全部（你想要也可以改成顯示「新增成功」但不刷新）
+        // 儲存完刷新
         await loadAll();
       } catch (e) {
         alert(e.message || "儲存失敗");
@@ -586,6 +588,71 @@
       }
     }
 
+    /* -------------------- 技巧訓練：滑到才載入 + 自動播放/暫停 -------------------- */
+    let trainingInited = false;
+
+    function initTrainingVideosOnce() {
+      if (trainingInited) return;
+      trainingInited = true;
+
+      const videos = Array.from(document.querySelectorAll("video.lazy-video"));
+      if (!videos.length) return;
+
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(async (entry) => {
+          const v = entry.target;
+
+          if (entry.isIntersecting) {
+            // 第一次看到才塞 src → 延遲載入
+            if (!v.getAttribute("src")) {
+              const src = v.getAttribute("data-src");
+              if (src) {
+                v.setAttribute("src", src);
+                v.load();
+              }
+            }
+            // 進入視野 → 播放（可能會被瀏覽器擋，catch 不噴錯）
+            try { await v.play(); } catch (_) {}
+          } else {
+            // 離開視野 → 暫停
+            try { v.pause(); } catch (_) {}
+          }
+        });
+      }, { threshold: 0.45 }); // 看到一半左右才播放，比較自然
+
+      videos.forEach(v => io.observe(v));
+    }
+
+    /* -------------------- 折疊控制（統一放一起，避免你之前那種沒反應） -------------------- */
+    window.addEventListener("load", () => {
+      // 新增/查詢
+      const addBtn = document.getElementById("toggleAdd");
+      const addPanel = document.getElementById("addPanel");
+      addBtn?.addEventListener("click", () => {
+        const open = addPanel.classList.toggle("open");
+        addBtn.textContent = open ? "▲ 收合" : "▼ 展開";
+      });
+
+      // 更改資料
+      const editBtn = document.getElementById("toggleEdit");
+      const editPanel = document.getElementById("editPanel");
+      editBtn?.addEventListener("click", () => {
+        const open = editPanel.classList.toggle("open");
+        editBtn.textContent = open ? "▲ 收合" : "▼ 展開";
+      });
+
+      // 技巧訓練
+      const trainBtn = document.getElementById("toggleTraining");
+      const trainPanel = document.getElementById("trainingPanel");
+      trainBtn?.addEventListener("click", () => {
+        const open = trainPanel.classList.toggle("open");
+        trainBtn.textContent = open ? "▲ 收合" : "▼ 展開";
+
+        // ✅ 展開時才初始化 IntersectionObserver（更快）
+        if (open) initTrainingVideosOnce();
+      });
+    });
+
     // 掛到 window 讓 HTML onclick 找得到
     window.saveRecord = saveRecord;
     window.searchRecords = searchRecords;
@@ -594,7 +661,7 @@
     window.loadAll = loadAll;
     window.clearInputs = clearInputs;
 
-    // ✅ 只做今日瀏覽人次；不要自動 loadAll
+    // ✅ 不要自動 loadAll（你要一開始不要顯示名單）
     updateTodayViewCount();
   </script>
 

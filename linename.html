@@ -214,6 +214,7 @@
 
       <button id="toggleAdd">▼ 展開</button>
       <button onclick="loadAll()">顯示全部</button>
+      <button onclick="resetListUI()">重新整理</button>
     </div>
 
     <small>● 顯示全部：直接顯示所有名單</small>
@@ -702,6 +703,12 @@
     function clearInputs() {
       document.getElementById("lineInput").value = "";
       document.getElementById("gameInput").value = "";
+    }
+
+    function resetListUI() {
+      document.getElementById("listTitle").textContent = "目前資料（尚未載入）";
+      document.getElementById("resultCount").textContent = "";
+      document.getElementById("listContainer").innerHTML = "";
     }
 
     /* -------------------- 今日瀏覽人次（每日刷新） -------------------- */

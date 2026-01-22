@@ -129,36 +129,36 @@
       color: #888;
       padding: 6px 0;
     }
-    /* ===== 技巧訓練區塊 ===== */
-.training-section {
-  margin-top: 24px;
-  padding: 16px;
-  background: #70cce1;
-  color: #fff;
-  border-radius: 12px;
+/* ===== 技巧教學：收合內容區 ===== */
+#trainingPanel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+  margin-top: 10px;
+}
+#trainingPanel.open {
+  max-height: 2000px; /* 影片多就拉大一點 */
 }
 
-.training-section h2 {
-  font-size: 22px;
-  margin-bottom: 16px;
+/* 技巧教學內部排版（白底區塊內） */
+.training-wrap {
+  padding-top: 8px;
 }
-
-.training-section h3 {
-  font-size: 18px;
-  margin-top: 24px;
-  margin-bottom: 8px;
+.training-wrap h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 14px 0 8px;
 }
-
 .training-video {
   width: 100%;
   max-width: 480px;
   border-radius: 12px;
   margin-top: 8px;
+  display: block;
 }
-
 .training-text {
   font-size: 14px;
-  color: #ccc;
+  color: #555;
   margin-top: 6px;
   line-height: 1.5;
 }
@@ -249,82 +249,56 @@
   </div>
   <!-- ===== 技巧訓練 ===== -->
 <div class="training-section">
-
-  <h2>技巧訓練</h2>
-
-  <!-- 簡單 -->
-  <h3>簡單</h3>
-  <div class="training-text">
-    順勢:飄移前先按下方向鍵在按飄移鍵
-    無論是入彎角度、速度、集氣量都會比同時按還來的好
-    步驟：方向鍵→方向鍵+飄移
+<!-- ===== 技巧教學（白底可收合） ===== -->
+<div class="section">
+  <div class="top-bar" style="display:flex; align-items:center; justify-content:flex-start; gap:10px;">
+    <h2 style="margin-right:10px;">技巧教學</h2>
+    <button id="toggleTraining">▼ 展開</button>
   </div>
-  <video
-    class="training-video"
-    src="shunshi.mp4"
-    autoplay
-    muted
-    loop
-    playsinline
-  ></video>
-  <div class="training-text">
-    後鬆:用於拉車頭、回正
-    起飄後正常拉回車身，但飄移鍵需晚放
-    步驟：起飄→回正→鬆方向鍵→鬆飄移鍵
+  <small>● 展開後才載入影片（加快首次開啟速度）</small>
+
+  <!-- 可折疊內容 -->
+  <div id="trainingPanel">
+    <div class="training-wrap">
+
+      <!-- 簡單 -->
+      <h3>簡單</h3>
+      <div class="training-text">
+        順勢：起飄前方向鍵先按
+        入彎角度、速度、集氣量會比同時按更好
+      </div>
+      <video class="training-video lazy-video"
+             data-src="shunshi.mp4"
+             autoplay muted loop playsinline
+             preload="none"></video>
+      
+
+      <video class="training-video lazy-video"
+             data-src="hs.mp4"
+             autoplay muted loop playsinline
+             preload="none"></video>
+      <div class="training-text">第二個範例，示範常見錯誤與修正方式。</div>
+
+      <!-- 中等 -->
+      <h3>中等</h3>
+
+      <video class="training-video lazy-video"
+             data-src="lws.mp4"
+             autoplay muted loop playsinline
+             preload="none"></video>
+      <div class="training-text">需要反應速度與時機判斷。</div>
+
+      <!-- 困難 -->
+      <h3>困難</h3>
+
+      <video class="training-video lazy-video"
+             data-src="wfbc.mp4"
+             autoplay muted loop playsinline
+             preload="none"></video>
+      <div class="training-text">高階技巧，建議熟練後再嘗試。</div>
+
+    </div>
   </div>
-  <video
-    class="training-video"
-    src="hs.mp4"
-    autoplay
-    muted
-    loop
-    playsinline
-  ></video>
-  <div class="training-text">
-    氮氣延續:用於氮氣快結束時
-    用超越可使氮氣速度保持更久（雖然才0.秒）
-    步驟：氮氣快結束時→超越
-  </div>
-  <video
-    class="training-video"
-    src="dqys.mp4"
-    autoplay
-    muted
-    loop
-    playsinline
-  ></video>
-  
-
-  <!-- 中等 -->
-  <h3>中等</h3>
-
-  <video
-    class="training-video"
-    src="ex3.mp4"
-    autoplay
-    muted
-    loop
-    playsinline
-  ></video>
-  <div class="training-text">
-    需要反應速度與時機判斷。
-  </div>
-
-  <!-- 困難 -->
-  <h3>困難</h3>
-
-  <video
-    class="training-video"
-    src="ex4.mp4"
-    autoplay
-    muted
-    loop
-    playsinline
-  ></video>
-  <div class="training-text">
-    高階技巧，建議熟練後再嘗試。
-  </div>
-
 </div>
 
   <!-- 今日瀏覽人次（頁面最底下小字） -->

@@ -200,6 +200,16 @@
       color: #555;
       margin-top: 4px;
     }
+
+    /* 📱 手機版按鈕縮小 */
+    @media (max-width: 480px) {
+    button {
+      padding: 6px 8px;      /* 原本 8px 12px */
+      font-size: 10px;       /* 原本 14px */
+      border-width: 2px;     /* 原本 3px */
+      margin-right: 4px;
+  }
+}
   </style>
 </head>
 
@@ -814,6 +824,7 @@
     window.updateGameName = updateGameName;
     window.loadAll = loadAll;
     window.clearInputs = clearInputs;
+    window.resetListUI = resetListUI;
 
     // ✅ 不要自動 loadAll（你要一開始不要顯示名單）
     updateTodayViewCount();

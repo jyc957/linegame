@@ -225,7 +225,6 @@
       <button id="toggleAdd">▼ 展開</button>
       <button onclick="loadAll()">顯示全部</button>
       <button onclick="resetListUI()">重新整理</button>
-     🔹 最後更新時間 -->
     <span id="lastUpdate"
          style="margin-left:auto;
       font-size:12px; color:#555;">
@@ -768,9 +767,9 @@
     async function loadLastUpdateTime() {
       try {
     // ⚠️ 請改成你自己的 GitHub 資訊
-        const owner = "你的GitHub帳號";          // 例如 jyc957
-        const repo = "你的Repo名稱";             // 例如 jyc957.github.io
-        const path = "index.html";                // 你的檔名（如果不是 index.html 要改）
+        const owner = "jyc957";          // 例如 jyc957
+        const repo = "jyc957.github.io";             // 例如 jyc957.github.io
+        const path = "linename.html";                // 你的檔名（如果不是 index.html 要改）
 
         const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${path}&per_page=1`;
 

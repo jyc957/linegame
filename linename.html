@@ -61,6 +61,7 @@
       background: #70cce1;
       color: black;
       cursor: pointer;
+      white-space: nowrap; /* ✅ 避免按鈕文字自己換行 */
     }
 
     button:active {
@@ -139,33 +140,18 @@
       gap: 18px;
     }
 
-    .training-group w1 {
+    /* ✅ 用 class 取代 <w1> 這種自訂 tag（更穩、更不會怪置中） */
+    .w1, .w2, .w3, .w4 {
+      display: block;
+      text-align: left;      /* ✅ 靠左 */
       margin: 0 0 10px 0;
       font-size: 16px;
       font-weight: 800;
-      color: #71d769
     }
-
-    .training-group w2 {
-      margin: 0 0 10px 0;
-      font-size: 16px;
-      font-weight: 800;
-      color: #005fb1
-    }
-
-    .training-group w3 {
-      margin: 0 0 10px 0;
-      font-size: 16px;
-      font-weight: 800;
-      color: #ff2b2b
-    }
-
-    .training-group w4 {
-      margin: 0 0 10px 0;
-      font-size: 16px;
-      font-weight: 800;
-      color: #6340c3
-    }
+    .w1 { color: #71d769; }
+    .w2 { color: #005fb1; }
+    .w3 { color: #ff2b2b; }
+    .w4 { color: #6340c3; }
 
     .training-item {
       margin-bottom: 14px;
@@ -177,6 +163,7 @@
       margin: 8px 0;
       line-height: 1.45;
       white-space: pre-line;
+      text-align: left;
     }
 
     .training-text {
@@ -185,6 +172,7 @@
       margin: 8px 0;
       line-height: 1.45;
       white-space: pre-line;
+      text-align: left;
     }
 
     video.training-video {
@@ -199,32 +187,35 @@
       font-size: 12px;
       color: #555;
       margin-top: 4px;
+      text-align: left;
     }
 
-    .footer-info {
+    /* ✅ 底部資訊列：左(瀏覽) 右(最後更新) */
+    .footer-bar{
       margin-top: 14px;
       padding: 6px 4px;
       font-size: 12px;
       color: #555;
 
       display: flex;
-      justify-content: space-between; /* 左右對齊 */
+      justify-content: space-between;
       align-items: center;
 
       max-width: 600px;
       margin-left: auto;
       margin-right: auto;
-   }
+      gap: 10px;
+    }
 
     /* 📱 手機版按鈕縮小 */
     @media (max-width: 480px) {
-    button {
-      padding: 6px 8px;      /* 原本 8px 12px */
-      font-size: 10px;       /* 原本 14px */
-      border-width: 2px;     /* 原本 3px */
-      margin-right: 4px;
-  }
-}
+      button {
+        padding: 6px 8px;
+        font-size: 10px;
+        border-width: 2px;
+        margin-right: 4px;
+      }
+    }
   </style>
 </head>
 
@@ -240,11 +231,6 @@
       <button id="toggleAdd">▼ 展開</button>
       <button onclick="loadAll()">顯示全部</button>
       <button onclick="resetListUI()">重新整理</button>
-    <div id="lastUpdate"
-         style="margin-left:auto;
-      font-size:12px; color:#555;">
-      最後更新：讀取中…
-    </div>
     </div>
 
     <div id="addPanel" class="collapse-content">
@@ -278,7 +264,6 @@
     </h2>
 
     <div id="editPanel">
-      <!-- 更改 LINE ID -->
       <label>舊 LINE ID：
         <input id="oldLineInput" type="text" placeholder="舊 LINE ID">
       </label>
@@ -291,7 +276,6 @@
 
       <hr>
 
-      <!-- 更改 遊戲名字 -->
       <label>舊遊戲名字：
         <input id="oldGameInput" type="text" placeholder="舊遊戲名字">
       </label>
@@ -325,61 +309,54 @@
     <div id="trainingPanel" class="collapse-content">
       <div class="training-wrap">
 
-        <!-- =========================
-             ✅【新增教學區塊】複製這一整段 .training-group
-             改 h3 標題、影片檔名、文字即可
-        ========================== -->
         <div class="smword">展開後需耐心等待影片載入...</div>
+
         <div class="training-group">
-          <w1>簡單</w1><!-- ✅【新增一支影片+文字】複製這一段 .training-item -->
+          <div class="w1">簡單</div>
+
+          <!-- ✅【新增影片】複製這一整段 .training-item，改 data-src & 文字 -->
           <div class="training-item">
             <div class="training-text">順勢</div>
             <div class="training-word">基本功之一 為最輕易上手的技巧</div>
             <video class="training-video lazy-video"
               data-src="shunshi.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">步驟：方向鍵→方向不鬆+飄移</div>
           </div>
 
-          <!-- ✅【新增一支影片+文字】再複製一段即可 -->
           <div class="training-item">
             <div class="training-text">後鬆出彎</div>
             <div class="training-word">比起一般的斷位 掉速更少</div>
             <video class="training-video lazy-video"
               data-src="hs.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">步驟：起飄→回正→鬆方向鍵→鬆飄移鍵</div>
           </div>
-          
+
           <div class="training-item">
             <div class="training-text">氮氣延續</div>
             <div class="training-word">藉由超越來延續氮氣的速度</div>
             <video class="training-video lazy-video"
               data-src="dqys.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">步驟：開氣→氮氣結束前→按超越</div>
           </div>
-          
+
           <div class="training-item">
             <div class="training-text">同反同</div>
             <div class="training-word">將飄移角度修飾，以獲得更快的飄移速度</div>
             <video class="training-video lazy-video"
               data-src="tft.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">步驟：方向鍵+飄移→輕點反向鍵→同向鍵</div>
           </div>
-          
+
           <div class="training-item">
             <div class="training-text">騙氣</div>
             <div class="training-word">用於有高低差的場景，短時間內可獲得較多集氣，但相對的速度也會掉</div>
             <video class="training-video lazy-video"
               data-src="pq.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">步驟：方向鍵+飄移→騰空→按住方向鍵+飄移→落地</div>
           </div>
 
@@ -388,28 +365,28 @@
             <div class="training-word">輕按方向&飄移，讓車子更貼彎，適用於環形彎道</div>
             <video class="training-video lazy-video"
               data-src="wt.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">步驟：起飄→按方向鍵→輕按飄移鍵→同時鬆（重複動作）</div>
           </div>
         </div>
 
         <div class="training-group">
-          <w2>中等</w2>
+          <div class="w2">中等</div>
 
+          <!-- ✅ 你這段有兩支影片放同一個 training-item，我保留但更穩 -->
           <div class="training-item">
             <div class="training-text">拉尾速</div>
             <div class="training-word">感受車子的斷飄角度及時機，需要大量練習，適合出彎使用
-              （注意時速沒過300以上就不算成功)(建議配合後鬆或蹭氣出彎使用）</div>
+（注意時速沒過300以上就不算成功)(建議配合後鬆或蹭氣出彎使用）</div>
+
             <video class="training-video lazy-video"
               data-src="lws.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">步驟：起飄→同反同→自然斷飄</div>
+
             <video class="training-video lazy-video"
               data-src="rwsfr.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">有高低差的地方拉尾速+超越 直接起飛</div>
           </div>
 
@@ -418,43 +395,39 @@
             <div class="training-word">在拉尾速的基礎上，斷飄後馬上再飄一次，飄移速度會更快，適合緩U&ㄇ彎</div>
             <video class="training-video lazy-video"
               data-src="bc.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">步驟：起飄→拉尾速→方向鍵不鬆+飄移</div>
           </div>
-          
+
           <div class="training-item">
             <div class="training-text">蹭氣出彎</div>
             <div class="training-word">在出彎減少掉速的同時，也能獲得少量的集氣</div>
             <video class="training-video lazy-video"
               data-src="tq.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">步驟：起飄→同反同→方向鍵+反向鍵</div>
           </div>
-          
+
           <div class="training-item">
             <div class="training-text">雙超越</div>
             <div class="training-word">沒什麼特別，就是同時按超越（速度疊加但加速時間不變）</div>
             <video class="training-video lazy-video"
               data-src="scy.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">步驟：開氣→兩個超越同時按</div>
           </div>
         </div>
 
         <div class="training-group">
-          <w3>困難</w3>
+          <div class="w3">困難</div>
 
           <div class="training-item">
             <div class="training-text">煞甩</div>
             <div class="training-word">在甩尾的步驟中加上一點煞車，可使車子更快的轉向，適合急U彎及救車
-            !!注意!!一定要先飄移再按煞車</div>
+!!注意!!一定要先飄移再按煞車</div>
             <video class="training-video lazy-video"
               data-src="shashuai.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">步驟：開氣→方向鍵+飄移→輕點煞車→開氣→回正</div>
           </div>
 
@@ -463,8 +436,7 @@
             <div class="training-word">與拉尾速相似，但沒有按同向鍵，起飄極輕，速度更快但對抗姿態弱，適合轉彎幅度非常小的彎</div>
             <video class="training-video lazy-video"
               data-src="wfbc.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">步驟：起飄→同向鍵→自然斷飄→方向鍵不鬆+飄移</div>
           </div>
 
@@ -473,8 +445,7 @@
             <div class="training-word">目前出彎最快技巧，需三指or四指操作，基本上可達出彎不掉速</div>
             <video class="training-video lazy-video"
               data-src="ss.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">步驟：起飄→同反同→同向鍵不鬆+反向鍵+飄移→回正</div>
           </div>
 
@@ -483,40 +454,33 @@
             <div class="training-word">比起普通拉尾速，時間又更長且飄移軌跡小，適合中間路段稍長的ㄇ彎</div>
             <video class="training-video lazy-video"
               data-src="ssbc.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">步驟：起飄→同向鍵→先按反向→反向不鬆+同向鍵→自然斷飄→方向鍵都不放+飄移</div>
           </div>
         </div>
-        
+
         <div class="training-group">
-          <w4>神操作</w4>
+          <div class="w4">神操作</div>
 
           <div class="training-item">
             <div class="training-text">這招練會就隨便玩了</div>
             <video class="training-video lazy-video"
               data-src="ex.mp4"
-              muted loop playsinline
-              preload="none"></video>
+              muted loop playsinline preload="none"></video>
             <div class="smword">載入時間可能會比較久 想學就要付出點代價</div>
           </div>
         </div>
+
       </div>
     </div>
   </div>
 
-  <!-- 今日瀏覽人次（頁面最底下小字） -->
-  <!-- 底部資訊列 -->
-  <div class="footer-info">
-    <div>
-    今日瀏覽人次：<span id="todayCount">載入中...</span>
-    </div>
-    <div id="lastUpdate">
-    最後更新：載入中...
-    </div>
+  <!-- ✅ 底部資訊列（左：瀏覽人次｜右：最後更新） -->
+  <div class="footer-bar">
+    <div>今日瀏覽人次：<span id="todayCount">載入中...</span></div>
+    <div>最後更新：<span id="lastUpdateTime">載入中...</span></div>
   </div>
 
-  <!-- Firebase + Firestore -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
@@ -537,10 +501,8 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 名單資料表
     const colRef = collection(db, "line_game_records");
 
-    /* -------------------- 工具 -------------------- */
     function cleanInput(str, fieldName, maxLen = 14) {
       const s = (str || "").trim();
       if (!s) throw new Error(fieldName + " 不能空白");
@@ -560,7 +522,6 @@
       return `${y}/${m}/${day} ${hh}:${mm}`;
     }
 
-    // 安全顯示：用 textContent 避免 XSS
     function renderList(list, titleText) {
       const box = document.getElementById("listContainer");
       const title = document.getElementById("listTitle");
@@ -568,8 +529,6 @@
 
       title.textContent = titleText || "目前資料";
       box.innerHTML = "";
-
-      // 顯示筆數
       countBox.textContent = `共 ${list.length} 筆資料`;
 
       if (!list.length) {
@@ -600,7 +559,6 @@
       });
     }
 
-    /* -------------------- Firestore 功能 -------------------- */
     async function loadAll() {
       try {
         const snap = await getDocs(colRef);
@@ -640,11 +598,9 @@
           updatedAt: now
         });
 
-        // 儲存完清空輸入
         document.getElementById("lineInput").value = "";
         document.getElementById("gameInput").value = "";
 
-        // 儲存完刷新
         await loadAll();
       } catch (e) {
         alert(e.message || "儲存失敗");
@@ -654,7 +610,6 @@
     async function searchRecords() {
       const line = document.getElementById("lineInput").value.trim().toLowerCase();
       const game = document.getElementById("gameInput").value.trim().toLowerCase();
-
       if (!line && !game) return alert("請至少輸入一項查詢");
 
       try {
@@ -697,12 +652,9 @@
 
         const now = Date.now();
         const jobs = [];
-        snap.forEach(docSnap => {
-          jobs.push(updateDoc(docSnap.ref, { lineId: newLine, updatedAt: now }));
-        });
+        snap.forEach(docSnap => jobs.push(updateDoc(docSnap.ref, { lineId: newLine, updatedAt: now })));
         await Promise.all(jobs);
 
-        // 更改完清空輸入框
         document.getElementById("oldLineInput").value = "";
         document.getElementById("newLineInput").value = "";
 
@@ -724,12 +676,9 @@
 
         const now = Date.now();
         const jobs = [];
-        snap.forEach(docSnap => {
-          jobs.push(updateDoc(docSnap.ref, { gameName: newGame, updatedAt: now }));
-        });
+        snap.forEach(docSnap => jobs.push(updateDoc(docSnap.ref, { gameName: newGame, updatedAt: now })));
         await Promise.all(jobs);
 
-        // 更改完清空輸入框
         document.getElementById("oldGameInput").value = "";
         document.getElementById("newGameInput").value = "";
 
@@ -740,7 +689,6 @@
       }
     }
 
-    // 清除（只清新增/查詢的兩格）
     function clearInputs() {
       document.getElementById("lineInput").value = "";
       document.getElementById("gameInput").value = "";
@@ -752,10 +700,9 @@
       document.getElementById("listContainer").innerHTML = "";
     }
 
-    /* -------------------- 今日瀏覽人次（每日刷新） -------------------- */
     async function updateTodayViewCount() {
       try {
-        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        const today = new Date().toISOString().slice(0, 10);
         const storageKey = "viewed_" + today;
 
         const countSpan = document.getElementById("todayCount");
@@ -763,7 +710,6 @@
 
         const snap = await getDoc(docRef);
 
-        // 今天此裝置第一次開啟才 +1
         if (!localStorage.getItem(storageKey)) {
           if (snap.exists()) {
             await updateDoc(docRef, { count: increment(1) });
@@ -773,7 +719,6 @@
           localStorage.setItem(storageKey, "1");
         }
 
-        // 顯示用：再讀一次
         const newSnap = await getDoc(docRef);
         countSpan.textContent = newSnap.exists() ? newSnap.data().count : "0";
       } catch (e) {
@@ -782,21 +727,25 @@
         if (countSpan) countSpan.textContent = "讀取失敗";
       }
     }
-    /* -------------------- GitHub 最後更新時間 -------------------- */
+
+    /* ✅ GitHub 最後更新時間（只更新右下角那個 span） */
     async function loadLastUpdateTime() {
+      const el = document.getElementById("lastUpdateTime");
+      if (!el) return;
+
       try {
-    // ⚠️ 請改成你自己的 GitHub 資訊
-        const owner = "jyc957";          // 例如 jyc957
-        const repo = "linegame";             // 例如 jyc957.github.io
-        const path = "linename.html";                // 你的檔名（如果不是 index.html 要改）
+        const owner = "jyc957";
+        const repo = "linegame";
+        const path = "linename.html";
 
-        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${path}&per_page=1`;
+        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(path)}&per_page=1`;
 
-        const res = await fetch(apiUrl);
+        const res = await fetch(apiUrl, { cache: "no-store" });
+        if (!res.ok) throw new Error("GitHub API 讀取失敗");
+
         const data = await res.json();
-
         if (!data || !data.length) {
-          document.getElementById("lastUpdate").textContent = "最後更新：未知";
+          el.textContent = "未知";
           return;
         }
 
@@ -809,16 +758,14 @@
         const hh = String(d.getHours()).padStart(2, "0");
         const mm = String(d.getMinutes()).padStart(2, "0");
 
-        document.getElementById("lastUpdate").textContent =
-          `最後更新：${y}/${m}/${day} ${hh}:${mm}`;
-
+        el.textContent = `${y}/${m}/${day} ${hh}:${mm}`;
       } catch (e) {
         console.error(e);
-        document.getElementById("lastUpdate").textContent = "最後更新：讀取失敗";
+        el.textContent = "讀取失敗";
       }
     }
 
-    /* -------------------- 技巧訓練：滑到才載入 + 自動播放/暫停 -------------------- */
+    /* 技巧訓練：滑到才載入 + 自動播放/暫停 */
     let trainingInited = false;
 
     function initTrainingVideosOnce() {
@@ -833,7 +780,6 @@
           const v = entry.target;
 
           if (entry.isIntersecting) {
-            // 第一次看到才塞 src → 延遲載入
             if (!v.getAttribute("src")) {
               const src = v.getAttribute("data-src");
               if (src) {
@@ -841,21 +787,17 @@
                 v.load();
               }
             }
-            // 進入視野 → 播放（可能會被瀏覽器擋，catch 不噴錯）
             try { await v.play(); } catch (_) {}
           } else {
-            // 離開視野 → 暫停
             try { v.pause(); } catch (_) {}
           }
         });
-      }, { threshold: 0.45 }); // 看到一半左右才播放，比較自然
+      }, { threshold: 0.45 });
 
       videos.forEach(v => io.observe(v));
     }
 
-    /* -------------------- 折疊控制（統一放一起，避免你之前那種沒反應） -------------------- */
     window.addEventListener("load", () => {
-      // 新增/查詢
       const addBtn = document.getElementById("toggleAdd");
       const addPanel = document.getElementById("addPanel");
       addBtn?.addEventListener("click", () => {
@@ -863,7 +805,6 @@
         addBtn.textContent = open ? "▲ 收合" : "▼ 展開";
       });
 
-      // 更改資料
       const editBtn = document.getElementById("toggleEdit");
       const editPanel = document.getElementById("editPanel");
       editBtn?.addEventListener("click", () => {
@@ -871,19 +812,15 @@
         editBtn.textContent = open ? "▲ 收合" : "▼ 展開";
       });
 
-      // 技巧訓練
       const trainBtn = document.getElementById("toggleTraining");
       const trainPanel = document.getElementById("trainingPanel");
       trainBtn?.addEventListener("click", () => {
         const open = trainPanel.classList.toggle("open");
         trainBtn.textContent = open ? "▲ 收合" : "▼ 展開";
-
-        // ✅ 展開時才初始化 IntersectionObserver（更快）
         if (open) initTrainingVideosOnce();
       });
     });
 
-    // 掛到 window 讓 HTML onclick 找得到
     window.saveRecord = saveRecord;
     window.searchRecords = searchRecords;
     window.updateLineId = updateLineId;
@@ -892,7 +829,6 @@
     window.clearInputs = clearInputs;
     window.resetListUI = resetListUI;
 
-    // ✅ 不要自動 loadAll（你要一開始不要顯示名單）
     updateTodayViewCount();
     loadLastUpdateTime();
   </script>

@@ -291,7 +291,7 @@
     <button id="toggleRank">▲ 收合</button>
   </div>
 
-  <img id="trackImage" class="track-img" src="track.jpg" alt="賽道圖片">
+  <img id="trackImage" class="track-img" src="highway.jpg" alt="城鎮高速公路">
 
   <div style="margin-top:10px; font-weight:800;">
     黨內計時成績排行（不定期更新）
@@ -664,6 +664,93 @@
       });
     }
 
+    // ===== 排行榜：時間字串轉成總毫秒（或百分之一秒）方便排序 =====
+function parseTimeToCs(t){ // cs = centiseconds (1/100秒)
+  // 期望格式 MM:SS.xx
+  // 例：01:23.45
+  const s = (t || "").trim();
+  const m = s.match(/^(\d{1,2}):([0-5]?\d)\.(\d{1,2})$/);
+  if(!m) return null;
+  const mm = Number(m[1]);
+  const ss = Number(m[2]);
+  const xx = Number(m[3].padEnd(2,'0')); // 1位補0
+  return (mm*60 + ss)*100 + xx;
+}
+
+// 簡單 CSV parser（你的內容很單純：name,time,note...）
+function parseCsv(text){
+  const lines = text.replace(/\r/g,'').trim().split('\n');
+  if(lines.length <= 1) return [];
+  const header = lines[0].split(',').map(x=>x.trim());
+  const rows = [];
+
+  for(let i=1;i<lines.length;i++){
+    const cols = lines[i].split(','); // 若你欄位可能有逗號就要更完整 parser；一般不會
+    const obj = {};
+    header.forEach((h,idx)=> obj[h] = (cols[idx]||'').trim());
+    rows.push(obj);
+  }
+  return rows;
+}
+
+async function loadRanking(){
+  const statusEl = document.getElementById("rankStatus");
+  const listEl = document.getElementById("rankList");
+
+  try{
+    statusEl.textContent = "載入中...";
+    listEl.innerHTML = "";
+
+    // ✅ 你要換成「你發佈的 CSV 連結」
+    // 建議最後加上 &t=時間戳 破快取
+    const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzrBZKoOZroOfo6ad-tamTCh0PYtfvEixvubyHvL8uo9qmTQZkzbwSOvIoVIjWHmDfv3JlqRUbAyy_/pub?output=csv";
+    const url = SHEET_CSV_URL + (SHEET_CSV_URL.includes('?') ? '&' : '?') + 't=' + Date.now();
+
+    const res = await fetch(url);
+    if(!res.ok) throw new Error("讀取失敗：" + res.status);
+    const text = await res.text();
+
+    const raw = parseCsv(text);
+
+    // 只保留合法 time
+    const list = raw.map(r=>{
+      const cs = parseTimeToCs(r.time);
+      return { name: r.name || "", time: r.time || "", cs };
+    }).filter(x=>x.name && x.cs !== null);
+
+    // 時間越小越快 → 排名越前
+    list.sort((a,b)=>a.cs - b.cs);
+
+    if(!list.length){
+      statusEl.textContent = "目前沒有有效成績（請確認 time 格式 MM:SS.xx）";
+      return;
+    }
+
+    statusEl.textContent = `已載入 ${list.length} 筆（每幾分鐘自動更新）`;
+
+    // 渲染
+    list.forEach((item, idx)=>{
+      const pos = idx + 1;
+      const row = document.createElement("div");
+      row.className = "rank-row" + (pos<=3 ? " top3 top"+pos : "");
+
+      row.innerHTML = `
+        <div class="rank-left">
+          <div class="rank-pos">${pos<=3 ? `第${pos}名` : `#${pos}`}</div>
+          <div class="rank-name">${item.name}</div>
+        </div>
+        <div class="rank-time">${item.time}</div>
+      `;
+      listEl.appendChild(row);
+    });
+
+  }catch(e){
+    console.error(e);
+    statusEl.textContent = "排行榜：讀取失敗（請確認CSV已發佈且為公開）";
+  }
+}
+
+
     async function loadAll() {
       try {
         const snap = await getDocs(colRef);
@@ -920,6 +1007,14 @@
         trainBtn.textContent = open ? "▲ 收合" : "▼ 展開";
         if (open) initTrainingVideosOnce();
       });
+      // 成績排行榜（預設開啟）
+      const rankBtn = document.getElementById("toggleRank");
+      const rankPanel = document.getElementById("rankPanel");
+      rankBtn?.addEventListener("click", () => {
+        const open = rankPanel.classList.toggle("open");
+        rankBtn.textContent = open ? "▲ 收合" : "▼ 展開";
+      });
+
     });
 
     window.saveRecord = saveRecord;
@@ -932,6 +1027,10 @@
 
     updateTodayViewCount();
     loadLastUpdateTime();
+    loadRanking();
+// 每 5 分鐘更新一次（你想要更快可改成 2 分鐘）
+    setInterval(loadRanking, 5 * 60 * 1000);
+
   </script>
 
 </body>

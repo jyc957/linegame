@@ -757,18 +757,17 @@ function timeToMs(str) {
     const raw = parseCsv(text);
 
     // 只保留合法成績
-    const list = raw.map(r => {
-      const cs = parseTimeToCs(r.time);
-      return {
-        name: (r.name || "").trim(),
-        time: (r.time || "").trim(),
-        cs
-      };
-    }).filter(x => x.name && x.cs !== null);
+    const list = raw.map(r=>{
+    const name = (r["名字"] || "").trim();
+    const timeStr = normalizeTimeString(r["成績(XX:XX:XX)"] || "");
+    const cs = parseTimeToCs(timeStr);
+
+    return { name, time: timeStr, cs };
+  }).filter(x => x.name && x.cs !== null);
 
     if (!list.length) {
       if (statusEl) {
-        statusEl.textContent = "目前沒有有效成績（格式需為 MM:SS.xx）";
+        statusEl.textContent = "目前沒有有效成績（格式需為 MM:SS:xx）";
       }
       return;
     }

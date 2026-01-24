@@ -968,28 +968,33 @@ list.forEach((item, idx) => {
     }
 
     async function updateTodayViewCount() {
-      try {
-        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-        const countSpan = document.getElementById("todayCount");
-        const docRef = doc(db, "daily_views", today);
+  try {
+    // ✅ 用台灣時區算「今天」
+    const today = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Taipei",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date()); // YYYY-MM-DD
 
-    // ✅ 每次進站都 +1（不再用 localStorage 擋）
-        const snap = await getDoc(docRef);
-        if (snap.exists()) {
-          await updateDoc(docRef, { count: increment(1) });
-        } else {
-          await setDoc(docRef, { count: 1 });
-        }
+    const countSpan = document.getElementById("todayCount");
+    const docRef = doc(db, "daily_views", today);
 
-    // ✅ 讀回來顯示
-        const newSnap = await getDoc(docRef);
-        countSpan.textContent = newSnap.exists() ? newSnap.data().count : "0";
-      } catch (e) {
-        console.error(e);
-        const countSpan = document.getElementById("todayCount");
-        if (countSpan) countSpan.textContent = "讀取失敗";
-      }
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      await updateDoc(docRef, { count: increment(1) });
+    } else {
+      await setDoc(docRef, { count: 1 });
     }
+
+    const newSnap = await getDoc(docRef);
+    countSpan.textContent = newSnap.exists() ? newSnap.data().count : "0";
+  } catch (e) {
+    console.error(e);
+    const countSpan = document.getElementById("todayCount");
+    if (countSpan) countSpan.textContent = "讀取失敗";
+  }
+}
 
     /* ✅ GitHub 最後更新時間（只更新右下角那個 span） */
     async function loadLastUpdateTime() {

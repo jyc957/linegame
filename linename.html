@@ -216,12 +216,93 @@
         margin-right: 4px;
       }
     }
-  </style>
+    .track-img{
+      width:100%;
+      border-radius:10px;
+      display:block;
+      max-height:240px;
+      object-fit:cover;
+      background:#ddd;
+    }
+
+    .rank-list{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .rank-row{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      padding:10px;
+      border-radius:10px;
+      background:#f6f7f8;
+    }
+
+    .rank-left{
+      display:flex;
+      gap:10px;
+      align-items:baseline;
+      min-width:0;
+    }
+
+    .rank-pos{
+      font-weight:900;
+      width:52px;
+      flex:0 0 auto;
+    }
+
+    .rank-name{
+      font-weight:700;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width:55vw;
+    }
+
+    .rank-time{
+      font-variant-numeric: tabular-nums;
+      font-weight:900;
+    }
+
+/* 前三名放大一點 */
+    .rank-row.top3 .rank-pos,
+    .rank-row.top3 .rank-name,
+    .rank-row.top3 .rank-time{
+      font-size:16px;
+    }
+
+/* 金銀銅底色（可自行改） */
+    .rank-row.top1{ background:#fff6cc; }
+    .rank-row.top2{ background:#f0f0f0; }
+    .rank-row.top3{ background:#ffe1cc; }
+ </style>
 </head>
 
 <body>
 
-  <h1>KP台灣民眾黨 黨員查詢系統</h1>
+  <h1>KP台灣民眾黨 黨部系統</h1>
+  <!-- 🏁 成績排行榜（預設展開，可收合） -->
+<div class="section">
+  <div class="top-bar" style="justify-content: space-between;">
+    <h2 style="margin-right:10px;">成績排行榜</h2>
+    <button id="toggleRank">▲ 收合</button>
+  </div>
+
+  <img id="trackImage" class="track-img" src="track.jpg" alt="賽道圖片">
+
+  <div style="margin-top:10px; font-weight:800;">
+    黨內計時成績排行（不定期更新）
+  </div>
+
+  <div class="smword" id="rankStatus">載入中...</div>
+
+  <div id="rankPanel" class="collapse-content open">
+    <div id="rankList" class="rank-list"></div>
+  </div>
+</div>
 
   <!-- 新增 / 查詢（可折疊） -->
   <div class="section">

@@ -311,9 +311,7 @@
     <div id="rankStatus" class="smword">載入中...</div>
 
     <!-- ✅【排行榜實際列表】 -->
-    <div id="rankingList" class="rank-list">
-  載入中...
-</div>
+    <div id="rankingList"></div>
 
   </div>
 </div>
@@ -723,57 +721,17 @@ function parseCsvRows(text) {
   return lines.map(parseLine);
 }
         // 🔧 修正全形 → 半形
-// ① 將各種輸入統一成 "MM:SS.xx"
 function normalizeTimeString(str) {
   if (!str) return "";
 
-  let s = String(str).trim();
-
-  // 全形數字 -> 半形
-  s = s.replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
-
-  // 全形符號 -> 半形
-  s = s.replace(/[：]/g, ":").replace(/[．。]/g, ".");
-
-  // 允許：
-  // 1) MM:SS.xx
-  // 2) MM:SS:xx  -> 把最後一個 ":" 換成 "."
-  // 3) MM.SS.xx  -> 把第一個 "." 換成 ":"
-  const colonCount = (s.match(/:/g) || []).length;
-  const dotCount = (s.match(/\./g) || []).length;
-
-  if (colonCount === 2 && dotCount === 0) {
-    // MM:SS:xx -> MM:SS.xx
-    const parts = s.split(":");
-    s = `${parts[0]}:${parts[1]}.${parts[2]}`;
-  } else if (dotCount === 2 && colonCount === 0) {
-    // MM.SS.xx -> MM:SS.xx
-    const parts = s.split(".");
-    s = `${parts[0]}:${parts[1]}.${parts[2]}`;
-  }
-
-  // 最後做一次標準化 padding（秒/小數不足補 0）
-  const m = s.match(/^(\d{1,2}):([0-5]?\d)\.(\d{1,2})$/);
-  if (!m) return s; // 先原樣回傳，後面 parse 會判斷失敗
-
-  const mm = String(Number(m[1]));                 // 分鐘允許 0~99
-  const ss = String(Number(m[2])).padStart(2, "0");
-  const xx = String(m[3]).padEnd(2, "0").slice(0, 2);
-
-  return `${mm}:${ss}.${xx}`;
-}
-
-// ② 解析成「百分之一秒」(cs) 用來排序
-function parseTimeToCs(t) {
-  const s = normalizeTimeString(t);
-  const m = s.match(/^(\d{1,2}):([0-5]\d)\.(\d{2})$/);
-  if (!m) return null;
-
-  const mm = Number(m[1]);
-  const ss = Number(m[2]);
-  const xx = Number(m[3]);
-
-  return (mm * 60 + ss) * 100 + xx;
+  return str
+    // 全形數字 → 半形
+    .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+    // 全形冒號 → 半形
+    .replace(/：/g, ":")
+    // 全形句點 → 半形
+    .replace(/。/g, ".")
+    .trim();
 }
 
 // ✅ 檢查是否為合法成績（MM:SS.xx）

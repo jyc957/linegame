@@ -680,7 +680,7 @@
 function parseTimeToCs(t){ // cs = centiseconds (1/100秒)
   // 期望格式 MM:SS.xx
   // 例：01:23.45
-  const s = (t || "").trim();
+  const s = normalizeTimeString(t || "");
   const m = s.match(/^(\d{1,2}):([0-5]?\d)\.(\d{1,2})$/);
   if(!m) return null;
   const mm = Number(m[1]);
@@ -690,19 +690,35 @@ function parseTimeToCs(t){ // cs = centiseconds (1/100秒)
 }
 
 // 簡單 CSV parser（你的內容很單純：name,time,note...）
-function parseCsv(text){
-  const lines = text.replace(/\r/g,'').trim().split('\n');
-  if(lines.length <= 1) return [];
-  const header = lines[0].split(',').map(x=>x.trim());
-  const rows = [];
+function parseCsvRows(text) {
+  const lines = text.replace(/\r/g, "").split("\n").filter(l => l.trim() !== "");
+  if (!lines.length) return [];
 
-  for(let i=1;i<lines.length;i++){
-    const cols = lines[i].split(','); // 若你欄位可能有逗號就要更完整 parser；一般不會
-    const obj = {};
-    header.forEach((h,idx)=> obj[h] = (cols[idx]||'').trim());
-    rows.push(obj);
-  }
-  return rows;
+  // 簡單 CSV 解析：支援 "..." 內含逗號
+  const parseLine = (line) => {
+    line = line.replace(/^\uFEFF/, ""); // ✅ 去 BOM
+    const out = [];
+    let cur = "";
+    let inQ = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        // 兩個 "" 視為一個 "
+        if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
+        else inQ = !inQ;
+      } else if (ch === "," && !inQ) {
+        out.push(cur.trim());
+        cur = "";
+      } else {
+        cur += ch;
+      }
+    }
+    out.push(cur.trim());
+    return out;
+  };
+
+  return lines.map(parseLine);
 }
         // 🔧 修正全形 → 半形
 function normalizeTimeString(str) {
@@ -754,20 +770,19 @@ function timeToMs(str) {
     if (!res.ok) throw new Error("讀取失敗：" + res.status);
 
     const text = await res.text();
-    const raw = parseCsv(text);
+    const rows = parseCsvRows(text);
 
-    // 只保留合法成績
-    const list = raw.map(r=>{
-    const name = (r["名字"] || "").trim();
-    const timeStr = normalizeTimeString(r["成績(XX:XX:XX)"] || "");
-    const cs = parseTimeToCs(timeStr);
-
-    return { name, time: timeStr, cs };
-  }).filter(x => x.name && x.cs !== null);
+// rows[0] 是表頭，從 rows[1] 開始才是資料
+const list = rows.slice(1).map(cols => {
+  const name = (cols[0] || "").trim();
+  const timeStr = normalizeTimeString((cols[1] || "").trim());
+  const cs = parseTimeToCs(timeStr);
+  return { name, time: timeStr, cs };
+}).filter(x => x.name && x.cs !== null);
 
     if (!list.length) {
       if (statusEl) {
-        statusEl.textContent = "目前沒有有效成績（格式需為 MM:SS:xx）";
+        statusEl.textContent = "目前沒有有效成績（格式需為 MM:SS.xx）";
       }
       return;
     }

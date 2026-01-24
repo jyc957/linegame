@@ -780,7 +780,9 @@ function timeToMs(str) {
     }
 
     // ===== 渲染排行榜 =====
-    list.forEach((item, idx)=>{
+listEl.innerHTML = "";
+
+list.forEach((item, idx) => {
   const pos = idx + 1;
 
   const row = document.createElement("div");
@@ -792,25 +794,15 @@ function timeToMs(str) {
   if (pos === 3) row.classList.add("top3");
 
   row.innerHTML = `
-    <div class="rank-left">
-      <div class="rank-pos">${pos <= 3 ? `第${pos}名` : `#${pos}`}</div>
-      <div class="rank-name">${item.name}</div>
-    </div>
-    <div class="rank-time">${item.time}</div>
-  `;
+  <div class="rank-left">
+    <div class="rank-pos">${pos <= 3 ? `第${pos}名` : `#${pos}`}</div>
+    <div class="rank-name">${item.name}</div>
+  </div>
+  <div class="rank-time">${item.time}</div>
+`;
 
   listEl.appendChild(row);
 });
-      row.innerHTML = `
-        <div class="rank-left">
-          <div class="rank-pos">${pos <= 3 ? `第${pos}名` : `#${pos}`}</div>
-          <div class="rank-name">${item.name}</div>
-        </div>
-        <div class="rank-time">${item.time}</div>
-      `;
-
-      listEl.appendChild(row);
-    });
 
   } catch (e) {
     console.error(e);

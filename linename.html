@@ -287,14 +287,12 @@
   <!-- 🏁 成績排行榜（預設展開，可收合） -->
 <!-- 🏁 成績排行榜（最上方） -->
 <div class="section">
-
-  <!-- 標題列（永遠顯示） -->
   <div class="top-bar">
     <h2>成績排行榜</h2>
     <button id="toggleRanking">▼ 收合</button>
   </div>
 
-  <!-- ⬇️ 可收合內容（圖片 + 排名） -->
+  <!-- 可收合內容 -->
   <div id="rankingPanel" class="collapse-content open">
 
     <!-- 賽道圖片 -->
@@ -309,10 +307,11 @@
       黨內計時成績排行（城鎮高速公路）
     </div>
 
-    <!-- 排名清單 -->
-    <div id="rankingList">
-      載入中...
-    </div>
+    <!-- ✅【一定要有】狀態文字 -->
+    <div id="rankStatus" class="smword">載入中...</div>
+
+    <!-- ✅【排行榜實際列表】 -->
+    <div id="rankingList"></div>
 
   </div>
 </div>

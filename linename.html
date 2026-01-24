@@ -736,64 +736,76 @@ function timeToMs(str) {
   );
 }
 
-async function loadRanking(){
-  const statusEl = document.getElementById("rankStatus");
-  const listEl = document.getElementById("rankList");
+  async function loadRanking(){
+  const statusEl = document.getElementById("rankStatus"); // 有就用，沒有也不會壞
+  const listEl = document.getElementById("rankingList");
 
   try{
-    statusEl.textContent = "載入中...";
+    if (statusEl) statusEl.textContent = "載入中...";
     listEl.innerHTML = "";
 
-    // ✅ 你要換成「你發佈的 CSV 連結」
-    // 建議最後加上 &t=時間戳 破快取
-    const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzrBZKoOZroOfo6ad-tamTCh0PYtfvEixvubyHvL8uo9qmTQZkzbwSOvIoVIjWHmDfv3JlqRUbAyy_/pub?output=csv";
-    const url = SHEET_CSV_URL + (SHEET_CSV_URL.includes('?') ? '&' : '?') + 't=' + Date.now();
+    // ✅ Google 試算表 CSV（已公開）
+    const SHEET_CSV_URL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzrBZKoOZroOfo6ad-tamTCh0PYtfvEixvubyHvL8uo9qmTQZkzbwSOvIoVIjWHmDfv3JlqRUbAyy_/pub?output=csv";
+
+    // 破快取
+    const url = SHEET_CSV_URL + "&t=" + Date.now();
 
     const res = await fetch(url);
-    if(!res.ok) throw new Error("讀取失敗：" + res.status);
-    const text = await res.text();
+    if (!res.ok) throw new Error("讀取失敗：" + res.status);
 
+    const text = await res.text();
     const raw = parseCsv(text);
 
-    // 只保留合法 time
-    const list = raw.map(r=>{
+    // 只保留合法成績
+    const list = raw.map(r => {
       const cs = parseTimeToCs(r.time);
-      return { name: r.name || "", time: r.time || "", cs };
-    }).filter(x=>x.name && x.cs !== null);
+      return {
+        name: (r.name || "").trim(),
+        time: (r.time || "").trim(),
+        cs
+      };
+    }).filter(x => x.name && x.cs !== null);
 
-    // 時間越小越快 → 排名越前
-    list.sort((a,b)=>a.cs - b.cs);
-
-    if(!list.length){
-      statusEl.textContent = "目前沒有有效成績（請確認 time 格式 MM:SS.xx）";
+    if (!list.length) {
+      if (statusEl) {
+        statusEl.textContent = "目前沒有有效成績（格式需為 MM:SS.xx）";
+      }
       return;
     }
 
-    statusEl.textContent = `已載入 ${list.length} 筆（每幾分鐘自動更新）`;
+    // 依時間排序（越小越快）
+    list.sort((a, b) => a.cs - b.cs);
 
-    // 渲染
-    list.forEach((item, idx)=>{
+    if (statusEl) {
+      statusEl.textContent = `已載入 ${list.length} 筆成績`;
+    }
+
+    // ===== 渲染排行榜 =====
+    list.forEach((item, idx) => {
       const pos = idx + 1;
+
       const row = document.createElement("div");
-      row.className = "rank-row" + (pos<=3 ? " top3 top"+pos : "");
+      row.className = "rank-row" + (pos <= 3 ? ` top3 top${pos}` : "");
 
       row.innerHTML = `
         <div class="rank-left">
-          <div class="rank-pos">${pos<=3 ? `第${pos}名` : `#${pos}`}</div>
+          <div class="rank-pos">${pos <= 3 ? `第${pos}名` : `#${pos}`}</div>
           <div class="rank-name">${item.name}</div>
         </div>
         <div class="rank-time">${item.time}</div>
       `;
+
       listEl.appendChild(row);
     });
 
-  }catch(e){
+  } catch (e) {
     console.error(e);
-    statusEl.textContent = "排行榜：讀取失敗（請確認CSV已發佈且為公開）";
+    if (statusEl) {
+      statusEl.textContent = "排行榜：讀取失敗（請確認試算表為公開 CSV）";
+    }
   }
 }
-
-
     async function loadAll() {
       try {
         const snap = await getDocs(colRef);

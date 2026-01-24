@@ -285,22 +285,35 @@
 
   <h1>KP台灣民眾黨 黨部系統</h1>
   <!-- 🏁 成績排行榜（預設展開，可收合） -->
+<!-- 🏁 成績排行榜（最上方） -->
 <div class="section">
-  <div class="top-bar" style="justify-content: space-between;">
-    <h2 style="margin-right:10px;">成績排行榜</h2>
-    <button id="toggleRank">▲ 收合</button>
+
+  <!-- 標題列（永遠顯示） -->
+  <div class="top-bar">
+    <h2>成績排行榜</h2>
+    <button id="toggleRanking">▼ 收合</button>
   </div>
 
-  <img id="trackImage" class="track-img" src="highway.jpg" alt="城鎮高速公路">
+  <!-- ⬇️ 可收合內容（圖片 + 排名） -->
+  <div id="rankingPanel" class="collapse-content open">
 
-  <div style="margin-top:10px; font-weight:800;">
-    黨內計時成績排行（城鎮高速公路）
-  </div>
+    <!-- 賽道圖片 -->
+    <img
+      src="highway.jpg"
+      alt="賽道圖片"
+      style="width:100%; border-radius:8px; margin-bottom:8px;"
+    >
 
-  <div class="smword" id="rankStatus">載入中...</div>
+    <!-- 說明文字 -->
+    <div style="font-size:14px; color:#555; margin-bottom:10px;">
+      黨內計時成績排行（城鎮高速公路）
+    </div>
 
-  <div id="rankPanel" class="collapse-content open">
-    <div id="rankList" class="rank-list"></div>
+    <!-- 排名清單 -->
+    <div id="rankingList">
+      載入中...
+    </div>
+
   </div>
 </div>
 
@@ -1043,6 +1056,15 @@ async function loadRanking(){
       rankBtn?.addEventListener("click", () => {
         const open = rankPanel.classList.toggle("open");
         rankBtn.textContent = open ? "▲ 收合" : "▼ 展開";
+      });
+
+      // 🏁 成績排行榜收合
+      const rankingBtn = document.getElementById("toggleRanking");
+      const rankingPanel = document.getElementById("rankingPanel");
+
+      rankingBtn?.addEventListener("click", () => {
+        const open = rankingPanel.classList.toggle("open");
+        rankingBtn.textContent = open ? "▲ 收合" : "▼ 展開";
       });
 
     });

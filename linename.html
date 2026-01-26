@@ -731,14 +731,34 @@ function parseCsvRows(text) {
 function normalizeTimeString(str) {
   if (!str) return "";
 
-  return str
-    // 全形數字 → 半形
-    .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
-    // 全形冒號 → 半形
-    .replace(/：/g, ":")
-    // 全形句點 → 半形
-    .replace(/。/g, ".")
-    .trim();
+  let s = String(str).trim();
+
+  // 全形 → 半形
+  s = s
+    .replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+    .replace(/[：]/g, ":")
+    .replace(/[．。]/g, ".");
+
+  // ===== 關鍵修正在這 =====
+  // 允許三種輸入：
+  // 1) MM:SS.xx  （標準）
+  // 2) MM:SS:xx  （LINE 常見）
+  // 3) MM.SS.xx  （少數人習慣）
+
+  const colonCount = (s.match(/:/g) || []).length;
+  const dotCount = (s.match(/\./g) || []).length;
+
+  if (colonCount === 2 && dotCount === 0) {
+    // MM:SS:xx → MM:SS.xx
+    const [m, s2, x] = s.split(":");
+    s = `${m}:${s2}.${x}`;
+  } else if (dotCount === 2 && colonCount === 0) {
+    // MM.SS.xx → MM:SS.xx
+    const [m, s2, x] = s.split(".");
+    s = `${m}:${s2}.${x}`;
+  }
+
+  return s;
 }
 
 // ✅ 檢查是否為合法成績（MM:SS.xx）

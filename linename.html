@@ -303,6 +303,7 @@
   <div class="top-bar">
     <h2>成績排行榜</h2>
     <button id="toggleRanking">▲ 收合</button>
+    <button id="refreshRanking">🔄 刷新成績</button>
   </div>
 
   <!-- 可收合內容 -->
@@ -1241,6 +1242,17 @@ list.forEach((item, idx) => {
         const open = rankingPanel.classList.toggle("open");
         rankingBtn.textContent = open ? "▲ 收合" : "▼ 展開";
       });
+      const refreshBtn = document.getElementById("refreshRanking");
+      refreshBtn?.addEventListener("click", async () => {
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = "刷新中...";
+      try {
+        await loadRanking();
+      } finally {
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = "🔄 刷新成績";
+      }
+    });
 
     });
 
@@ -1256,8 +1268,6 @@ list.forEach((item, idx) => {
     updateTodayViewCount();
     loadLastUpdateTime();
     loadRanking();
-// 每 5 分鐘更新一次（你想要更快可改成 2 分鐘）
-    setInterval(loadRanking, 1 * 60 * 1000);
 
   </script>
 

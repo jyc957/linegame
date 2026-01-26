@@ -285,6 +285,12 @@
 .rank-row:active{
   transform: scale(0.995);
 }
+    /* 點到後閃一下 */
+.rank-row.flash {
+  outline: 3px solid #ff2b2b;
+  transform: scale(1.02);
+  transition: transform .15s ease;
+}
  </style>
 </head>
 
@@ -866,6 +872,7 @@ list.forEach((item, idx) => {
 
   const row = document.createElement("div");
   row.className = "rank-row";
+  row.dataset.nameKey = item.name.trim().toLowerCase();
 
   // 前三名加 class
   if (pos === 1) row.classList.add("top1");
@@ -923,6 +930,32 @@ list.forEach((item, idx) => {
       statusEl.textContent = "排行榜：讀取失敗（請確認試算表為公開 CSV）";
     }
   }
+}
+    function jumpToRankingByName(gameName) {
+  const key = (gameName || "").trim().toLowerCase();
+  if (!key) return;
+
+  // 先展開排行榜
+  const panel = document.getElementById("rankingPanel");
+  const btn = document.getElementById("toggleRanking");
+  if (panel && !panel.classList.contains("open")) {
+    panel.classList.add("open");
+    if (btn) btn.textContent = "▲ 收合";
+  }
+
+  // 找到排行榜那一列
+  const rows = Array.from(document.querySelectorAll("#rankingList .rank-row"));
+  const target = rows.find(r => (r.dataset.nameKey || "") === key);
+
+  if (!target) {
+    alert("排行榜找不到這個名字（可能排行榜用的名字和目前資料不一樣）");
+    return;
+  }
+
+  // 捲到那一列 + 閃一下
+  target.scrollIntoView({ behavior: "smooth", block: "center" });
+  target.classList.add("flash");
+  setTimeout(() => target.classList.remove("flash"), 900);
 }
     async function loadAll() {
       try {
@@ -1211,6 +1244,7 @@ list.forEach((item, idx) => {
     window.loadAll = loadAll;
     window.clearInputs = clearInputs;
     window.resetListUI = resetListUI;
+    window.jumpToRankingByName = jumpToRankingByName;
 
     updateTodayViewCount();
     loadLastUpdateTime();

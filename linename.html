@@ -278,6 +278,13 @@
     .rank-row.top1{ background:#fed22b; }
     .rank-row.top2{ background:#a1bcd1; }
     .rank-row.top3{ background:#fe9554; }
+
+    .rank-row:hover{
+  filter: brightness(0.98);
+}
+.rank-row:active{
+  transform: scale(0.995);
+}
  </style>
 </head>
 
@@ -750,6 +757,43 @@ function timeToMs(str) {
     parseInt(ms.padEnd(2, "0"), 10) * 10
   );
 }
+    // ✅ 點排行榜名字 → 到 Firestore 查這個 gameName 的資料 → 顯示在下方名單區
+async function showFromRankingByGameName(gameName){
+  try{
+    // 讓下方區塊顯示「載入中」
+    document.getElementById("listTitle").textContent = `排行榜點選：${gameName}`;
+    document.getElementById("resultCount").textContent = "載入中...";
+    document.getElementById("listContainer").innerHTML = "";
+
+    // 用 where 精準查（同名會有多筆 → 全部顯示）
+    const q = query(colRef, where("gameName", "==", gameName));
+    const snap = await getDocs(q);
+
+    const list = [];
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      list.push({
+        id: docSnap.id,
+        lineId: d.lineId || "",
+        gameName: d.gameName || "",
+        updatedAt: d.updatedAt || d.createdAt || 0
+      });
+    });
+
+    list.sort((a,b)=> b.updatedAt - a.updatedAt);
+
+    // 用你原本的 renderList 顯示
+    renderList(list, `排行榜點選：${gameName}`);
+
+    // ✅ 自動捲到下方顯示區（手機更好用）
+    document.getElementById("listTitle")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }catch(e){
+    console.error(e);
+    document.getElementById("resultCount").textContent = "";
+    document.getElementById("listContainer").innerHTML =
+      `<div class="empty-text">查詢失敗，請稍後再試。</div>`;
+  }
+}
 
   async function loadRanking(){
   const statusEl = document.getElementById("rankStatus"); // 有就用，沒有也不會壞
@@ -808,15 +852,49 @@ list.forEach((item, idx) => {
   if (pos === 2) row.classList.add("top2");
   if (pos === 3) row.classList.add("top3");
 
-  row.innerHTML = `
-  <div class="rank-left">
-    <div class="rank-pos">${pos <= 3 ? `第${pos}名` : `#${pos}`}</div>
-    <div class="rank-name">${item.name}</div>
-  </div>
-  <div class="rank-time">${item.time}</div>
-`;
+  // ===== 渲染排行榜 =====
+listEl.innerHTML = "";
+
+list.forEach((item, idx) => {
+  const pos = idx + 1;
+
+  const row = document.createElement("div");
+  row.className = "rank-row";
+
+  if (pos === 1) row.classList.add("top1");
+  if (pos === 2) row.classList.add("top2");
+  if (pos === 3) row.classList.add("top3");
+
+  // ✅ 用 textContent 避免任何奇怪字元把網頁搞爆
+  const left = document.createElement("div");
+  left.className = "rank-left";
+
+  const posEl = document.createElement("div");
+  posEl.className = "rank-pos";
+  posEl.textContent = (pos <= 3) ? `第${pos}名` : `#${pos}`;
+
+  const nameEl = document.createElement("div");
+  nameEl.className = "rank-name";
+  nameEl.textContent = item.name;
+
+  const timeEl = document.createElement("div");
+  timeEl.className = "rank-time";
+  timeEl.textContent = item.time;
+
+  left.appendChild(posEl);
+  left.appendChild(nameEl);
+  row.appendChild(left);
+  row.appendChild(timeEl);
+
+  // ✅ 點擊整列（或你也可以只綁 nameEl）
+  row.style.cursor = "pointer";
+  row.title = "點一下顯示此人的 LINE ID";
+  row.addEventListener("click", () => {
+    showFromRankingByGameName(item.name);
+  });
 
   listEl.appendChild(row);
+});
 });
 
   } catch (e) {

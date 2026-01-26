@@ -309,6 +309,85 @@
   color: #245c63;
   line-height: 1.4;
 }
+    /* ✅ Toast（右下角彈出） */
+.toast-wrap{
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none; /* 不擋按鈕 */
+}
+
+.toast{
+  min-width: 220px;
+  max-width: 86vw;
+  background: rgba(20, 40, 50, 0.92);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.12);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  pointer-events: auto; /* 允許點擊關閉 */
+  transform: translateY(8px);
+  opacity: 0;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.toast.open{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-icon{
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  color: #0b2a33;
+}
+
+.toast-body{
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.toast-title{
+  font-weight: 900;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.toast-msg{
+  font-size: 13px;
+  line-height: 1.35;
+  word-break: break-word;
+  opacity: .95;
+}
+
+.toast-close{
+  border: 0;
+  background: transparent;
+  color: rgba(255,255,255,.9);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+/* 類型顏色 */
+.toast.success .toast-icon{ background:#5be37a; }
+.toast.error   .toast-icon{ background:#ffb3b3; }
+.toast.info    .toast-icon{ background:#7bd8ff; }
+.toast.warn    .toast-icon{ background:#ffd56a; }
     /* ✅ 自訂 Modal（報錯/提示） */
 .ui-modal{
   position: fixed;
@@ -804,6 +883,53 @@ function showInfo(msg, title="提示") { showModal(msg, { title, type:"info" });
       if (/[<>]/.test(s)) throw new Error(fieldName + " 不能包含 < >");
       return s;
     }
+    // ✅ Toast
+const toastWrap = document.getElementById("toastWrap");
+let toastSeq = 0;
+
+function showToast(msg, { title = "提示", type = "info", duration = 2200 } = {}) {
+  if (!toastWrap) return;
+
+  const id = `t${++toastSeq}`;
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  t.setAttribute("role", "status");
+  t.dataset.id = id;
+
+  const iconChar = type === "success" ? "✓"
+                 : type === "error"   ? "!"
+                 : type === "warn"    ? "!"
+                 : "i";
+
+  t.innerHTML = `
+    <div class="toast-icon">${iconChar}</div>
+    <div class="toast-body">
+      <div class="toast-title">${title}</div>
+      <div class="toast-msg"></div>
+    </div>
+    <button class="toast-close" aria-label="關閉">×</button>
+  `;
+  t.querySelector(".toast-msg").textContent = String(msg ?? "");
+
+  // 點 X 關閉
+  t.querySelector(".toast-close").addEventListener("click", () => closeToast(t));
+
+  toastWrap.appendChild(t);
+  requestAnimationFrame(() => t.classList.add("open"));
+
+  // 自動關閉
+  const timer = setTimeout(() => closeToast(t), duration);
+  t._timer = timer;
+
+  return t;
+}
+
+function closeToast(t) {
+  if (!t) return;
+  clearTimeout(t._timer);
+  t.classList.remove("open");
+  setTimeout(() => t.remove(), 180);
+}
 
     function formatTime(ts) {
       if (!ts) return "未紀錄";
@@ -1233,7 +1359,7 @@ list.forEach((item, idx) => {
         document.getElementById("oldLineInput").value = "";
         document.getElementById("newLineInput").value = "";
 
-        showSuccess("修改成功！");
+        showToast("修改成功！");
         await loadAll();
       } catch (e) {
         showError(e.message || "修改失敗");
@@ -1257,7 +1383,7 @@ list.forEach((item, idx) => {
         document.getElementById("oldGameInput").value = "";
         document.getElementById("newGameInput").value = "";
 
-        showSuccess("修改完成！");
+        showToast("修改完成！");
         await loadAll();
       } catch (e) {
         showError(e.message || "修改失敗");
@@ -1457,10 +1583,12 @@ list.forEach((item, idx) => {
     </div>
   </div>
 </div>
+  <!-- ✅ Toast 容器 -->
+<div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
   <footer class="site-footer">
-  <img src="team.png" alt="台灣民眾黨 KP 車隊" class="footer-logo">
+  <img src="team.png" alt="KP台灣民眾黨" class="footer-logo">
   <div class="footer-text">
-    台灣民眾黨 KP 車隊<br>
+    KP台灣民眾黨<br>
     Taiwan People's Party
   </div>
 </footer>

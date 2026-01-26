@@ -922,6 +922,7 @@ list.forEach((item, idx) => {
   row.appendChild(timeEl);
 
   // ✅ 點擊整列（或你也可以只綁 nameEl）
+  row.dataset.nameKey = normalizeNameKey(item.name);
   row.style.cursor = "pointer";
   row.title = "點一下顯示此人的 LINE ID";
   row.addEventListener("click", () => {
@@ -939,11 +940,18 @@ list.forEach((item, idx) => {
     }
   }
 }
+    function normalizeNameKey(name) {
+  return String(name || "")
+    .trim()
+    .replace(/\u3000/g, " ")                // 全形空白 -> 半形
+    .replace(/\s+/g, " ")                   // 多空白壓成一個
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")  // 移除零寬字元/BOM
+    .toLowerCase();                         // 統一小寫
+}
     function jumpToRankingByName(gameName) {
-  const key = (gameName || "").trim().toLowerCase();
+  const key = normalizeNameKey(gameName);
   if (!key) return;
 
-  // 先展開排行榜
   const panel = document.getElementById("rankingPanel");
   const btn = document.getElementById("toggleRanking");
   if (panel && !panel.classList.contains("open")) {
@@ -951,16 +959,14 @@ list.forEach((item, idx) => {
     if (btn) btn.textContent = "▲ 收合";
   }
 
-  // 找到排行榜那一列
   const rows = Array.from(document.querySelectorAll("#rankingList .rank-row"));
   const target = rows.find(r => (r.dataset.nameKey || "") === key);
 
   if (!target) {
-    alert("排行榜找不到這個名字（可能排行榜用的名字和目前資料不一）");
+    alert("排行榜找不到這個名字（可能排行榜的名字和目前資料不一）");
     return;
   }
 
-  // 捲到那一列 + 閃一下
   target.scrollIntoView({ behavior: "smooth", block: "center" });
   target.classList.add("flash");
   setTimeout(() => target.classList.remove("flash"), 900);

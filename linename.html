@@ -674,6 +674,13 @@
         main.className = "item-main";
         main.textContent = `遊戲名字：${item.gameName}`;
 
+        // ✅ 新增這幾行
+        main.style.cursor = "pointer";
+        main.title = "點一下跳I排行榜";
+        main.addEventListener("click", () => {
+          jumpToRankingByName(item.gameName);
+        });
+
         const sub = document.createElement("div");
         sub.className = "item-sub";
         sub.textContent = `LINE ID：${item.lineId}`;
@@ -948,7 +955,7 @@ list.forEach((item, idx) => {
   const target = rows.find(r => (r.dataset.nameKey || "") === key);
 
   if (!target) {
-    alert("排行榜找不到這個名字（可能排行榜用的名字和目前資料不一樣）");
+    alert("排行榜找不到這個名字（可能排行榜用的名字和目前資料不一）");
     return;
   }
 

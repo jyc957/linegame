@@ -291,6 +291,24 @@
   transform: scale(1.02);
   transition: transform .15s ease;
 }
+.site-footer {
+  margin-top: 40px;
+  padding: 16px 0 24px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.footer-logo {
+  width: 96px;
+  max-width: 30vw;
+  margin-bottom: 8px;
+}
+
+.footer-text {
+  font-size: 12px;
+  color: #245c63;
+  line-height: 1.4;
+}
     /* ✅ 自訂 Modal（報錯/提示） */
 .ui-modal{
   position: fixed;
@@ -386,11 +404,6 @@
 </head>
 
 <body>
-<div style="text-align:center; margin-bottom:12px;">
-  <img src="team.png"
-       alt="KP 台灣民眾黨"
-       style="width:96px; max-width:30vw;">
-</div>
   <h1>KP台灣民眾黨 黨部系統</h1>
   <!-- 🏁 成績排行榜（預設展開，可收合） -->
 <!-- 🏁 成績排行榜（最上方） -->
@@ -1444,6 +1457,13 @@ list.forEach((item, idx) => {
     </div>
   </div>
 </div>
+  <footer class="site-footer">
+  <img src="team.png" alt="台灣民眾黨 KP 車隊" class="footer-logo">
+  <div class="footer-text">
+    台灣民眾黨 KP 車隊<br>
+    Taiwan People's Party
+  </div>
+</footer>
 
 </body>
 </html>

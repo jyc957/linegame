@@ -483,12 +483,47 @@
 #mapPanel { display: none; }
 #mapPanel.open { display: block; }
 
+/* 地圖抽籤：標題列讓「收合/展開」貼著標題，不要跑到最右 */
+.map-head{
+  justify-content: flex-start;
+}
+
+/* 地圖抽籤：按鈕排版 */
+.map-actions{
+  display:flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.map-btn-row{
+  display:flex;
+  gap: 10px;
+}
+.map-btn-row .btn{
+  flex: 1;
+}
+.map-info{
+  display:block;
+  margin-top: 8px;
+  font-size: 14px;
+  color: #333;
+}
+.loading{
+  margin-top: 10px;
+  font-size: 14px;
+  color: #555;
+}
+
+
 /* 讓表頭排版舒服一點（若你已有類似就不用重複） */
 .panel-head{
   display:flex;
   align-items:center;
+  justify-content: space-between;
   gap: 12px;
 }
+
 .panel-actions{
   display:flex;
   gap:8px;
@@ -645,14 +680,13 @@
 <!-- 地圖抽籤 -->
 <div class="section">
   <div class="card">
-    <!-- 收合時只顯示這一行 -->
-    <div class="panel-head">
+    <div class="panel-head map-head">
       <div class="panel-title">🗺️ 地圖抽籤</div>
       <button id="toggleMapPanel" class="btn">▼ 展開</button>
     </div>
 
-    <!-- 展開後才顯示：抽幾張/按鈕/總數/結果 -->
-    <div id="mapPanel" class="map-panel">
+    <!-- 展開後才看得到 -->
+    <div id="mapPanel" class="panel">
       <div class="map-actions">
         <select id="mapCountSelect" class="select">
           <option value="1">抽 1 張</option>
@@ -667,26 +701,24 @@
         </select>
 
         <div class="map-btn-row">
-    <button id="drawMapBtn" class="btn">🎲 抽地圖</button>
-    <button id="resetMapBtn" class="btn">♻️ 重新整理</button>
-  </div>
-</div>
-
-      <!-- 你要的：抽籤前就能看到總地圖數（但要展開才看得到） -->
-      <div id="mapInfo" class="map-info">
-        目前共有 <b id="mapTotalCount">0</b> 張地圖
+          <button id="drawMapBtn" class="btn">🎲 抽地圖</button>
+          <button id="resetMapBtn" class="btn">♻️ 重製</button>
+        </div>
       </div>
 
-      <div class="smword">※ 圖池為排位競速圖（不含 1 星地圖）</div>
-      <div id="mapLoading" class="map-loading" style="display:none;">
-  載入中...
-</div>
+      <div class="map-meta">
+        <span id="mapInfo" class="map-info">目前共有 <b id="mapTotalCount">0</b> 張地圖</span>
+      </div>
+
+      <div class="smword">※ 團池為排位競速圖（不含 1 星地圖）</div>
+
+      <div id="mapLoading" class="loading" style="display:none;">載入中...</div>
       <div id="mapResult"></div>
     </div>
   </div>
 </div>
-  <!-- 技巧教學（白底 + 可收折 + 滑到自動播放） -->
-  <div class="section">
+
+<div class="section">
     <div class="top-bar">
       <h2 style="margin-right:10px;">技巧訓練</h2>
       <button id="toggleTraining">▼ 展開</button>
@@ -891,7 +923,28 @@
     <div>最後更新：<span id="lastUpdateTime">載入中...</span></div>
   </div>
 
-  <script type="module">
+  <!-- ✅ 自訂提示視窗 -->
+<div id="uiModal" class="ui-modal" aria-hidden="true">
+  <div class="ui-modal__backdrop" data-close="1"></div>
+
+  <div class="ui-modal__card" role="dialog" aria-modal="true" aria-labelledby="uiModalTitle">
+    <div class="ui-modal__head">
+      <div class="ui-modal__icon" id="uiModalIcon">!</div>
+      <div class="ui-modal__title" id="uiModalTitle">提示</div>
+      <button class="ui-modal__x" id="uiModalX" aria-label="關閉">✕</button>
+    </div>
+
+    <div class="ui-modal__body" id="uiModalMsg">內容</div>
+
+    <div class="ui-modal__foot">
+      <button class="ui-modal__btn" id="uiModalOk">確定</button>
+    </div>
+  </div>
+</div>
+  <!-- ✅ Toast 容器 -->
+<div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
+  
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
       getFirestore, collection, addDoc,
@@ -1328,31 +1381,63 @@ const LIMIT_BY_COUNT = {
   12: 32,
 };
 
-    async function loadMaps() {
-  const res = await fetch(
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzrBZKoOZroOfo6ad-tamTCh0PYtfvEixvubyHvL8uo9qmTQZkzbwSOvIoVIjWHmDfv3JlqRUbAyy_/pub?gid=575254095&single=true&output=csv"
-  );
+// ✅ 地圖資料快取（避免每次都重新抓 CSV）
+// - 展開面板、抽籤時會共用同一份快取
+// - 5 分鐘內重用，避免載入變慢
+let _mapCacheData = null;
+let _mapCacheAt = 0;
+let _mapCachePromise = null;
+const MAP_CACHE_TTL_MS = 5 * 60 * 1000;
 
-  if (!res.ok) {
-    throw new Error("地圖 CSV 讀取失敗：" + res.status);
+
+
+    async function loadMaps(force = false) {
+  const now = Date.now();
+  if (!force && _mapCacheData && (now - _mapCacheAt) < MAP_CACHE_TTL_MS) {
+    const el = document.getElementById("mapTotalCount");
+    if (el) el.textContent = _mapCacheData.length;
+    return _mapCacheData;
   }
 
-  const text = await res.text();
-  const rows = parseCsvRows(text);
+  if (!force && _mapCachePromise) {
+    return await _mapCachePromise;
+  }
 
-  const maps = rows.slice(1)
-    .map(r => ({
-      name: (r[0] || "").trim(),
-      difficulty: Number(r[1]) || 0
-    }))
-    .filter(m => m.name);
+  _mapCachePromise = (async () => {
+    const res = await fetch(
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzrBZKoOZroOfo6ad-tamTCh0PYtfvEixvubyHvL8uo9qmTQZkzbwSOvIoVIjWHmDfv3JlqRUbAyy_/pub?gid=575254095&single=true&output=csv",
+      { cache: "no-store" }
+    );
 
-  // ✅ 顯示總地圖數
-  const el = document.getElementById("mapTotalCount");
-  if (el) el.textContent = maps.length;
+    if (!res.ok) {
+      throw new Error("地圖 CSV 讀取失敗：" + res.status);
+    }
 
-  // ✅ 回傳「去重複後」的地圖
-  return dedupeMaps(maps);
+    const csv = await res.text();
+    const rows = parseCsvRows(csv);
+
+    const maps = rows.slice(1)
+      .map(r => ({
+        name: (r[0] || "").trim(),
+        difficulty: Number(r[1]) || 0
+      }))
+      .filter(m => m.name);
+
+    const deduped = dedupeMaps(maps);
+
+    const el = document.getElementById("mapTotalCount");
+    if (el) el.textContent = deduped.length;
+
+    _mapCacheData = deduped;
+    _mapCacheAt = Date.now();
+    return deduped;
+  })();
+
+  try {
+    return await _mapCachePromise;
+  } finally {
+    _mapCachePromise = null;
+  }
 }
 
 function dedupeMaps(maps) {
@@ -1794,10 +1879,10 @@ const mapPanel = document.getElementById("mapPanel");
 
 function setMapPanelOpen(open) {
   if (!mapPanel) return;
-  mapPanel.style.display = open ? "block" : "none";
+  mapPanel.classList.toggle("open", open);
   if (mapToggleBtn) mapToggleBtn.textContent = open ? "▲ 收合" : "▼ 展開";
 
-  // 展開時先載入一次地圖數量，讓你抽之前就看到「目前共有XX張」
+  // 展開時先載入一次地圖數量（只抓一次，後面會用快取）
   if (open) {
     loadMaps().catch(console.error);
   }
@@ -1848,31 +1933,6 @@ resetMapBtn?.addEventListener("click", () => {
     // showModal("地圖清單讀取失敗", { type: "error" });
   }
 })();
-   
-    document.getElementById("drawMapBtn").addEventListener("click", async () => {
-  try {
-    const count = Number(document.getElementById("mapCountSelect").value);
-    const maxSum = LIMIT_BY_COUNT[count];
-    if (maxSum === undefined) {
-      showModal(`沒有設定「抽 ${count} 張」的難度上限`, { type: "error" });
-      return;
-    }
-
-    const maps = await loadMaps();
-    if (!maps.length) {
-      showModal("沒有地圖資料", { type: "error" });
-      return;
-    }
-
-    const { picked, total } = drawRandomMapsWithLimit(maps, count, maxSum);
-
-    renderMapResult(picked, {
-      count,
-      total,
-      maxSum,
-      mapTotal: maps.length, // 就算不顯示也沒差
-    });
-
   } catch (e) {
     console.error(e);
     showModal("地圖抽籤失敗", { type: "error" });
@@ -1880,26 +1940,6 @@ resetMapBtn?.addEventListener("click", () => {
 });
 
   </script>
-  <!-- ✅ 自訂提示視窗 -->
-<div id="uiModal" class="ui-modal" aria-hidden="true">
-  <div class="ui-modal__backdrop" data-close="1"></div>
-
-  <div class="ui-modal__card" role="dialog" aria-modal="true" aria-labelledby="uiModalTitle">
-    <div class="ui-modal__head">
-      <div class="ui-modal__icon" id="uiModalIcon">!</div>
-      <div class="ui-modal__title" id="uiModalTitle">提示</div>
-      <button class="ui-modal__x" id="uiModalX" aria-label="關閉">✕</button>
-    </div>
-
-    <div class="ui-modal__body" id="uiModalMsg">內容</div>
-
-    <div class="ui-modal__foot">
-      <button class="ui-modal__btn" id="uiModalOk">確定</button>
-    </div>
-  </div>
-</div>
-  <!-- ✅ Toast 容器 -->
-<div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
   <footer class="site-footer">
   <img src="team.png" alt="KP台灣民眾黨" class="footer-logo">
   <div class="footer-text">

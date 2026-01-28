@@ -1754,10 +1754,43 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
         refreshBtn.textContent = "🔄 刷新成績";
       }
       });
+      const drawMapBtn = document.getElementById("drawMapBtn");
+      const mapCountSelect = document.getElementById("mapCountSelect");
       // ===== 地圖抽籤：收合控制（預設收合） =====
 // ===== 地圖抽籤：收合控制（預設收合）=====
 const mapToggleBtn = document.getElementById("toggleMapPanel");
 const mapPanel = document.getElementById("mapPanel");
+      drawMapBtn?.addEventListener("click", async () => {
+
+  // 1️⃣ 清掉上一次結果
+  resetMapResultUI();
+
+  // 2️⃣ 顯示「載入中...」
+  showMapLoading(true);
+
+  // 3️⃣ 讓畫面有時間刷新（很重要）
+  await new Promise(r => setTimeout(r, 200));
+
+  try {
+    const count = Number(mapCountSelect.value);
+    const maps = await loadMaps();
+
+    const result = drawRandomMapsWithLimit(
+      maps,
+      count,
+      LIMIT_BY_COUNT[count] ?? Infinity
+    );
+
+    renderMapResult(result.picked, { count });
+
+  } catch (err) {
+    console.error(err);
+    alert("抽籤失敗，請稍後再試");
+  } finally {
+    // 4️⃣ 一定要關掉 loading
+    showMapLoading(false);
+  }
+});
 
 function setMapPanelOpen(open) {
   if (!mapPanel) return;

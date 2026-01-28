@@ -496,6 +496,33 @@
   align-items:center;
   flex-wrap:wrap;
 }
+    /* 地圖抽籤：預設收合 */
+.map-panel {
+  display: none;
+  margin-top: 12px;
+}
+
+/* 展開後的控制區：全部換行(直排) */
+.map-actions {
+  display: flex;
+  flex-direction: column;   /* ✅ 一個一行 */
+  gap: 10px;
+  align-items: flex-start;
+}
+
+/* 下拉與按鈕在手機上看起來舒服一點 */
+.map-actions .select,
+.map-actions .btn {
+  width: 100%;
+  max-width: 220px; /* 你想更寬就調大或拿掉 */
+}
+
+/* “目前共有XX張地圖”那行 */
+.map-info {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #333;
+}
  </style>
 </head>
 
@@ -601,14 +628,18 @@
     </div>
   </div>
 
+<!-- 地圖抽籤 -->
 <div class="section">
   <div class="card">
+    <!-- 收合時只顯示這一行 -->
     <div class="panel-head">
       <div class="panel-title">🗺️ 地圖抽籤</div>
+      <button id="toggleMapPanel" class="btn">▼ 展開</button>
+    </div>
 
-      <div class="panel-actions">
-        <button id="toggleMapPanel" class="btn">▼ 展開</button>
-
+    <!-- 展開後才顯示：抽幾張/按鈕/總數/結果 -->
+    <div id="mapPanel" class="map-panel">
+      <div class="map-actions">
         <select id="mapCountSelect" class="select">
           <option value="1">抽 1 張</option>
           <option value="2">抽 2 張</option>
@@ -624,16 +655,13 @@
         <button id="drawMapBtn" class="btn">🎲 抽地圖</button>
         <button id="resetMapBtn" class="btn">♻️ 重製</button>
       </div>
-    </div>
 
-    <!-- 預設收合：你 JS 會切換 open -->
-    <div id="mapPanel" class="collapse-content">
-      <!-- 這行你要「展開後」才顯示 -->
-      <span id="mapInfo" style="display:none;">
+      <!-- 你要的：抽籤前就能看到總地圖數（但要展開才看得到） -->
+      <div id="mapInfo" class="map-info">
         目前共有 <b id="mapTotalCount">0</b> 張地圖
-      </span>
+      </div>
 
-      <div class="smword">圖池為排位競速圖（不含1星地圖）</div>
+      <div class="smword">※ 團池為排位競速圖（不含 1 星地圖）</div>
       <div id="mapResult"></div>
     </div>
   </div>
@@ -1703,23 +1731,16 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
       }
       });
       // ===== 地圖抽籤：收合控制（預設收合） =====
+// ===== 地圖抽籤：收合控制（預設收合）=====
 const mapToggleBtn = document.getElementById("toggleMapPanel");
 const mapPanel = document.getElementById("mapPanel");
-const mapInfo = document.getElementById("mapInfo");
 
-function setMapPanelOpen(open){
+function setMapPanelOpen(open) {
   if (!mapPanel) return;
-
-  // ✅ 只用 class open 控制收合（不要用 display）
-  mapPanel.classList.toggle("open", open);
-
-  // 按鈕文字
+  mapPanel.style.display = open ? "block" : "none";
   if (mapToggleBtn) mapToggleBtn.textContent = open ? "▲ 收合" : "▼ 展開";
 
-  // ✅ 展開才顯示「目前共有XX張地圖」
-  if (mapInfo) mapInfo.style.display = open ? "inline" : "none";
-
-  // ✅ 只在第一次展開時載入（可選）
+  // 展開時先載入一次地圖數量，讓你抽之前就看到「目前共有XX張」
   if (open) {
     loadMaps().catch(console.error);
   }
@@ -1729,7 +1750,7 @@ function setMapPanelOpen(open){
 setMapPanelOpen(false);
 
 mapToggleBtn?.addEventListener("click", () => {
-  const open = !mapPanel?.classList.contains("open");
+  const open = mapPanel.style.display === "none";
   setMapPanelOpen(open);
 });
       // ===== 地圖抽籤：重製結果 =====

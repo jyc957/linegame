@@ -1326,17 +1326,15 @@ function dedupeMaps(maps) {
   if (!box) return;
 
   const { count, total, maxSum } = meta;
-  const limitText = (maxSum === Infinity) ? "不限制" : maxSum;
 
-  // ✅ 標題區：不要再顯示「地圖總數」
+  // 標題：只顯示抽幾張
   box.innerHTML = `
     <div class="item">
       <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
-      <div class="item-time">總難度：${total} / ${limitText}</div>
     </div>
   `;
 
-  // ✅ 列表區：第 1 張 / 第 2 張...
+  // 列表：第 1 張、第 2 張…
   picked.forEach((m, idx) => {
     const div = document.createElement("div");
     div.className = "item";
@@ -1345,19 +1343,14 @@ function dedupeMaps(maps) {
     main.className = "item-main";
     main.textContent = `第 ${idx + 1} 張 ${m.name}`;
 
-    const sub = document.createElement("div");
-    sub.className = "item-sub";
-    sub.textContent = `難度：${m.difficulty ?? 0}`;
-
     div.appendChild(main);
-    div.appendChild(sub);
     box.appendChild(div);
   });
 
-  // ✅ 抽不到符合上限就提示（但仍顯示最接近的一組）
+  // 抽不到符合上限 → 只提示，不顯示數字
   if (maxSum !== Infinity && total > maxSum) {
     showModal(
-      `這次抽不到符合上限的組合（已給你最接近的一組：${total}/${maxSum}）`,
+      "這次抽不到符合條件的組合，已提供最接近的一組",
       { type: "info" }
     );
   }

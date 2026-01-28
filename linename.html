@@ -594,6 +594,9 @@
   <div class="section">
   <div class="top-bar">
     <h2>🗺️ 地圖抽籤</h2>
+    <div class="map-info">
+  目前共有 <span id="mapTotalCount">0</span> 張地圖
+</div>
 
     <select id="mapCountSelect">
       <option value="1">抽 1 張</option>
@@ -602,6 +605,7 @@
       <option value="4">抽 4 張</option>
       <option value="6">抽 6 張</option>
       <option value="8">抽 8 張</option>
+      <option value="10">抽 10 張</option>
       <option value="12">抽 12 張</option>
     </select>
 
@@ -1241,54 +1245,145 @@ async function showFromRankingByGameName(gameName){
     if (statusEl) statusEl.textContent = "排行榜：讀取失敗（請確認試算表為公開 CSV）";
   }
 }
+    // 抽幾張 -> 難度總和上限（固定規則）
+const LIMIT_BY_COUNT = {
+  1: Infinity, // 1 不限制
+  2: 6,
+  3: 10,
+  4: 14,
+  5: 16,
+  6: 20,
+  8: 24,
+  10: 28,
+  12: 32,
+};
 
-    async function loadMaps(){
-  const MAP_CSV =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzrBZKoOZroOfo6ad-tamTCh0PYtfvEixvubyHvL8uo9qmTQZkzbwSOvIoVIjWHmDfv3JlqRUbAyy_/pub?output=csv&gid=575254095";
-
-
-  const res = await fetch(MAP_CSV + "&t=" + Date.now());
-  if(!res.ok) throw new Error("地圖讀取失敗");
-
+    async function loadMaps() {
+  const res = await fetch(MAP_SHEET_URL);
   const text = await res.text();
   const rows = parseCsvRows(text);
 
-  // 跳過表頭，只取第一欄
-  return rows
-    .slice(1)
-    .map(r => (r[0] || "").trim())
-    .filter(Boolean);
-}
-function drawRandomMaps(list, count){
-  const pool = [...list];
-  const result = [];
+  const maps = rows.slice(1)
+    .map(r => ({
+      name: r[0]?.trim(),
+      difficulty: Number(r[1]) || 0
+    }))
+    .filter(m => m.name);
 
-  while(pool.length && result.length < count){
-    const idx = Math.floor(Math.random() * pool.length);
-    result.push(pool.splice(idx, 1)[0]);
-  }
-  return result;
+  // ✅ 顯示總地圖數
+  document.getElementById("mapTotalCount").textContent = maps.length;
+
+  return maps;
+  return dedupeMaps(maps);
 }
-    function renderMapResult(maps){
+    function dedupeMaps(maps){
+  const seen = new Set();
+  const out = [];
+  for (const m of maps){
+    const key = String(m.name || "").trim();
+    if (!key) continue;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(m);
+  }
+  return out;
+}
+function drawRandomMaps(maps, count, maxDifficulty = Infinity) {
+  const MAX_TRY = 500; // 防止卡死
+  let best = null;
+
+  for (let i = 0; i < MAX_TRY; i++) {
+    // 隨機洗牌
+    const shuffled = [...maps].sort(() => Math.random() - 0.5);
+    const picked = shuffled.slice(0, count);
+
+    const totalDifficulty = picked.reduce(
+      (sum, m) => sum + (m.difficulty || 0),
+      0
+    );
+
+    if (totalDifficulty <= maxDifficulty) {
+      return {
+        maps: picked,
+        totalDifficulty
+      };
+    }
+
+    // 記住目前最接近的一組（備用）
+    if (!best || totalDifficulty < best.totalDifficulty) {
+      best = { maps: picked, totalDifficulty };
+    }
+  }
+
+  // ⚠️ 抽不到符合條件的，回傳最接近的一組
+  return best;
+}
+    function renderMapResult(picked, meta){
   const box = document.getElementById("mapResult");
-  box.innerHTML = "";
+  if (!box) return;
 
-  if(!maps.length){
-    box.innerHTML = `<div class="empty-text">沒有抽到地圖</div>`;
-    return;
-  }
+  const { count, total, maxSum, mapTotal } = meta;
+  const limitText = (maxSum === Infinity) ? "不限制" : maxSum;
 
-  maps.forEach((name, idx) => {
+  // 標題區
+  box.innerHTML = `
+    <div class="item">
+      <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
+      <div class="item-sub">地圖總數：${mapTotal} 張</div>
+      <div class="item-time">總難度：${total} / ${limitText}</div>
+    </div>
+  `;
+
+  // 列表區（像目前資料那樣一行一筆）
+  picked.forEach((m, idx) => {
     const div = document.createElement("div");
     div.className = "item";
 
     const main = document.createElement("div");
     main.className = "item-main";
-    main.textContent = `第 ${idx+1} 張：${name}`;
+    main.textContent = `#${idx + 1} ${m.name}`;
+
+    const sub = document.createElement("div");
+    sub.className = "item-sub";
+    sub.textContent = `難度：${m.diff}`;
 
     div.appendChild(main);
+    div.appendChild(sub);
     box.appendChild(div);
   });
+
+  // 如果抽不到符合上限的組合，提示一下（best fallback）
+  if (maxSum !== Infinity && total > maxSum) {
+    showModal(`這次抽不到符合上限的組合（已給你最接近的一組：${total}/${maxSum}）`, { type: "info" });
+  }
+}
+    function shuffleCopy(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function drawRandomMapsWithLimit(maps, count, maxSum){
+  // ✅ 不重複抽（因為是從同一個陣列洗牌後 slice）
+  // ✅ maxSum=Infinity 表示不限制（抽 1 張）
+
+  const tries = 800; // 你想更嚴格就加大
+  let best = null;   // 找不到符合時，回傳最接近的一組（避免抽不到）
+
+  for (let t = 0; t < tries; t++){
+    const cand = shuffleCopy(maps).slice(0, count);
+    const total = cand.reduce((s, x) => s + (Number(x.diff) || 0), 0);
+
+    if (total <= maxSum) return { picked: cand, total };
+
+    // 記錄最接近但超過最少的（fallback）
+    if (!best || total < best.total) best = { picked: cand, total };
+  }
+
+  return best || { picked: [], total: 0 };
 }
     function normalizeNameKey(name) {
   return String(name || "")
@@ -1625,12 +1720,15 @@ function drawRandomMaps(list, count){
     loadLastUpdateTime();
     loadRanking();
 
-    const drawBtn = document.getElementById("drawMapBtn");
-    drawBtn?.addEventListener("click", async () => {
+    document.getElementById("drawMapBtn").addEventListener("click", async () => {
   try {
-    const count = Number(
-      document.getElementById("mapCountSelect").value
-    );
+    const count = Number(document.getElementById("mapCountSelect").value);
+
+    const maxSum = LIMIT_BY_COUNT[count];
+    if (maxSum === undefined) {
+      showModal(`沒有設定「抽 ${count} 張」的難度上限`, { type: "error" });
+      return;
+    }
 
     const maps = await loadMaps();
     if (!maps.length) {
@@ -1638,8 +1736,10 @@ function drawRandomMaps(list, count){
       return;
     }
 
-    const result = drawRandomMaps(maps, count);
-    renderMapResult(result);
+    const { picked, total } = drawRandomMapsWithLimit(maps, count, maxSum);
+
+    // ✅ 顯示（你可以依自己排版改 render）
+    renderMapResult(picked, { count, total, maxSum, mapTotal: maps.length });
 
   } catch (e) {
     console.error(e);

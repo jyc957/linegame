@@ -591,6 +591,26 @@
     <div id="listContainer"></div>
   </div>
 
+  <div class="section">
+  <div class="top-bar">
+    <h2>🗺️ 地圖抽籤</h2>
+
+    <select id="mapCountSelect">
+      <option value="1">抽 1 張</option>
+      <option value="2">抽 2 張</option>
+      <option value="3">抽 3 張</option>
+      <option value="4">抽 4 張</option>
+      <option value="6">抽 6 張</option>
+      <option value="8">抽 8 張</option>
+      <option value="12">抽 12 張</option>
+    </select>
+
+    <button id="drawMapBtn">🎲 抽地圖</button>
+  </div>
+
+  <div id="mapResult" class="list-container"></div>
+</div>
+
   <!-- 技巧教學（白底 + 可收折 + 滑到自動播放） -->
   <div class="section">
     <div class="top-bar">
@@ -1221,6 +1241,55 @@ async function showFromRankingByGameName(gameName){
     if (statusEl) statusEl.textContent = "排行榜：讀取失敗（請確認試算表為公開 CSV）";
   }
 }
+
+    async function loadMaps(){
+  const MAP_CSV =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzrBZKoOZroOfo6ad-tamTCh0PYtfvEixvubyHvL8uo9qmTQZkzbwSOvIoVIjWHmDfv3JlqRUbAyy_/pub?output=csv&gid=575254095";
+
+
+  const res = await fetch(MAP_CSV + "&t=" + Date.now());
+  if(!res.ok) throw new Error("地圖讀取失敗");
+
+  const text = await res.text();
+  const rows = parseCsvRows(text);
+
+  // 跳過表頭，只取第一欄
+  return rows
+    .slice(1)
+    .map(r => (r[0] || "").trim())
+    .filter(Boolean);
+}
+function drawRandomMaps(list, count){
+  const pool = [...list];
+  const result = [];
+
+  while(pool.length && result.length < count){
+    const idx = Math.floor(Math.random() * pool.length);
+    result.push(pool.splice(idx, 1)[0]);
+  }
+  return result;
+}
+    function renderMapResult(maps){
+  const box = document.getElementById("mapResult");
+  box.innerHTML = "";
+
+  if(!maps.length){
+    box.innerHTML = `<div class="empty-text">沒有抽到地圖</div>`;
+    return;
+  }
+
+  maps.forEach((name, idx) => {
+    const div = document.createElement("div");
+    div.className = "item";
+
+    const main = document.createElement("div");
+    main.className = "item-main";
+    main.textContent = `第 ${idx+1} 張：${name}`;
+
+    div.appendChild(main);
+    box.appendChild(div);
+  });
+}
     function normalizeNameKey(name) {
   return String(name || "")
     .trim()
@@ -1555,6 +1624,28 @@ async function showFromRankingByGameName(gameName){
     updateTodayViewCount();
     loadLastUpdateTime();
     loadRanking();
+
+    const drawBtn = document.getElementById("drawMapBtn");
+    drawBtn?.addEventListener("click", async () => {
+  try {
+    const count = Number(
+      document.getElementById("mapCountSelect").value
+    );
+
+    const maps = await loadMaps();
+    if (!maps.length) {
+      showModal("沒有地圖資料", { type: "error" });
+      return;
+    }
+
+    const result = drawRandomMaps(maps, count);
+    renderMapResult(result);
+
+  } catch (e) {
+    console.error(e);
+    showModal("地圖抽籤失敗", { type: "error" });
+  }
+});
 
   </script>
   <!-- ✅ 自訂提示視窗 -->

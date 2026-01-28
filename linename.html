@@ -1298,41 +1298,12 @@ function dedupeMaps(maps) {
   }
   return out;
 }
-function drawRandomMaps(maps, count, maxDifficulty = Infinity) {
-  const MAX_TRY = 500; // 防止卡死
-  let best = null;
 
-  for (let i = 0; i < MAX_TRY; i++) {
-    // 隨機洗牌
-    const shuffled = [...maps].sort(() => Math.random() - 0.5);
-    const picked = shuffled.slice(0, count);
-
-    const totalDifficulty = picked.reduce(
-      (sum, m) => sum + (m.difficulty || 0),
-      0
-    );
-
-    if (totalDifficulty <= maxDifficulty) {
-      return {
-        maps: picked,
-        totalDifficulty
-      };
-    }
-
-    // 記住目前最接近的一組（備用）
-    if (!best || totalDifficulty < best.totalDifficulty) {
-      best = { maps: picked, totalDifficulty };
-    }
-  }
-
-  // ⚠️ 抽不到符合條件的，回傳最接近的一組
-  return best;
-}
     function renderMapResult(picked, meta){
   const box = document.getElementById("mapResult");
   if (!box) return;
 
-  const { count, total, maxSum, mapTotal } = meta;
+  const { count, total, maxSum } = meta;
   const limitText = (maxSum === Infinity) ? "不限制" : maxSum;
 
   // 標題區
@@ -1353,7 +1324,7 @@ function drawRandomMaps(maps, count, maxDifficulty = Infinity) {
 
     const sub = document.createElement("div");
     sub.className = "item-sub";
-    sub.textContent = `難度：${m.diff}`;
+    sub.textContent = `難度：${m.difficulty}`;
 
     div.appendChild(main);
     div.appendChild(sub);
@@ -1383,7 +1354,7 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
 
   for (let t = 0; t < tries; t++){
     const cand = shuffleCopy(maps).slice(0, count);
-    const total = cand.reduce((s, x) => s + (Number(x.diff) || 0), 0);
+    const total = cand.reduce((s, x) => s + (Number(x.difficulty) || 0), 0);
 
     if (total <= maxSum) return { picked: cand, total };
 
@@ -1741,6 +1712,11 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
     document.getElementById("drawMapBtn").addEventListener("click", async () => {
   try {
     const count = Number(document.getElementById("mapCountSelect").value);
+    const maxSum = LIMIT_BY_COUNT[count];
+    if (maxSum === undefined) {
+      showModal(`沒有設定「抽 ${count} 張」的難度上限`, { type: "error" });
+      return;
+    }
 
     const maps = await loadMaps();
     if (!maps.length) {
@@ -1750,8 +1726,12 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
 
     const { picked, total } = drawRandomMapsWithLimit(maps, count, maxSum);
 
-    // ✅ 顯示（你可以依自己排版改 render）
-    renderMapResult(picked, { count, total, maxSum, mapTotal: maps.length });
+    renderMapResult(picked, {
+      count,
+      total,
+      maxSum,
+      mapTotal: maps.length, // 就算不顯示也沒差
+    });
 
   } catch (e) {
     console.error(e);

@@ -1321,19 +1321,22 @@ function dedupeMaps(maps) {
   return out;
 }
 
-    function renderMapResult(picked, meta){
+    function renderMapResult(picked, meta) {
   const box = document.getElementById("mapResult");
   if (!box) return;
 
   const { count, total, maxSum } = meta;
   const limitText = (maxSum === Infinity) ? "不限制" : maxSum;
 
-  // 標題區
-  box.innerHTML =
-  `<div class="item">
-     <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
+  // ✅ 標題區：不要再顯示「地圖總數」
+  box.innerHTML = `
+    <div class="item">
+      <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
+      <div class="item-time">總難度：${total} / ${limitText}</div>
+    </div>
+  `;
 
-  // 列表區（像目前資料那樣一行一筆）
+  // ✅ 列表區：第 1 張 / 第 2 張...
   picked.forEach((m, idx) => {
     const div = document.createElement("div");
     div.className = "item";
@@ -1344,16 +1347,19 @@ function dedupeMaps(maps) {
 
     const sub = document.createElement("div");
     sub.className = "item-sub";
-    sub.textContent = `難度：${m.difficulty}`;
+    sub.textContent = `難度：${m.difficulty ?? 0}`;
 
     div.appendChild(main);
     div.appendChild(sub);
     box.appendChild(div);
   });
 
-  // 如果抽不到符合上限的組合，提示一下（best fallback）
+  // ✅ 抽不到符合上限就提示（但仍顯示最接近的一組）
   if (maxSum !== Infinity && total > maxSum) {
-    showModal(`這次抽不到符合上限的組合（已給你最接近的一組：${total}/${maxSum}）`, { type: "info" });
+    showModal(
+      `這次抽不到符合上限的組合（已給你最接近的一組：${total}/${maxSum}）`,
+      { type: "info" }
+    );
   }
 }
     function shuffleCopy(arr){

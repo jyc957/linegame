@@ -488,7 +488,6 @@
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:10px;
 }
 .panel-actions{
   display:flex;
@@ -502,19 +501,27 @@
   margin-top: 12px;
 }
 
-/* 展開後的控制區：全部換行(直排) */
-.map-actions {
-  display: flex;
-  flex-direction: column;   /* ✅ 一個一行 */
-  gap: 10px;
-  align-items: flex-start;
-}
-
 /* 下拉與按鈕在手機上看起來舒服一點 */
 .map-actions .select,
 .map-actions .btn {
   width: 100%;
   max-width: 220px; /* 你想更寬就調大或拿掉 */
+}
+    /* 整個控制區：直排 */
+.map-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 第二行：抽地圖 / 重製 左右 */
+.map-btn-row {
+  display: flex;
+  gap: 10px;
+}
+
+.map-btn-row .btn {
+  flex: 1;          /* 左右平均 */
 }
 
 /* “目前共有XX張地圖”那行 */
@@ -652,9 +659,11 @@
           <option value="12">抽 12 張</option>
         </select>
 
-        <button id="drawMapBtn" class="btn">🎲 抽地圖</button>
-        <button id="resetMapBtn" class="btn">♻️ 重製</button>
-      </div>
+        <div class="map-btn-row">
+    <button id="drawMapBtn" class="btn">🎲 抽地圖</button>
+    <button id="resetMapBtn" class="btn">♻️ 重新整理</button>
+  </div>
+</div>
 
       <!-- 你要的：抽籤前就能看到總地圖數（但要展開才看得到） -->
       <div id="mapInfo" class="map-info">

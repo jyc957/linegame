@@ -627,7 +627,7 @@
     </div>
 
     <!-- 預設收合：你 JS 會切換 open -->
-    <div id="mapPanel" class="panel">
+    <div id="mapPanel" class="collapse-content">
       <!-- 這行你要「展開後」才顯示 -->
       <span id="mapInfo" style="display:none;">
         目前共有 <b id="mapTotalCount">0</b> 張地圖
@@ -1710,14 +1710,17 @@ const mapInfo = document.getElementById("mapInfo");
 
 function setMapPanelOpen(open){
   if (!mapPanel) return;
+
+  // ✅ 只用 class open 控制收合（不要用 display）
   mapPanel.classList.toggle("open", open);
-  mapPanel.style.display = open ? "block" : "none";
+
+  // 按鈕文字
   if (mapToggleBtn) mapToggleBtn.textContent = open ? "▲ 收合" : "▼ 展開";
 
-  // ✅ 展開後才顯示「目前共有XX張地圖」
+  // ✅ 展開才顯示「目前共有XX張地圖」
   if (mapInfo) mapInfo.style.display = open ? "inline" : "none";
 
-  // ✅ 展開時就先抓一次地圖數（讓你不用抽就看到）
+  // ✅ 只在第一次展開時載入（可選）
   if (open) {
     loadMaps().catch(console.error);
   }
@@ -1727,7 +1730,7 @@ function setMapPanelOpen(open){
 setMapPanelOpen(false);
 
 mapToggleBtn?.addEventListener("click", () => {
-  const open = !(mapPanel?.classList.contains("open"));
+  const open = !mapPanel?.classList.contains("open");
   setMapPanelOpen(open);
 });
       // ===== 地圖抽籤：重製結果 =====

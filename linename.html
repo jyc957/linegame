@@ -1259,27 +1259,36 @@ const LIMIT_BY_COUNT = {
 };
 
     async function loadMaps() {
-  const res = await fetch(MAP_SHEET_URL);
+  const res = await fetch(
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzrBZKoOZroOfo6ad-tamTCh0PYtfvEixvubyHvL8uo9qmTQZkzbwSOvIoVIjWHmDfv3JlqRUbAyy_/pub?gid=575254095&single=true&output=csv"
+  );
+
+  if (!res.ok) {
+    throw new Error("地圖 CSV 讀取失敗：" + res.status);
+  }
+
   const text = await res.text();
   const rows = parseCsvRows(text);
 
   const maps = rows.slice(1)
     .map(r => ({
-      name: r[0]?.trim(),
+      name: (r[0] || "").trim(),
       difficulty: Number(r[1]) || 0
     }))
     .filter(m => m.name);
 
   // ✅ 顯示總地圖數
-  document.getElementById("mapTotalCount").textContent = maps.length;
+  const el = document.getElementById("mapTotalCount");
+  if (el) el.textContent = maps.length;
 
-  return maps;
+  // ✅ 回傳「去重複後」的地圖
   return dedupeMaps(maps);
 }
-    function dedupeMaps(maps){
+
+function dedupeMaps(maps) {
   const seen = new Set();
   const out = [];
-  for (const m of maps){
+  for (const m of maps) {
     const key = String(m.name || "").trim();
     if (!key) continue;
     if (seen.has(key)) continue;

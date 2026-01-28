@@ -479,6 +479,23 @@
 .ui-modal__btn:active{
   transform: scale(.98);
 }
+  /* 地圖抽籤 panel：預設收合 */
+#mapPanel { display: none; }
+#mapPanel.open { display: block; }
+
+/* 讓表頭排版舒服一點（若你已有類似就不用重複） */
+.panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.panel-actions{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+}
  </style>
 </head>
 
@@ -593,27 +610,40 @@
 
   <div class="section">
   <div class="top-bar">
-    <h2>🗺️ 地圖抽籤</h2>
-    <div class="map-info">
-  目前共有 <span id="mapTotalCount">0</span> 張地圖
-</div>
-    <div class="smword">圖池為排位競速圖（不含1星地圖）”</div>
+    <!-- 地圖抽籤（收合區） -->
+<div class="card">
+  <div class="panel-head">
+    <div class="panel-title">🗺️ 地圖抽籤</div>
 
-    <select id="mapCountSelect">
-      <option value="1">抽 1 張</option>
-      <option value="2">抽 2 張</option>
-      <option value="3">抽 3 張</option>
-      <option value="4">抽 4 張</option>
-      <option value="6">抽 6 張</option>
-      <option value="8">抽 8 張</option>
-      <option value="10">抽 10 張</option>
-      <option value="12">抽 12 張</option>
-    </select>
+    <div class="panel-actions">
+      <!-- 收合鍵：預設收合，所以文字是「展開」 -->
+      <button id="toggleMapPanel" class="btn">▼ 展開</button>
 
-    <button id="drawMapBtn">🎲 抽地圖</button>
+      <select id="mapCountSelect" class="select">
+        <option value="1">抽 1 張</option>
+        <option value="2">抽 2 張</option>
+        <option value="3">抽 3 張</option>
+        <option value="4">抽 4 張</option>
+        <option value="5">抽 5 張</option>
+        <option value="6">抽 6 張</option>
+        <option value="8" selected>抽 8 張</option>
+        <option value="10">抽 10 張</option>
+        <option value="12">抽 12 張</option>
+      </select>
+
+      <button id="drawMapBtn" class="btn">🎲 抽地圖</button>
+      <button id="resetMapBtn" class="btn">♻️ 重製</button>
+    </div>
   </div>
 
-  <div id="mapResult" class="list-container"></div>
+  <!-- 展開後才看得到 -->
+  <div id="mapPanel" class="panel">
+    <div class="map-meta">
+      <span id="mapInfo" style="display:none;">目前共有 <b id="mapTotalCount">0</b> 張地圖</span>
+    </div>
+   <div class="smword">圖池為排位競速圖（不含1星地圖）”</div>
+    <div id="mapResult"></div>
+  </div>
 </div>
 
   <!-- 技巧教學（白底 + 可收折 + 滑到自動播放） -->
@@ -1310,8 +1340,6 @@ function dedupeMaps(maps) {
   box.innerHTML =
   `<div class="item">
      <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
-     <div class="item-time">總難度：${total} / ${limitText}</div>
-   </div>`;
 
   // 列表區（像目前資料那樣一行一筆）
   picked.forEach((m, idx) => {
@@ -1320,7 +1348,7 @@ function dedupeMaps(maps) {
 
     const main = document.createElement("div");
     main.className = "item-main";
-    main.textContent = `#${idx + 1} ${m.name}`;
+    main.textContent = `第 ${idx + 1} 張 ${m.name}`;
 
     const sub = document.createElement("div");
     sub.className = "item-sub";
@@ -1682,7 +1710,47 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
         refreshBtn.disabled = false;
         refreshBtn.textContent = "🔄 刷新成績";
       }
-    });
+      });
+      // ===== 地圖抽籤：收合控制（預設收合） =====
+const mapToggleBtn = document.getElementById("toggleMapPanel");
+const mapPanel = document.getElementById("mapPanel");
+const mapInfo = document.getElementById("mapInfo");
+
+function setMapPanelOpen(open){
+  if (!mapPanel) return;
+  mapPanel.classList.toggle("open", open);
+  mapPanel.style.display = open ? "block" : "none";
+  if (mapToggleBtn) mapToggleBtn.textContent = open ? "▲ 收合" : "▼ 展開";
+
+  // ✅ 展開後才顯示「目前共有XX張地圖」
+  if (mapInfo) mapInfo.style.display = open ? "inline" : "none";
+
+  // ✅ 展開時就先抓一次地圖數（讓你不用抽就看到）
+  if (open) {
+    loadMaps().catch(console.error);
+  }
+}
+
+// 進頁面：預設收合
+setMapPanelOpen(false);
+
+mapToggleBtn?.addEventListener("click", () => {
+  const open = !(mapPanel?.classList.contains("open"));
+  setMapPanelOpen(open);
+});
+      // ===== 地圖抽籤：重製結果 =====
+const resetMapBtn = document.getElementById("resetMapBtn");
+
+function resetMapResultUI(){
+  const box = document.getElementById("mapResult");
+  if (box) box.innerHTML = "";
+}
+
+resetMapBtn?.addEventListener("click", () => {
+  resetMapResultUI();
+  // 可選：給個提示，不要就刪掉這行
+  // showToast("已清空抽籤結果");
+});
 
     });
 
@@ -1708,7 +1776,7 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
     // showModal("地圖清單讀取失敗", { type: "error" });
   }
 })();
-
+   
     document.getElementById("drawMapBtn").addEventListener("click", async () => {
   try {
     const count = Number(document.getElementById("mapCountSelect").value);

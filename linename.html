@@ -537,6 +537,13 @@
   color: #555;
   font-weight: bold;
 }
+    .skip-anim{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:14px;
+  color:#333;
+}
  </style>
 </head>
 
@@ -669,6 +676,10 @@
         <div class="map-btn-row">
     <button id="drawMapBtn" class="btn">🎲 抽地圖</button>
     <button id="resetMapBtn" class="btn">♻️ 重新整理</button>
+          <label class="skip-anim">
+  <input type="checkbox" id="skipMapAnim">
+  跳過動畫
+</label>
   </div>
 </div>
 
@@ -1435,6 +1446,75 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
 
   return best || { picked: [], total: 0 };
 }
+    function animateMapDraw(maps, count, ms = 1200, tick = 90){
+  const box = document.getElementById("mapResult");
+  if (!box) return Promise.resolve();
+
+  const start = Date.now();
+
+  return new Promise((resolve) => {
+    const timer = setInterval(() => {
+      const fake = shuffleCopy(maps).slice(0, count);
+
+      // 畫面：只顯示名稱，不顯示難度（照你現在的需求）
+      box.innerHTML = `
+        <div class="item">
+          <div class="item-main">抽籤中...</div>
+        </div>
+      `;
+
+      fake.forEach((m, idx) => {
+        const div = document.createElement("div");
+        div.className = "item";
+
+        const main = document.createElement("div");
+        main.className = "item-main";
+        main.textContent = `第 ${idx + 1} 張 ${m.name}`;
+
+        div.appendChild(main);
+        box.appendChild(div);
+      });
+
+      if (Date.now() - start >= ms){
+        clearInterval(timer);
+        resolve();
+      }
+    }, tick);
+  });
+}
+    function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+/**
+ * 逐張揭曉（不顯示難度版）
+ * picked: 真正抽到的陣列 [{name, difficulty...}, ...]
+ */
+async function revealMapsOneByOne(picked, count, delayMs = 350){
+  const box = document.getElementById("mapResult");
+  if (!box) return;
+
+  // 先清空並放標題
+  box.innerHTML = `
+    <div class="item">
+      <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
+    </div>
+  `;
+
+  for (let i = 0; i < picked.length; i++){
+    const m = picked[i];
+
+    const div = document.createElement("div");
+    div.className = "item";
+
+    const main = document.createElement("div");
+    main.className = "item-main";
+    main.textContent = `第 ${i + 1} 張 ${m.name}`;
+
+    div.appendChild(main);
+    box.appendChild(div);
+
+    await sleep(delayMs);
+  }
+}
     function normalizeNameKey(name) {
   return String(name || "")
     .trim()
@@ -1761,34 +1841,42 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
 const mapToggleBtn = document.getElementById("toggleMapPanel");
 const mapPanel = document.getElementById("mapPanel");
       drawMapBtn?.addEventListener("click", async () => {
-
-  // 1️⃣ 清掉上一次結果
-  resetMapResultUI();
-
-  // 2️⃣ 顯示「載入中...」
-  showMapLoading(true);
-
-  // 3️⃣ 讓畫面有時間刷新（很重要）
-  await new Promise(r => setTimeout(r, 100));
-
   try {
+    if (typeof resetMapResultUI === "function") {
+  resetMapResultUI();
+}
+
+    showMapLoading?.(true);
+    await new Promise(r => setTimeout(r, 50)); // 讓「載入中」先畫出來
+
     const count = Number(mapCountSelect.value);
+    const maxSum = LIMIT_BY_COUNT[count] ?? Infinity;
+
     const maps = await loadMaps();
+    if (!maps.length){
+      showModal?.("沒有地圖資料", { type: "error" });
+      return;
+    }
 
-    const result = drawRandomMapsWithLimit(
-      maps,
-      count,
-      LIMIT_BY_COUNT[count] ?? Infinity
-    );
+    // ✅ 先把「真正結果」算出來
+    const result = drawRandomMapsWithLimit(maps, count, maxSum);
+    const picked = result.picked || [];
 
-    renderMapResult(result.picked, { count });
+    const skip = document.getElementById("skipMapAnim")?.checked;
 
-  } catch (err) {
+    if (skip){
+      // 直接顯示（不用動畫）
+      revealMapsOneByOne(picked, count, 0); // 0ms = 等同一次出完
+    } else {
+      // ✅ 一張一張揭曉
+      await revealMapsOneByOne(picked, count, 350);
+    }
+
+  } catch (err){
     console.error(err);
-    alert("抽籤失敗，請稍後再試");
+    showModal?.("抽取失敗，請稍後再試", { type: "error" });
   } finally {
-    // 4️⃣ 一定要關掉 loading
-    showMapLoading(false);
+    showMapLoading?.(false);
   }
 });
 

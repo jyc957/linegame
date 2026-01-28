@@ -602,49 +602,48 @@
   </div>
 
   <!-- 顯示結果 -->
-  <div class="section">
-    <h2 id="listTitle">目前資料（尚未載入）</h2>
-    <div id="resultCount" style="font-size:13px; color:#555; margin-top:4px;"></div>
-    <div id="listContainer"></div>
-  </div>
-    <!-- 地圖抽籤（收合區） -->
-    <div class="section">
-    <div class="top-bar">
-<div class="card">
-  <div class="panel-head">
-    <div class="panel-title">🗺️ 地圖抽籤</div>
+  <!-- 地圖抽籤（收合區） -->
+<div class="section">
 
-    <div class="panel-actions">
-      <!-- 收合鍵：預設收合，所以文字是「展開」 -->
-      <button id="toggleMapPanel" class="btn">▼ 展開</button>
+  <!-- 如果你想保留 top-bar（可有可無） -->
+  <div class="top-bar"></div>
 
-      <select id="mapCountSelect" class="select">
-        <option value="1">抽 1 張</option>
-        <option value="2">抽 2 張</option>
-        <option value="3">抽 3 張</option>
-        <option value="4">抽 4 張</option>
-        <option value="5">抽 5 張</option>
-        <option value="6">抽 6 張</option>
-        <option value="8" selected>抽 8 張</option>
-        <option value="10">抽 10 張</option>
-        <option value="12">抽 12 張</option>
-      </select>
+  <div class="card">
+    <div class="panel-head">
+      <div class="panel-title">🗺️ 地圖抽籤</div>
 
-      <button id="drawMapBtn" class="btn">🎲 抽地圖</button>
-      <button id="resetMapBtn" class="btn">♻️ 重製</button>
+      <div class="panel-actions">
+        <button id="toggleMapPanel" class="btn">▼ 展開</button>
+
+        <select id="mapCountSelect" class="select">
+          <option value="1">抽 1 張</option>
+          <option value="2">抽 2 張</option>
+          <option value="3">抽 3 張</option>
+          <option value="4">抽 4 張</option>
+          <option value="5">抽 5 張</option>
+          <option value="6">抽 6 張</option>
+          <option value="8" selected>抽 8 張</option>
+          <option value="10">抽 10 張</option>
+          <option value="12">抽 12 張</option>
+        </select>
+
+        <button id="drawMapBtn" class="btn">🎲 抽地圖</button>
+        <button id="resetMapBtn" class="btn">♻️ 重製</button>
+      </div>
+    </div>
+
+    <div id="mapPanel" class="panel">
+      <div class="map-meta">
+        <span id="mapInfo" style="display:none;">
+          目前共有 <b id="mapTotalCount">0</b> 張地圖
+        </span>
+      </div>
+      <div class="smword">圖池為排位競速圖（不含1星地圖）”</div>
+      <div id="mapResult"></div>
     </div>
   </div>
 
-  <!-- 展開後才看得到 -->
-  <div id="mapPanel" class="panel">
-    <div class="map-meta">
-      <span id="mapInfo" style="display:none;">目前共有 <b id="mapTotalCount">0</b> 張地圖</span>
-    </div>
-   <div class="smword">圖池為排位競速圖（不含1星地圖）”</div>
-    <div id="mapResult"></div>
-  </div>
 </div>
-
   <!-- 技巧教學（白底 + 可收折 + 滑到自動播放） -->
   <div class="section">
     <div class="top-bar">

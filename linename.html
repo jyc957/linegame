@@ -597,6 +597,7 @@
     <div class="map-info">
   目前共有 <span id="mapTotalCount">0</span> 張地圖
 </div>
+    <div class="smword">圖池為排位競速圖（不含1星地圖）”</div>
 
     <select id="mapCountSelect">
       <option value="1">抽 1 張</option>
@@ -1335,13 +1336,11 @@ function drawRandomMaps(maps, count, maxDifficulty = Infinity) {
   const limitText = (maxSum === Infinity) ? "不限制" : maxSum;
 
   // 標題區
-  box.innerHTML = `
-    <div class="item">
-      <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
-      <div class="item-sub">地圖總數：${mapTotal} 張</div>
-      <div class="item-time">總難度：${total} / ${limitText}</div>
-    </div>
-  `;
+  box.innerHTML =
+  `<div class="item">
+     <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
+     <div class="item-time">總難度：${total} / ${limitText}</div>
+   </div>`;
 
   // 列表區（像目前資料那樣一行一筆）
   picked.forEach((m, idx) => {
@@ -1728,16 +1727,20 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
     updateTodayViewCount();
     loadLastUpdateTime();
     loadRanking();
+    // 進頁面先顯示目前地圖總數（不抽，只更新 XX 張）
+(async () => {
+  try {
+    await loadMaps(); // loadMaps 裡面會更新 mapTotalCount
+  } catch (e) {
+    console.error(e);
+    // 你想要的話也可以顯示成「讀取失敗」
+    // showModal("地圖清單讀取失敗", { type: "error" });
+  }
+})();
 
     document.getElementById("drawMapBtn").addEventListener("click", async () => {
   try {
     const count = Number(document.getElementById("mapCountSelect").value);
-
-    const maxSum = LIMIT_BY_COUNT[count];
-    if (maxSum === undefined) {
-      showModal(`沒有設定「抽 ${count} 張」的難度上限`, { type: "error" });
-      return;
-    }
 
     const maps = await loadMaps();
     if (!maps.length) {

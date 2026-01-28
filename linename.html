@@ -606,8 +606,8 @@
 <div class="section">
 
   <!-- 如果你想保留 top-bar（可有可無） -->
-  <div class="top-bar"></div>
-
+  <!-- 地圖抽籤（收合區） -->
+<div class="section">
   <div class="card">
     <div class="panel-head">
       <div class="panel-title">🗺️ 地圖抽籤</div>
@@ -632,17 +632,17 @@
       </div>
     </div>
 
+    <!-- 預設收合：你 JS 會切換 open -->
     <div id="mapPanel" class="panel">
-      <div class="map-meta">
-        <span id="mapInfo" style="display:none;">
-          目前共有 <b id="mapTotalCount">0</b> 張地圖
-        </span>
-      </div>
-      <div class="smword">圖池為排位競速圖（不含1星地圖）”</div>
+      <!-- 這行你要「展開後」才顯示 -->
+      <span id="mapInfo" style="display:none;">
+        目前共有 <b id="mapTotalCount">0</b> 張地圖
+      </span>
+
+      <div class="smword">圖池為排位競速圖（不含1星地圖）</div>
       <div id="mapResult"></div>
     </div>
   </div>
-
 </div>
   <!-- 技巧教學（白底 + 可收折 + 滑到自動播放） -->
   <div class="section">

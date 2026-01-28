@@ -1769,7 +1769,7 @@ const mapPanel = document.getElementById("mapPanel");
   showMapLoading(true);
 
   // 3️⃣ 讓畫面有時間刷新（很重要）
-  await new Promise(r => setTimeout(r, 200));
+  await new Promise(r => setTimeout(r, 100));
 
   try {
     const count = Number(mapCountSelect.value);

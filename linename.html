@@ -564,6 +564,17 @@
   font-size:17px;
   padding:10px 12px;
 }
+    /* 抽籤結果：新卡片從下往上滑入 */
+.reveal-item {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.reveal-item.is-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: transform 240ms ease, opacity 240ms ease;
+}
  </style>
 </head>
 
@@ -1404,38 +1415,36 @@ function dedupeMaps(maps) {
   el.style.display = show ? "block" : "none";
 }
 
-    function renderMapResult(picked, meta) {
+    async function revealMapsOneByOne(picked, count, delay = 350) {
   const box = document.getElementById("mapResult");
   if (!box) return;
 
-  const { count, total, maxSum } = meta;
+  // 先清空
+  box.innerHTML = "";
 
-  // 標題：只顯示抽幾張
-  box.innerHTML = `
-    <div class="item">
-      <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
-    </div>
-  `;
+  // 標題（你目前是要保留標題就留，不要就刪）
+  const title = document.createElement("div");
+  title.className = "item";
+  title.innerHTML = `<div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>`;
+  box.appendChild(title);
 
-  // 列表：第 1 張、第 2 張…
-  picked.forEach((m, idx) => {
+  for (let i = 0; i < picked.length; i++) {
+    const m = picked[i];
+
     const div = document.createElement("div");
-    div.className = "item";
+    div.className = "item reveal-item";
+    div.innerHTML = `
+      <div class="item-main">第 ${i + 1} 張 ${m.name}</div>
+    `;
 
-    const main = document.createElement("div");
-    main.className = "item-main";
-    main.textContent = `第 ${idx + 1} 張 ${m.name}`;
+    // ✅ 疊積木效果：每次都插在「標題」下面（最上方）
+    // 這樣新的一張會在上面，舊的往下堆
+    box.insertBefore(div, box.children[1] || null);
 
-    div.appendChild(main);
-    box.appendChild(div);
-  });
+    // ✅ 觸發動畫（先插入，再下一拍加 class）
+    requestAnimationFrame(() => div.classList.add("is-in"));
 
-  // 抽不到符合上限 → 只提示，不顯示數字
-  if (maxSum !== Infinity && total > maxSum) {
-    showModal(
-      "這次抽不到符合條件的組合，已提供最接近的一組",
-      { type: "info" }
-    );
+    if (delay > 0) await new Promise(r => setTimeout(r, delay));
   }
 }
     function shuffleCopy(arr){

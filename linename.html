@@ -1522,7 +1522,7 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
  * 逐張揭曉（不顯示難度版）
  * picked: 真正抽到的陣列 [{name, difficulty...}, ...]
  */
-    async function revealMapsStacked(picked, count, delayMs = 280) {
+    async function revealMapsStacked(picked, count, delayMs = 400) {
   const box = document.getElementById("mapResult");
   if (!box) return;
 

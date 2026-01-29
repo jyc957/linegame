@@ -537,7 +537,19 @@
   color: #555;
   font-weight: bold;
 }
-    .skip-anim{
+    
+/* 抽籤動畫：由下往上滑入、像堆積木一樣往下堆 */
+#mapResult .item.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  will-change: transform, opacity;
+}
+#mapResult .item.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: transform .28s ease-out, opacity .28s ease-out;
+}
+.skip-anim{
   display:flex;
   align-items:center;
   gap:8px;
@@ -999,9 +1011,9 @@ function closeModal() {
   document.body.style.overflow = "";
 }
 
-uiModalOk.addEventListener("click", closeModal);
-uiModalX.addEventListener("click", closeModal);
-uiModal.addEventListener("click", (e) => {
+uiModalOk?.addEventListener("click", closeModal);
+uiModalX?.addEventListener("click", closeModal);
+uiModal?.addEventListener("click", (e) => {
   if (e.target && e.target.dataset && e.target.dataset.close) closeModal();
 });
 window.addEventListener("keydown", (e) => {
@@ -1582,6 +1594,42 @@ async function revealMapsOneByOne(picked, count, delayMs = 350){
     await sleep(delayMs);
   }
 }
+
+
+/**
+ * 逐張揭曉（動畫版）：每一張由下往上滑入，然後往下堆疊
+ * picked: [{name, ...}, ...]
+ */
+async function revealMapsStacked(picked, count, delayMs = 350) {
+  const box = document.getElementById("mapResult");
+  if (!box) return;
+
+  // 先清空並放標題
+  box.innerHTML = `
+    <div class="item">
+      <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
+    </div>
+  `;
+
+  for (let i = 0; i < picked.length; i++) {
+    const m = picked[i];
+
+    const div = document.createElement("div");
+    div.className = "item reveal";
+
+    const main = document.createElement("div");
+    main.className = "item-main";
+    main.textContent = `第 ${i + 1} 張 ${m.name}`;
+
+    div.appendChild(main);
+    box.appendChild(div);
+
+    // 觸發 transition（下一幀再加 class）
+    requestAnimationFrame(() => div.classList.add("in"));
+
+    await sleep(delayMs);
+  }
+}
     function normalizeNameKey(name) {
   return String(name || "")
     .trim()
@@ -2010,35 +2058,11 @@ resetMapBtn?.addEventListener("click", () => {
   }
 })();
    
-    document.getElementById("drawMapBtn").addEventListener("click", async () => {
-  try {
-    const count = Number(document.getElementById("mapCountSelect").value);
-    const maxSum = LIMIT_BY_COUNT[count];
-    if (maxSum === undefined) {
-      showModal(`沒有設定「抽 ${count} 張」的難度上限`, { type: "error" });
-      return;
-    }
+    
 
-    const maps = await loadMaps();
-    if (!maps.length) {
-      showModal("沒有地圖資料", { type: "error" });
-      return;
-    }
+/* (removed duplicate drawMapBtn listener) */
 
-    const { picked, total } = drawRandomMapsWithLimit(maps, count, maxSum);
 
-    renderMapResult(picked, {
-      count,
-      total,
-      maxSum,
-      mapTotal: maps.length, // 就算不顯示也沒差
-    });
-
-  } catch (e) {
-    console.error(e);
-    showModal("地圖抽籤失敗", { type: "error" });
-  }
-});
 
   </script>
   <!-- ✅ 自訂提示視窗 -->

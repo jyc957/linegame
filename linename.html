@@ -1943,6 +1943,7 @@ const mapPanel = document.getElementById("mapPanel");
       renderMapResult(picked, { count });
     } else {
       // ✅ 有動畫：由下往上滑入、疊積木
+      console.log("use stacked anim");
       await revealMapsStacked(picked, count, 280);
     }
   } catch (err) {

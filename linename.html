@@ -537,19 +537,7 @@
   color: #555;
   font-weight: bold;
 }
-    
-/* 抽籤動畫：由下往上滑入、像堆積木一樣往下堆 */
-#mapResult .item.reveal {
-  opacity: 0;
-  transform: translateY(18px);
-  will-change: transform, opacity;
-}
-#mapResult .item.reveal.in {
-  opacity: 1;
-  transform: translateY(0);
-  transition: transform .28s ease-out, opacity .28s ease-out;
-}
-.skip-anim{
+    .skip-anim{
   display:flex;
   align-items:center;
   gap:8px;
@@ -575,17 +563,6 @@
   white-space:nowrap;
   font-size:17px;
   padding:10px 12px;
-}
-    /* 抽籤結果：由下往上滑入、像疊積木 */
-#mapResult .item.reveal {
-  opacity: 0;
-  transform: translateY(18px); /* 從下方來 */
-}
-
-#mapResult .item.reveal.show {
-  opacity: 1;
-  transform: translateY(0);
-  transition: transform 0.35s ease, opacity 0.35s ease;
 }
  </style>
 </head>
@@ -946,9 +923,6 @@
   </div>
 
   <script type="module">
-    window.onerror = function (msg, src, line, col) {
-  alert(`JS錯誤：${msg}\n第 ${line} 行, 第 ${col} 欄`);
-};
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
       getFirestore, collection, addDoc,
@@ -1011,9 +985,9 @@ function closeModal() {
   document.body.style.overflow = "";
 }
 
-uiModalOk?.addEventListener("click", closeModal);
-uiModalX?.addEventListener("click", closeModal);
-uiModal?.addEventListener("click", (e) => {
+uiModalOk.addEventListener("click", closeModal);
+uiModalX.addEventListener("click", closeModal);
+uiModal.addEventListener("click", (e) => {
   if (e.target && e.target.dataset && e.target.dataset.close) closeModal();
 });
 window.addEventListener("keydown", (e) => {
@@ -1429,39 +1403,6 @@ function dedupeMaps(maps) {
   if (!el) return;
   el.style.display = show ? "block" : "none";
 }
-    function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
-
-// 一張一張揭曉：每張從下往上滑入，然後堆在下面
-async function revealMapsStacked(picked, count, delayMs = 350){
-  const box = document.getElementById("mapResult");
-  if (!box) return;
-
-  // 先清空 + 放標題（你原本的標題文字可自行調整）
-  box.innerHTML = `
-    <div class="item">
-      <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
-    </div>
-  `;
-
-  for (let i = 0; i < picked.length; i++){
-    const m = picked[i];
-
-    const div = document.createElement("div");
-    div.className = "item reveal";
-
-    const main = document.createElement("div");
-    main.className = "item-main";
-    main.textContent = `第 ${i + 1} 張 ${m.name}`;
-
-    div.appendChild(main);
-    box.appendChild(div);
-
-    // 讓瀏覽器先把元素放進 DOM，再加 show 觸發 transition
-    requestAnimationFrame(() => div.classList.add("show"));
-
-    if (delayMs > 0) await sleep(delayMs);
-  }
-}
 
     function renderMapResult(picked, meta) {
   const box = document.getElementById("mapResult");
@@ -1590,42 +1531,6 @@ async function revealMapsOneByOne(picked, count, delayMs = 350){
 
     div.appendChild(main);
     box.appendChild(div);
-
-    await sleep(delayMs);
-  }
-}
-
-
-/**
- * 逐張揭曉（動畫版）：每一張由下往上滑入，然後往下堆疊
- * picked: [{name, ...}, ...]
- */
-async function revealMapsStacked(picked, count, delayMs = 350) {
-  const box = document.getElementById("mapResult");
-  if (!box) return;
-
-  // 先清空並放標題
-  box.innerHTML = `
-    <div class="item">
-      <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
-    </div>
-  `;
-
-  for (let i = 0; i < picked.length; i++) {
-    const m = picked[i];
-
-    const div = document.createElement("div");
-    div.className = "item reveal";
-
-    const main = document.createElement("div");
-    main.className = "item-main";
-    main.textContent = `第 ${i + 1} 張 ${m.name}`;
-
-    div.appendChild(main);
-    box.appendChild(div);
-
-    // 觸發 transition（下一幀再加 class）
-    requestAnimationFrame(() => div.classList.add("in"));
 
     await sleep(delayMs);
   }
@@ -1961,12 +1866,13 @@ const mapPanel = document.getElementById("mapPanel");
       resetMapResultUI();
     }
 
+    // ✅ 先判斷 skip（要不要動畫）
     const skip = document.getElementById("skipMapAnim")?.checked;
 
-    // 只有 skip 才顯示載入中
+    // ✅ 只有 skip 才顯示「載入中」
     if (skip) {
       showMapLoading?.(true);
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise(r => setTimeout(r, 50)); // 讓載入中有機會顯示
     }
 
     const count = Number(mapCountSelect.value);
@@ -1978,25 +1884,27 @@ const mapPanel = document.getElementById("mapPanel");
       return;
     }
 
-    // ✅ 先算出真正結果
+    // 先算出真正結果
     const result = drawRandomMapsWithLimit(maps, count, maxSum);
     const picked = result.picked || [];
 
+    // 關掉載入中（只有 skip=true 才真的有開）
     showMapLoading?.(false);
 
-    // ✅ 再來才顯示（這時 picked 已經存在）
+    // ✅ 顯示結果
     if (skip) {
       // 不動畫：一次顯示
-      renderMapResult(picked, { count });
+      revealMapsOneByOne(picked, count, 0);
     } else {
-      // 動畫：由下往上滑入、堆疊
-      await revealMapsStacked(picked, count, 350);
+      // 有動畫：一張一張揭曉
+      await revealMapsOneByOne(picked, count, 350);
     }
 
   } catch (err) {
     console.error(err);
     showModal?.("抽取失敗，請稍後再試", { type: "error" });
   } finally {
+    // 保險關閉（就算前面 return / error）
     showMapLoading?.(false);
   }
 });
@@ -2058,11 +1966,35 @@ resetMapBtn?.addEventListener("click", () => {
   }
 })();
    
-    
+    document.getElementById("drawMapBtn").addEventListener("click", async () => {
+  try {
+    const count = Number(document.getElementById("mapCountSelect").value);
+    const maxSum = LIMIT_BY_COUNT[count];
+    if (maxSum === undefined) {
+      showModal(`沒有設定「抽 ${count} 張」的難度上限`, { type: "error" });
+      return;
+    }
 
-/* (removed duplicate drawMapBtn listener) */
+    const maps = await loadMaps();
+    if (!maps.length) {
+      showModal("沒有地圖資料", { type: "error" });
+      return;
+    }
 
+    const { picked, total } = drawRandomMapsWithLimit(maps, count, maxSum);
 
+    renderMapResult(picked, {
+      count,
+      total,
+      maxSum,
+      mapTotal: maps.length, // 就算不顯示也沒差
+    });
+
+  } catch (e) {
+    console.error(e);
+    showModal("地圖抽籤失敗", { type: "error" });
+  }
+});
 
   </script>
   <!-- ✅ 自訂提示視窗 -->

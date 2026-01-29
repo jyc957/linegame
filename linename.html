@@ -614,11 +614,11 @@
   </div>
 </div>
 
-  <!-- 新增 / 查詢（可折疊） -->
-  <div class="section">
+<!-- 新增 / 查詢（可折疊） -->
+<div class="section">
+  <div class="card">
     <div class="top-bar">
       <h2 style="margin-right:10px;">新增 / 查詢</h2>
-
       <button id="toggleAdd">▼ 展開</button>
       <button onclick="loadAll()">顯示全部</button>
       <button onclick="resetListUI()">重新整理</button>
@@ -627,12 +627,12 @@
     <div id="addPanel" class="collapse-content">
       <label>
         LINE 名字：
-        <input id="lineInput" type="text" placeholder="例：jason😈🐺🛠😺" />
+        <input id="lineInput" type="text" placeholder="例：jason😈..." />
       </label>
 
       <label>
         遊戲名字：
-        <input id="gameInput" type="text" placeholder="例：ᴷᴾღ帥帥哥" />
+        <input id="gameInput" type="text" placeholder="例：KP帥帥哥" />
       </label>
 
       <button onclick="saveRecord()">儲存</button>
@@ -644,14 +644,17 @@
         ● 查詢：可輸入部分文字做模糊搜尋<br>
         ● 清除：將輸入框內的文字刪除
       </small>
-  <div class="card">
-    <h2 id="listTitle">目前資料</h2>
-    <div id="resultCount" class="smword"></div>
-    <div id="listContainer"></div>
-  </div>
-</div>
-<!-- 目前資料 -->
 
+      <!-- ✅ 目前資料：放在這裡（展開後出現） -->
+      <div class="card" style="margin-top:12px;">
+        <h2 id="listTitle">目前資料</h2>
+        <div id="resultCount" class="smword"></div>
+        <div id="listContainer"></div>
+      </div>
+
+    </div> <!-- ✅ 一定要有：關 addPanel -->
+  </div>   <!-- ✅ 關 card -->
+</div>     <!-- ✅ 關 section -->
   <!-- 更改資料（可折疊） -->
   <div class="section">
     <h2 style="display:flex; align-items:center; gap:10px;">

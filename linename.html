@@ -1914,6 +1914,7 @@ const mapPanel = document.getElementById("mapPanel");
 
     // 先讀 skip（要不要動畫）
     const skip = document.getElementById("skipMapAnim")?.checked;
+    console.log("【DEBUG】skip =", skip);
 
     // 只有 skip=true 才顯示「載入中...」
     if (skip) {
@@ -2012,36 +2013,6 @@ resetMapBtn?.addEventListener("click", () => {
   }
 })();
    
-    /*document.getElementById("drawMapBtn").addEventListener("click", async () => {
-  try {
-    const count = Number(document.getElementById("mapCountSelect").value);
-    const maxSum = LIMIT_BY_COUNT[count];
-    if (maxSum === undefined) {
-      showModal(`沒有設定「抽 ${count} 張」的難度上限`, { type: "error" });
-      return;
-    }
-
-    const maps = await loadMaps();
-    if (!maps.length) {
-      showModal("沒有地圖資料", { type: "error" });
-      return;
-    }
-
-    const { picked, total } = drawRandomMapsWithLimit(maps, count, maxSum);
-
-    renderMapResult(picked, {
-      count,
-      total,
-      maxSum,
-      mapTotal: maps.length, // 就算不顯示也沒差
-    });
-
-  } catch (e) {
-    console.error(e);
-    showModal("地圖抽籤失敗", { type: "error" });
-  }
-});*/
-
   </script>
   <!-- ✅ 自訂提示視窗 -->
 <div id="uiModal" class="ui-modal" aria-hidden="true">

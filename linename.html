@@ -561,7 +561,7 @@
   align-items:center;
   gap:6px;
   white-space:nowrap;
-  font-size:14px;
+  font-size:17px;
   padding:10px 12px;
 }
  </style>
@@ -1863,39 +1863,48 @@ const mapPanel = document.getElementById("mapPanel");
       drawMapBtn?.addEventListener("click", async () => {
   try {
     if (typeof resetMapResultUI === "function") {
-  resetMapResultUI();
-}
+      resetMapResultUI();
+    }
 
-    showMapLoading?.(true);
-    await new Promise(r => setTimeout(r, 50)); // 讓「載入中」先畫出來
+    // ✅ 先判斷 skip（要不要動畫）
+    const skip = document.getElementById("skipMapAnim")?.checked;
+
+    // ✅ 只有 skip 才顯示「載入中」
+    if (skip) {
+      showMapLoading?.(true);
+      await new Promise(r => setTimeout(r, 50)); // 讓載入中有機會顯示
+    }
 
     const count = Number(mapCountSelect.value);
     const maxSum = LIMIT_BY_COUNT[count] ?? Infinity;
 
     const maps = await loadMaps();
-    if (!maps.length){
+    if (!maps.length) {
       showModal?.("沒有地圖資料", { type: "error" });
       return;
     }
 
-    // ✅ 先把「真正結果」算出來
+    // 先算出真正結果
     const result = drawRandomMapsWithLimit(maps, count, maxSum);
     const picked = result.picked || [];
 
-    const skip = document.getElementById("skipMapAnim")?.checked;
+    // 關掉載入中（只有 skip=true 才真的有開）
+    showMapLoading?.(false);
 
-    if (skip){
-      // 直接顯示（不用動畫）
-      revealMapsOneByOne(picked, count, 0); // 0ms = 等同一次出完
+    // ✅ 顯示結果
+    if (skip) {
+      // 不動畫：一次顯示
+      revealMapsOneByOne(picked, count, 0);
     } else {
-      // ✅ 一張一張揭曉
+      // 有動畫：一張一張揭曉
       await revealMapsOneByOne(picked, count, 350);
     }
 
-  } catch (err){
+  } catch (err) {
     console.error(err);
     showModal?.("抽取失敗，請稍後再試", { type: "error" });
   } finally {
+    // 保險關閉（就算前面 return / error）
     showMapLoading?.(false);
   }
 });

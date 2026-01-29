@@ -923,6 +923,9 @@
   </div>
 
   <script type="module">
+    window.onerror = function (msg, src, line, col) {
+  alert(`JS錯誤：${msg}\n第 ${line} 行, 第 ${col} 欄`);
+};
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
       getFirestore, collection, addDoc,

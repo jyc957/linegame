@@ -564,6 +564,17 @@
   font-size:17px;
   padding:10px 12px;
 }
+    /* 抽籤結果：由下往上滑入、像疊積木 */
+#mapResult .item.reveal {
+  opacity: 0;
+  transform: translateY(18px); /* 從下方來 */
+}
+
+#mapResult .item.reveal.show {
+  opacity: 1;
+  transform: translateY(0);
+  transition: transform 0.35s ease, opacity 0.35s ease;
+}
  </style>
 </head>
 
@@ -1406,6 +1417,39 @@ function dedupeMaps(maps) {
   if (!el) return;
   el.style.display = show ? "block" : "none";
 }
+    function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+// 一張一張揭曉：每張從下往上滑入，然後堆在下面
+async function revealMapsStacked(picked, count, delayMs = 350){
+  const box = document.getElementById("mapResult");
+  if (!box) return;
+
+  // 先清空 + 放標題（你原本的標題文字可自行調整）
+  box.innerHTML = `
+    <div class="item">
+      <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
+    </div>
+  `;
+
+  for (let i = 0; i < picked.length; i++){
+    const m = picked[i];
+
+    const div = document.createElement("div");
+    div.className = "item reveal";
+
+    const main = document.createElement("div");
+    main.className = "item-main";
+    main.textContent = `第 ${i + 1} 張 ${m.name}`;
+
+    div.appendChild(main);
+    box.appendChild(div);
+
+    // 讓瀏覽器先把元素放進 DOM，再加 show 觸發 transition
+    requestAnimationFrame(() => div.classList.add("show"));
+
+    if (delayMs > 0) await sleep(delayMs);
+  }
+}
 
     function renderMapResult(picked, meta) {
   const box = document.getElementById("mapResult");
@@ -1869,13 +1913,12 @@ const mapPanel = document.getElementById("mapPanel");
       resetMapResultUI();
     }
 
-    // ✅ 先判斷 skip（要不要動畫）
     const skip = document.getElementById("skipMapAnim")?.checked;
 
-    // ✅ 只有 skip 才顯示「載入中」
+    // 只有 skip 才顯示載入中
     if (skip) {
       showMapLoading?.(true);
-      await new Promise(r => setTimeout(r, 50)); // 讓載入中有機會顯示
+      await new Promise(r => setTimeout(r, 50));
     }
 
     const count = Number(mapCountSelect.value);
@@ -1887,27 +1930,25 @@ const mapPanel = document.getElementById("mapPanel");
       return;
     }
 
-    // 先算出真正結果
+    // ✅ 先算出真正結果
     const result = drawRandomMapsWithLimit(maps, count, maxSum);
     const picked = result.picked || [];
 
-    // 關掉載入中（只有 skip=true 才真的有開）
     showMapLoading?.(false);
 
-    // ✅ 顯示結果
+    // ✅ 再來才顯示（這時 picked 已經存在）
     if (skip) {
       // 不動畫：一次顯示
-      revealMapsOneByOne(picked, count, 0);
+      renderMapResult(picked, { count });
     } else {
-      // 有動畫：一張一張揭曉
-      await revealMapsOneByOne(picked, count, 350);
+      // 動畫：由下往上滑入、堆疊
+      await revealMapsStacked(picked, count, 350);
     }
 
   } catch (err) {
     console.error(err);
     showModal?.("抽取失敗，請稍後再試", { type: "error" });
   } finally {
-    // 保險關閉（就算前面 return / error）
     showMapLoading?.(false);
   }
 });

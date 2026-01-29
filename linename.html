@@ -565,16 +565,16 @@
   padding:10px 12px;
 }
     /* 疊積木：由下往上滑入 */
-.item {
+.item{
   transition: transform 280ms ease, opacity 280ms ease;
 }
 
-.item.stack-enter {
+.item.stack-enter{
   opacity: 0;
   transform: translateY(22px);
 }
 
-.item.stack-in {
+.item.stack-in{
   opacity: 1;
   transform: translateY(0);
 }
@@ -1526,7 +1526,6 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
   const box = document.getElementById("mapResult");
   if (!box) return;
 
-  // 先清空，放標題（你說不要顯示難度，我就只留標題）
   box.innerHTML = `
     <div class="item">
       <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
@@ -1537,7 +1536,7 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
     const m = picked[i];
 
     const div = document.createElement("div");
-    div.className = "item stack-enter"; // 先是「在下面」
+    div.className = "item stack-enter";   // 先給初始狀態
 
     const main = document.createElement("div");
     main.className = "item-main";
@@ -1546,11 +1545,12 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
     div.appendChild(main);
     box.appendChild(div);
 
-    // 讓瀏覽器先把元素插入，再移除 class 觸發 transition
-    requestAnimationFrame(() => {
-      div.classList.remove("stack-enter");
-      div.classList.add("stack-in");
-    });
+    // ✅ 強制瀏覽器先計算一次樣式（關鍵！）
+    div.getBoundingClientRect();
+
+    // ✅ 再切到完成狀態 -> 一定會觸發 transition
+    div.classList.remove("stack-enter");
+    div.classList.add("stack-in");
 
     await sleep(delayMs);
   }

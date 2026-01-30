@@ -1404,8 +1404,14 @@ async function showFromRankingByGameName(gameName){
       row.style.cursor = "pointer";
       row.title = "點一下顯示此人的 LINE ID";
       row.addEventListener("click", () => {
-        showFromRankingByGameName(item.name);
-      });
+  // 1) 不管有沒有留資料，都先展開「目前資料」那塊並捲到位置
+  openCurrentDataAndScroll();
+
+  // 2) 等展開動畫跑完再做查詢/顯示（避免你說的「滾動卡一半」）
+  setTimeout(() => {
+    showFromRankingByGameName(item.name);
+  }, 450); // 這個時間要 >= 你的展開動畫時間
+});
 
       listEl.appendChild(row);
     });

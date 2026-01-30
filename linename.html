@@ -1622,7 +1622,7 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
     await sleep(delayMs);
   }
 }
-async function revealMapsOneByOne(picked, count, delayMs = 350){
+async function revealMapsOneByOne(picked, count, delayMs = 3400){
   const box = document.getElementById("mapResult");
   if (!box) return;
 

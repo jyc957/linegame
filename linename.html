@@ -1231,25 +1231,46 @@ function timeToMs(str) {
     parseInt(ms.padEnd(2, "0"), 10) * 10
   );
 }
-    async function openCurrentDataAndScroll() {
+    async function openCurrentDataAndScroll(gameName) {
+  // 1) 永遠先展開「新增/查詢」區塊（裡面包含 目前資料）
   const panel = document.getElementById("addPanel");
   const btn = document.getElementById("toggleAdd");
-  const anchor = document.getElementById("listTitle") || document.getElementById("listContainer");
-  if (!panel || !anchor) return;
-
-  // 1) 先確保「新增/查詢」是展開的（因為目前資料在這裡面）
-  // 你的專案若是用 class "open" 來控制展開，就用這個：
-  if (!panel.classList.contains("open")) {
+  if (panel && !panel.classList.contains("open")) {
     panel.classList.add("open");
     if (btn) btn.textContent = "▲ 收合";
   }
 
-  // 2) 等待 DOM 更新 + 展開高度穩定（避免 smooth scroll 卡一半）
-  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-  await new Promise(r => setTimeout(r, 100)); // 你可以改 50~150，看你面板展開速度
+  // 2) 等展開動畫跑完，避免 scroll 卡一半
+  await new Promise(r => setTimeout(r, 300));
 
-  // 3) 再捲動到「目前資料」
-  anchor.scrollIntoView({ behavior: "smooth", block: "start" });
+  // 3) 先預設：至少捲到「目前資料」標題
+  const titleEl = document.getElementById("listTitle");
+  if (titleEl) {
+    titleEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // 4) 如果有提供名字，就嘗試定位到那一筆（找不到也沒關係）
+  if (!gameName) return;
+
+  const key = normalizeNameKey(gameName);
+
+  // 你的 list render 是：#listContainer 內一堆 .item
+  const rows = Array.from(document.querySelectorAll("#listContainer .item"));
+
+  // 每筆的遊戲名在 .item-main 裡，文字是「遊戲名字：xxx」
+  const target = rows.find(r => {
+    const t = r.querySelector(".item-main")?.textContent || "";
+    return normalizeNameKey(t).includes(key);
+  });
+
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    target.classList.add("flash");
+    setTimeout(() => target.classList.remove("flash"), 900);
+  } else {
+    // 找不到：維持捲到「目前資料」就好（可選：跳個提示）
+    // showToast?.("這個人還沒留過資料", { type: "info" });
+  }
 }
     // ✅ 點排行榜名字 → 到 Firestore 查這個 gameName 的資料 → 顯示在下方名單區
 async function showFromRankingByGameName(gameName){

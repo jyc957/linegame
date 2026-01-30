@@ -1504,6 +1504,10 @@ function dedupeMaps(maps) {
     div.appendChild(main);
     box.appendChild(div);
   });
+      // ⭐ 地圖抽籤結果顯示完後，自動捲到結果區塊底部
+setTimeout(() => {
+  box.scrollIntoView({ behavior: "smooth", block: "end" });
+}, 50);
 
   // 抽不到符合上限 → 只提示，不顯示數字
   if (maxSum !== Infinity && total > maxSum) {
@@ -1612,7 +1616,9 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
     // ✅ 再切到完成狀態 -> 一定會觸發 transition
     div.classList.remove("stack-enter");
     div.classList.add("stack-in");
-
+    if (i >= 3) {
+  div.scrollIntoView({ behavior: "smooth", block: "end" });
+}
     await sleep(delayMs);
   }
 }

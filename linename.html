@@ -1134,6 +1134,7 @@ function closeToast(t) {
         div.appendChild(time);
         box.appendChild(div);
       });
+      openCurrentDataAndScroll();
     }
 
     // ===== 排行榜：時間字串轉成總毫秒（或百分之一秒）方便排序 =====
@@ -1229,6 +1230,36 @@ function timeToMs(str) {
     parseInt(s, 10) * 1000 +
     parseInt(ms.padEnd(2, "0"), 10) * 10
   );
+}
+    function openCurrentDataAndScroll() {
+  // 你的「新增/查詢」收合按鈕 & 內容區
+  const btn = document.getElementById("toggleAdd");
+  const panel = document.getElementById("addPanel");
+
+  // 「目前資料」卡片的標題 or 容器（你有 listTitle / listContainer）
+  const target =
+    document.getElementById("listTitle") ||
+    document.getElementById("listContainer");
+
+  // 1) 先確保區塊展開（因為你把目前資料放在 addPanel 裡）
+  if (panel) {
+    // 你原本就是用 open class 來控制的話，這樣最穩
+    panel.classList.add("open");
+    panel.style.display = "block"; // 兼容你的 CSS 寫法（有些人用 display:none）
+  }
+  if (btn) {
+    // 依你原本按鈕文字習慣（如果你有其他文字就自行改）
+    btn.textContent = "▲ 收合";
+  }
+
+  // 2) 再滾到結果（下一個 event loop 讓 DOM 先更新）
+  setTimeout(() => {
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    // 如果你覺得太貼頂，可以再往上挪一點點（可選）
+    setTimeout(() => window.scrollBy({ top: -10, behavior: "smooth" }), 200);
+  }, 0);
 }
     // ✅ 點排行榜名字 → 到 Firestore 查這個 gameName 的資料 → 顯示在下方名單區
 async function showFromRankingByGameName(gameName){
@@ -1604,6 +1635,7 @@ async function revealMapsOneByOne(picked, count, delayMs = 350){
     .toLowerCase();                         // 統一小寫
 }
     function jumpToRankingByName(gameName) {
+      openCurrentDataAndScroll();
   const key = normalizeNameKey(gameName);
   if (!key) return;
 

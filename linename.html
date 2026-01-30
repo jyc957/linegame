@@ -1616,7 +1616,7 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
     // ✅ 再切到完成狀態 -> 一定會觸發 transition
     div.classList.remove("stack-enter");
     div.classList.add("stack-in");
-    if (i >= 3) {
+    if (i >= 8) {
   div.scrollIntoView({ behavior: "smooth", block: "end" });
 }
     await sleep(delayMs);

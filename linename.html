@@ -946,7 +946,7 @@
   <!-- ✅ 底部資訊列（左：瀏覽人次｜右：最後更新） -->
   <div class="footer-bar">
     <div>今日瀏覽人次：<span id="todayCount">載入中...</span></div>
-    <div>最後更新：<span id="lastUpdateTime">載入中...</span></div>
+    <div>網頁最後更新於：<span id="lastUpdateTime">載入中...</span></div>
   </div>
 
   <script type="module">
@@ -1118,7 +1118,7 @@ function closeToast(t) {
         main.style.cursor = "pointer";
         main.title = "點一下跳I排行榜";
         main.addEventListener("click", () => {
-          jumpToRankingByName(item.gameName);
+          openCurrentDataAndScroll(item.gameName);
         });
 
         const sub = document.createElement("div");
@@ -1231,35 +1231,25 @@ function timeToMs(str) {
     parseInt(ms.padEnd(2, "0"), 10) * 10
   );
 }
-    function openCurrentDataAndScroll() {
-  // 你的「新增/查詢」收合按鈕 & 內容區
-  const btn = document.getElementById("toggleAdd");
+    async function openCurrentDataAndScroll() {
   const panel = document.getElementById("addPanel");
+  const btn = document.getElementById("toggleAdd");
+  const anchor = document.getElementById("listTitle") || document.getElementById("listContainer");
+  if (!panel || !anchor) return;
 
-  // 「目前資料」卡片的標題 or 容器（你有 listTitle / listContainer）
-  const target =
-    document.getElementById("listTitle") ||
-    document.getElementById("listContainer");
-
-  // 1) 先確保區塊展開（因為你把目前資料放在 addPanel 裡）
-  if (panel) {
-    // 你原本就是用 open class 來控制的話，這樣最穩
+  // 1) 先確保「新增/查詢」是展開的（因為目前資料在這裡面）
+  // 你的專案若是用 class "open" 來控制展開，就用這個：
+  if (!panel.classList.contains("open")) {
     panel.classList.add("open");
-    panel.style.display = "block"; // 兼容你的 CSS 寫法（有些人用 display:none）
-  }
-  if (btn) {
-    // 依你原本按鈕文字習慣（如果你有其他文字就自行改）
-    btn.textContent = "▲ 收合";
+    if (btn) btn.textContent = "▲ 收合";
   }
 
-  // 2) 再滾到結果（下一個 event loop 讓 DOM 先更新）
-  setTimeout(() => {
-    if (!target) return;
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  // 2) 等待 DOM 更新 + 展開高度穩定（避免 smooth scroll 卡一半）
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  await new Promise(r => setTimeout(r, 100)); // 你可以改 50~150，看你面板展開速度
 
-    // 如果你覺得太貼頂，可以再往上挪一點點（可選）
-    setTimeout(() => window.scrollBy({ top: -10, behavior: "smooth" }), 200);
-  }, 0);
+  // 3) 再捲動到「目前資料」
+  anchor.scrollIntoView({ behavior: "smooth", block: "start" });
 }
     // ✅ 點排行榜名字 → 到 Firestore 查這個 gameName 的資料 → 顯示在下方名單區
 async function showFromRankingByGameName(gameName){

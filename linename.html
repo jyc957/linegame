@@ -723,9 +723,13 @@
         <div class="map-btn-row">
     <button id="drawMapBtn" class="btn">🎲 抽地圖</button>
     <button id="resetMapBtn" class="btn">♻️ 重新整理</button>
-          <label class="skip-anim">
+  <label class="skip-anim">
   <input type="checkbox" id="skipMapAnim">
   跳過動畫
+</label>
+          <label class="skip-anim">
+  <input type="checkbox" id="hellMode">
+  ⚠高難度模式⚠
 </label>
   </div>
 </div>
@@ -736,6 +740,8 @@
       </div>
 
       <div class="smword">※ 圖池為排位競速圖（不含 1 星地圖）</div>
+      <br>
+      <div class="smword">高難度模式：地圖全部為3星以上</div>
       <div id="mapLoading" class="map-loading" style="display:none;">
   載入中...
 </div>
@@ -1526,7 +1532,7 @@ setTimeout(() => {
   return a;
 }
 
-function drawRandomMapsWithLimit(maps, count, maxSum){
+function drawRandomMapsWithLimit(maps, count, maxSum, minSum = 0){
   // ✅ 不重複抽（因為是從同一個陣列洗牌後 slice）
   // ✅ maxSum=Infinity 表示不限制（抽 1 張）
 
@@ -1537,7 +1543,7 @@ function drawRandomMapsWithLimit(maps, count, maxSum){
     const cand = shuffleCopy(maps).slice(0, count);
     const total = cand.reduce((s, x) => s + (Number(x.difficulty) || 0), 0);
 
-    if (total <= maxSum) return { picked: cand, total };
+    if (total <= maxSum && total >= minSum) return { picked: cand, total };
 
     // 記錄最接近但超過最少的（fallback）
     if (!best || total < best.total) best = { picked: cand, total };
@@ -1991,16 +1997,25 @@ const mapPanel = document.getElementById("mapPanel");
     }
 
     const count = Number(mapCountSelect.value);
-    const maxSum = LIMIT_BY_COUNT[count] ?? Infinity;
+    const hell = document.getElementById("hellMode")?.checked;
 
+// 預設規則
+let maxSum = LIMIT_BY_COUNT[count] ?? Infinity;
+let minSum = 0;
+
+// 🔥 地獄難度規則
+if (hell) {
+  maxSum = Infinity;
+  minSum = 3 * count;
+}
+showMapLoading?.(true);
+await sleep(50);
     const maps = await loadMaps();
-    if (!maps.length) {
-      showModal?.("沒有地圖資料", { type: "error" });
-      return;
-    }
-
-    // ✅ 先把 picked 算出來（不然後面一定爆）
-    const result = drawRandomMapsWithLimit(maps, count, maxSum);
+if (!maps.length) {
+  showModal?.("沒有地圖資料", { type: "error" });
+  return;
+}
+const result = drawRandomMapsWithLimit(maps, count, maxSum, minSum);
     const picked = result.picked || [];
 
     // 關掉載入中（只有 skip=true 才會曾經打開）

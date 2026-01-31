@@ -1988,7 +1988,7 @@ const mapPanel = document.getElementById("mapPanel");
 
     // 先讀 skip（要不要動畫）
     const skip = document.getElementById("skipMapAnim")?.checked;
-    console.log("【DEBUG】skip =", skip);
+    console.log("[DEBUG] skip =", skip);
 
     // 只有 skip=true 才顯示「載入中...」
     if (skip) {
@@ -1999,26 +1999,49 @@ const mapPanel = document.getElementById("mapPanel");
     const count = Number(mapCountSelect.value);
     const hell = document.getElementById("hellMode")?.checked;
 
-// 預設規則
-let maxSum = LIMIT_BY_COUNT[count] ?? Infinity;
-let minSum = 0;
+    // 規則預設
+    let maxSum = LIMIT_BY_COUNT[count] ?? Infinity;
+    let minSum = 0;
 
-// 🔥 地獄難度規則
-if (hell) {
-  maxSum = Infinity;
-  minSum = 3 * count;
-}
-showMapLoading?.(true);
-await sleep(50);
+    // 🔥 地獄/高難度規則：無上限 + 總和不小於 3X
+    if (hell) {
+      maxSum = Infinity;
+      minSum = 3 * count;
+    }
+
+    // 這裡你原本就有再顯示一次 loading（我保留）
+    showMapLoading?.(true);
+    await sleep(50);
+
     const maps = await loadMaps();
-if (!maps.length) {
-  showModal?.("沒有地圖資料", { type: "error" });
-  return;
-}
-const result = drawRandomMapsWithLimit(maps, count, maxSum, minSum);
+    if (!maps.length) {
+      showModal?.("沒有地圖資料", { type: "error" });
+      return;
+    }
+
+    // ✅ 高難度模式：每張都要 >= 3★（關鍵在這裡）
+    let pool = maps;
+    if (hell) {
+      pool = maps.filter(m => {
+        const d = parseInt(m.difficulty, 10);
+        return Number.isFinite(d) && d >= 3;
+      });
+
+      // 防呆：符合 3★以上的圖池不足
+      if (pool.length < count) {
+        showModal?.(
+          `高難度模式下，符合「3★以上」的地圖只有 ${pool.length} 張，無法抽 ${count} 張`,
+          { type: "error" }
+        );
+        return;
+      }
+    }
+
+    // ✅ 用 pool 來抽（不是 maps）
+    const result = drawRandomMapsWithLimit(pool, count, maxSum, minSum);
     const picked = result.picked || [];
 
-    // 關掉載入中（只有 skip=true 才會曾經打開）
+    // 關掉載入中（只有 skip=true 才會曾經顯示打開，但關掉多關一次沒差）
     showMapLoading?.(false);
 
     // 顯示
@@ -2026,7 +2049,7 @@ const result = drawRandomMapsWithLimit(maps, count, maxSum, minSum);
       // 不動畫：一次顯示
       renderMapResult(picked, { count });
     } else {
-      // ✅ 有動畫：由下往上滑入、疊積木
+      // 有動畫：由下往上滑入、堆積木
       console.log("use stacked anim");
       await revealMapsStacked(picked, count, 280);
     }
@@ -2034,7 +2057,7 @@ const result = drawRandomMapsWithLimit(maps, count, maxSum, minSum);
     console.error(err);
     showModal?.("抽取失敗，請稍後再試", { type: "error" });
   } finally {
-    // 保險：避免任何情況卡住載入中
+    // 保險：避免任何情況卡在載入中
     showMapLoading?.(false);
   }
 });

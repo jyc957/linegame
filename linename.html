@@ -1793,28 +1793,53 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
     }
 
     async function updateGameName() {
-      try {
-        const oldGame = cleanInput(document.getElementById("oldGameInput").value, "舊遊戲名字", 30);
-        const newGame = cleanInput(document.getElementById("newGameInput").value, "新遊戲名字", 30);
+  try {
+    const PREFIX = "ᴷᴾღ";
 
-        const q = query(colRef, where("gameName", "==", oldGame));
-        const snap = await getDocs(q);
-        if (snap.empty) return showError("找不到該遊戲名字");
+    const oldPart = cleanInput(document.getElementById("oldGameInput").value, "舊遊戲名字", 30);
+    const newPart = cleanInput(document.getElementById("newGameInput").value, "新遊戲名字", 30);
 
-        const now = Date.now();
-        const jobs = [];
-        snap.forEach(docSnap => jobs.push(updateDoc(docSnap.ref, { gameName: newGame, updatedAt: now })));
-        await Promise.all(jobs);
+    // ✅ 讀全部，做模糊比對
+    const snap = await getDocs(colRef);
 
-        document.getElementById("oldGameInput").value = "";
-        document.getElementById("newGameInput").value = "";
-
-        showToast("修改完成！");
-        await loadAll();
-      } catch (e) {
-        showError(e.message || "修改失敗");
+    const target = [];
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const gameName = (d.gameName || "");
+      if (gameName.includes(oldPart)) {
+        target.push({ ref: docSnap.ref, gameName });
       }
-    }
+    });
+
+    if (!target.length) return alert("找不到包含該文字的遊戲名字");
+
+    const now = Date.now();
+    const jobs = target.map(({ ref, gameName }) => {
+      let nextName = "";
+
+      // ✅ 若原本有前綴，就保留前綴，後面改成新名字
+      if (gameName.startsWith(PREFIX)) {
+        // 如果你新名字自己就有輸入前綴，也尊重你
+        nextName = newPart.startsWith(PREFIX) ? newPart : (PREFIX + newPart);
+      } else {
+        nextName = newPart; // 沒前綴就整個改
+      }
+
+      return updateDoc(ref, { gameName: nextName, updatedAt: now });
+    });
+
+    await Promise.all(jobs);
+
+    // 清空輸入框
+    document.getElementById("oldGameInput").value = "";
+    document.getElementById("newGameInput").value = "";
+
+    alert(`修改完成！共更新 ${target.length} 筆`);
+    await loadAll();
+  } catch (e) {
+    alert(e.message || "修改失敗");
+  }
+}
 
     function clearInputs() {
       document.getElementById("lineInput").value = "";

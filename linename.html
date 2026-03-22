@@ -266,6 +266,15 @@
       font-variant-numeric: tabular-nums;
       font-weight:900;
     }
+    .rank-row.no-score{
+  background:#f3f3f3;
+  opacity:0.9;
+}
+
+.rank-row.no-score .rank-time{
+  color:#888;
+  font-weight:700;
+}
 
 /* 前三名放大一點 */
     .rank-row.top3 .rank-pos,
@@ -1327,21 +1336,24 @@ async function showFromRankingByGameName(gameName){
     if (statusEl) statusEl.textContent = "載入中...";
     if (listEl) listEl.innerHTML = "";
 
-    // ✅ Google 試算表 CSV（已公開）
     const SHEET_CSV_URL =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzrBZKoOZroOfo6ad-tamTCh0PYtfvEixvubyHvL8uo9qmTQZkzbwSOvIoVIjWHmDfv3JlqRUbAyy_/pub?output=csv";
 
-    // 破快取
     const url = SHEET_CSV_URL + "&t=" + Date.now();
 
-    const res = await fetch(url);
+    // 1) 同時讀取：試算表成績 + Firebase名單
+    const [res, snap] = await Promise.all([
+      fetch(url),
+      getDocs(colRef)
+    ]);
+
     if (!res.ok) throw new Error("讀取失敗：" + res.status);
 
     const text = await res.text();
     const rows = parseCsvRows(text);
 
-    // rows[0] 是表頭，從 rows[1] 開始才是資料
-    const list = rows
+    // 2) 試算表成績
+    const scoreList = rows
       .slice(1)
       .map((cols) => {
         const name = (cols[0] || "").trim();
@@ -1351,27 +1363,53 @@ async function showFromRankingByGameName(gameName){
       })
       .filter((x) => x.name && x.cs !== null);
 
-    if (!list.length) {
-      if (statusEl) statusEl.textContent = "目前沒有有效成績（格式需為 MM:SS.xx）";
-      return;
+    // 3) 排序
+    scoreList.sort((a, b) => a.cs - b.cs);
+
+    // 4) 建立「已有成績」名字集合
+    const scoredNameSet = new Set(
+      scoreList.map(x => normalizeNameKey(x.name))
+    );
+
+    // 5) 從 Firebase 名單找「還沒成績」的人
+    const noScoreList = [];
+    const seenNoScore = new Set();
+
+    snap.forEach((docSnap) => {
+      const d = docSnap.data();
+      const gameName = (d.gameName || "").trim();
+      if (!gameName) return;
+
+      const key = normalizeNameKey(gameName);
+
+      // Firebase 有，但試算表沒有 → 暫無成績
+      if (!scoredNameSet.has(key) && !seenNoScore.has(key)) {
+        seenNoScore.add(key);
+        noScoreList.push({
+          name: gameName,
+          time: "暫無成績",
+          cs: null
+        });
+      }
+    });
+
+    // 6) 狀態文字
+    const totalCount = scoreList.length + noScoreList.length;
+    if (statusEl) {
+      statusEl.textContent = `已載入 ${totalCount} 筆（含 ${noScoreList.length} 筆暫無成績）`;
     }
 
-    // 依時間排序（越小越快）
-    list.sort((a, b) => a.cs - b.cs);
-
-    if (statusEl) statusEl.textContent = `已載入 ${list.length} 筆成績`;
-
-    // ===== 渲染排行榜（同成績並列名次：會跳號，例如 1,1,3）=====
+    // 7) 清空列表
     listEl.innerHTML = "";
 
-    let lastCs = null; // 上一筆成績（排序後）
-    let rank = 0;      // 目前名次（會跳號）
-    let shown = 0;     // 已渲染筆數
+    // 8) 先渲染有成績的人（含並列名次）
+    let lastCs = null;
+    let rank = 0;
+    let shown = 0;
 
-    list.forEach((item) => {
+    scoreList.forEach((item) => {
       shown++;
 
-      // 同成績 => 名次不變；不同成績 => 名次更新成目前筆數（所以跳號）
       if (item.cs !== lastCs) {
         rank = shown;
         lastCs = item.cs;
@@ -1380,12 +1418,10 @@ async function showFromRankingByGameName(gameName){
       const row = document.createElement("div");
       row.className = "rank-row";
 
-      // 前三名底色：用 rank 判斷才符合並列
       if (rank === 1) row.classList.add("top1");
       if (rank === 2) row.classList.add("top2");
       if (rank === 3) row.classList.add("top3");
 
-      // ✅ 用 textContent 避免特殊字元影響 HTML
       const left = document.createElement("div");
       left.className = "rank-left";
 
@@ -1406,28 +1442,62 @@ async function showFromRankingByGameName(gameName){
       row.appendChild(left);
       row.appendChild(timeEl);
 
-      // ✅ 給 jumpToRankingByName 用（你那邊是用 dataset.nameKey 找）
       row.dataset.nameKey = normalizeNameKey(item.name);
-
-      // ✅ 點擊排行榜：下方顯示此人的遊戲名字+LINE ID
       row.style.cursor = "pointer";
       row.title = "點一下顯示此人的 LINE ID";
       row.addEventListener("click", () => {
-  // 1) 不管有沒有留資料，都先展開「目前資料」那塊並捲到位置
-  openCurrentDataAndScroll();
+        openCurrentDataAndScroll();
+        setTimeout(() => {
+          showFromRankingByGameName(item.name);
+        }, 450);
+      });
 
-  // 2) 等展開動畫跑完再做查詢/顯示（避免你說的「滾動卡一半」）
-  setTimeout(() => {
-    showFromRankingByGameName(item.name);
-  }, 450); // 這個時間要 >= 你的展開動畫時間
-});
+      listEl.appendChild(row);
+    });
+
+    // 9) 再渲染「暫無成績」的人（放最底下）
+    noScoreList.forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "rank-row no-score";
+
+      const left = document.createElement("div");
+      left.className = "rank-left";
+
+      const posEl = document.createElement("div");
+      posEl.className = "rank-pos";
+      posEl.textContent = "-";
+
+      const nameEl = document.createElement("div");
+      nameEl.className = "rank-name";
+      nameEl.textContent = item.name;
+
+      const timeEl = document.createElement("div");
+      timeEl.className = "rank-time";
+      timeEl.textContent = "暫無成績";
+
+      left.appendChild(posEl);
+      left.appendChild(nameEl);
+      row.appendChild(left);
+      row.appendChild(timeEl);
+
+      row.dataset.nameKey = normalizeNameKey(item.name);
+      row.style.cursor = "pointer";
+      row.title = "點一下顯示此人的 LINE ID";
+      row.addEventListener("click", () => {
+        openCurrentDataAndScroll();
+        setTimeout(() => {
+          showFromRankingByGameName(item.name);
+        }, 450);
+      });
 
       listEl.appendChild(row);
     });
 
   } catch (e) {
     console.error(e);
-    if (statusEl) statusEl.textContent = "排行榜：讀取失敗（請確認試算表為公開 CSV）";
+    if (statusEl) {
+      statusEl.textContent = "排行榜：讀取失敗（請確認試算表為公開 CSV）";
+    }
   }
 }
     // 抽幾張 -> 難度總和上限（固定規則）

@@ -189,16 +189,6 @@
       margin-top: 4px;
       text-align: left;
     }
-    .copy-code {
-  color: #1976d2;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.copy-code:active {
-  opacity: 0.6;
-}
-
     /* ✅ 底部資訊列：左(瀏覽) 右(最後更新) */
     .footer-bar{
       margin-top: 14px;
@@ -901,7 +891,7 @@
             <div class="training-text">煞甩</div>
             <div class="training-word">在甩尾的步驟中加上一點煞車，可使車子更快的轉向，適合急U彎及救車<br>
             !!注意!!一定要先飄移再按煞車</div>
-            <div class="smword">煞甩練習：<span class="copy-code" data-copy="2U38SG">2U38SG</span>(賽道夢工廠)</div>
+            <div class="smword">煞甩練習：2U38SG (賽道夢工廠)</div>
             <video class="training-video lazy-video"
               data-src="shashuai.mp4"
               muted loop playsinline preload="none"></video>
@@ -1159,7 +1149,6 @@ function closeToast(t) {
         div.appendChild(sub);
         div.appendChild(time);
         box.appendChild(div);
-        enableCopyCode();
       });
     }
 
@@ -1603,7 +1592,6 @@ setTimeout(() => {
       { type: "info" }
     );
   }
-      enableCopyCode();
 }
     function shuffleCopy(arr){
   const a = arr.slice();
@@ -2199,68 +2187,6 @@ resetMapBtn?.addEventListener("click", () => {
   // 可選：給個提示，不要就刪掉這行
   // showToast("已清空抽籤結果");
 });
-// ===== 一鍵複製功能（全站通用）=====
-function copyTextSafe(text) {
-  // 優先用現代 clipboard API
-  if (navigator.clipboard && window.isSecureContext) {
-    return navigator.clipboard.writeText(text);
-  }
-
-  // fallback：用 textarea + execCommand
-  return new Promise((resolve, reject) => {
-    try {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
-      ta.style.top = "0";
-      ta.setAttribute("readonly", "");
-      document.body.appendChild(ta);
-
-      ta.focus();
-      ta.select();
-      ta.setSelectionRange(0, ta.value.length);
-
-      const ok = document.execCommand("copy");
-      document.body.removeChild(ta);
-
-      if (ok) resolve();
-      else reject(new Error("copy failed"));
-    } catch (err) {
-      reject(err);
-    }
-  });
-}
-
-// ===== 一鍵複製功能（全站通用）=====
-function enableCopyCode() {
-  document.querySelectorAll(".copy-code").forEach(el => {
-    if (el.dataset.binded) return;
-    el.dataset.binded = "1";
-
-    el.title = "點一下複製";
-
-    el.addEventListener("click", async () => {
-      const text = el.dataset.copy || el.textContent;
-
-      try {
-        await copyTextSafe(text);
-
-        el.classList.add("flash");
-        setTimeout(() => el.classList.remove("flash"), 500);
-
-        if (typeof showToast === "function") {
-          showToast("已複製：" + text);
-        } else {
-          console.log("已複製：" + text);
-        }
-      } catch (e) {
-        console.error("複製失敗：", e);
-        alert("複製失敗，請手動長按複製");
-      }
-    });
-  });
-}
     });
 
     window.saveRecord = saveRecord;
@@ -2276,7 +2202,6 @@ function enableCopyCode() {
     loadLastUpdateTime();
     loadRanking();
     renderList([], "目前資料（尚未載入）");
-    enableCopyCode();
     // 進頁面先顯示目前地圖總數（不抽，只更新 XX 張）
 (async () => {
   try {

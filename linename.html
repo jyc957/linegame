@@ -189,6 +189,15 @@
       margin-top: 4px;
       text-align: left;
     }
+    .copy-code {
+  color: #1976d2;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.copy-code:active {
+  opacity: 0.6;
+}
 
     /* ✅ 底部資訊列：左(瀏覽) 右(最後更新) */
     .footer-bar{
@@ -892,7 +901,7 @@
             <div class="training-text">煞甩</div>
             <div class="training-word">在甩尾的步驟中加上一點煞車，可使車子更快的轉向，適合急U彎及救車<br>
             !!注意!!一定要先飄移再按煞車</div>
-            <div class="smword">煞甩練習場：2U38SG (賽道夢工廠）</div>
+            <div class="smword">煞甩練習：<span class="copy-code" data-copy="2U38SG">2U38SG</span>(賽道夢工廠)</div>
             <video class="training-video lazy-video"
               data-src="shashuai.mp4"
               muted loop playsinline preload="none"></video>
@@ -1150,6 +1159,7 @@ function closeToast(t) {
         div.appendChild(sub);
         div.appendChild(time);
         box.appendChild(div);
+        enableCopyCode();
       });
     }
 
@@ -1593,6 +1603,7 @@ setTimeout(() => {
       { type: "info" }
     );
   }
+      enableCopyCode();
 }
     function shuffleCopy(arr){
   const a = arr.slice();
@@ -2188,7 +2199,35 @@ resetMapBtn?.addEventListener("click", () => {
   // 可選：給個提示，不要就刪掉這行
   // showToast("已清空抽籤結果");
 });
+// ===== 一鍵複製功能（全站通用）=====
+function enableCopyCode() {
+  document.querySelectorAll(".copy-code").forEach(el => {
+    // 避免重複綁定
+    if (el.dataset.binded) return;
+    el.dataset.binded = "1";
 
+    el.title = "點一下複製";
+
+    el.addEventListener("click", async () => {
+      const text = el.dataset.copy || el.textContent;
+
+      try {
+        await navigator.clipboard.writeText(text);
+
+        // 小動畫
+        el.classList.add("flash");
+        setTimeout(() => el.classList.remove("flash"), 500);
+
+        // 提示（你有 showToast 就會用）
+        if (typeof showToast === "function") {
+          showToast("已複製：" + text);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    });
+  });
+}
     });
 
     window.saveRecord = saveRecord;

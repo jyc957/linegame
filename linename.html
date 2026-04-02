@@ -1757,30 +1757,38 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
   setTimeout(() => target.classList.remove("flash"), 900);
 }
     async function loadAll() {
-      try {
-        const snap = await getDocs(colRef);
-        const list = [];
+  const addPanel = document.getElementById("addPanel");
+  const addBtn = document.getElementById("toggleAdd");
 
-        snap.forEach(docSnap => {
-          const d = docSnap.data();
-          list.push({
-            id: docSnap.id,
-            lineId: d.lineId || "",
-            gameName: d.gameName || "",
-            updatedAt: d.updatedAt || d.createdAt || 0
-          });
-        });
+  if (addPanel && !addPanel.classList.contains("open")) {
+    addPanel.classList.add("open");
+    if (addBtn) addBtn.textContent = "▲ 收合";
+  }
 
-        list.sort((a, b) => b.updatedAt - a.updatedAt);
-        renderList(list, "全部資料（依修改時間）");
-      } catch (e) {
-        console.error(e);
-        document.getElementById("listTitle").textContent = "讀取失敗";
-        document.getElementById("resultCount").textContent = "";
-        document.getElementById("listContainer").innerHTML =
-          `<div class="empty-text">讀取資料失敗，請稍後再試。</div>`;
-      }
-    }
+  try {
+    const snap = await getDocs(colRef);
+    const list = [];
+
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      list.push({
+        id: docSnap.id,
+        lineId: d.lineId || "",
+        gameName: d.gameName || "",
+        updatedAt: d.updatedAt || d.createdAt || 0
+      });
+    });
+
+    list.sort((a, b) => b.updatedAt - a.updatedAt);
+    renderList(list, "全部資料（依修改時間）");
+  } catch (e) {
+    console.error(e);
+    document.getElementById("listTitle").textContent = "讀取失敗";
+    document.getElementById("resultCount").textContent = "";
+    document.getElementById("listContainer").innerHTML =
+      `<div class="empty-text">讀取資料失敗，請稍後再試。</div>`;
+  }
+}
 
     async function saveRecord() {
       try {

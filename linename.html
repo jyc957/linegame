@@ -1834,47 +1834,41 @@ function applyAliasName(name, aliasMap) {
 
     async function updateGameName() {
   try {
-    const PREFIX = "ᴷᴾღ";
-
     const oldPart = cleanInput(document.getElementById("oldGameInput").value, "舊遊戲名字", 30);
     const newPart = cleanInput(document.getElementById("newGameInput").value, "新遊戲名字", 30);
 
     const snap = await getDocs(colRef);
 
     const target = [];
-const oldKey = normalizeNameKey(oldPart);
+    const oldKey = normalizeNameKey(oldPart);
 
-snap.forEach(docSnap => {
-  const d = docSnap.data();
-  const gameName = (d.gameName || "");
-  const gameKey = normalizeNameKey(gameName);
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const gameName = (d.gameName || "");
+      const gameKey = normalizeNameKey(gameName);
 
-  if (gameKey.includes(oldKey)) {
-    target.push({ ref: docSnap.ref, gameName });
-  }
-});
+      if (gameKey.includes(oldKey)) {
+        target.push({ ref: docSnap.ref, gameName });
+      }
+    });
 
-    if (!target.length) return alert("找不到包含該文字的遊戲名字");
+    if (!target.length) {
+      showError("找不到包含該文字的遊戲名字");
+      return;
+    }
 
     const now = Date.now();
     const jobs = [];
     const aliasJobs = [];
 
     target.forEach(({ ref, gameName }) => {
-      let nextName = "";
-
-      if (gameName.startsWith(PREFIX)) {
-        nextName = newPart.startsWith(PREFIX) ? newPart : (PREFIX + newPart);
-      } else {
-        nextName = newPart;
-      }
+      const nextName = newPart; // ✅ 完全照你輸入，不自動補前綴
 
       jobs.push(updateDoc(ref, {
         gameName: nextName,
         updatedAt: now
       }));
 
-      // ✅ 額外記錄：舊名字 -> 新名字
       aliasJobs.push(addDoc(aliasRef, {
         oldName: gameName,
         newName: nextName,
@@ -1887,11 +1881,12 @@ snap.forEach(docSnap => {
     document.getElementById("oldGameInput").value = "";
     document.getElementById("newGameInput").value = "";
 
-    alert(`修改完成！共更新 ${target.length} 筆`);
+    showSuccess(`修改完成！共更新 ${target.length} 筆`);
     await loadAll();
     await loadRanking();
   } catch (e) {
-    alert(e.message || "修改失敗");
+    console.error(e);
+    showError(e.message || "修改失敗");
   }
 }
 function clearInputs() {

@@ -1670,10 +1670,12 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
     function normalizeNameKey(name) {
   return String(name || "")
     .trim()
-    .replace(/\u3000/g, " ")                // 全形空白 -> 半形
-    .replace(/\s+/g, " ")                   // 多空白壓成一個
-    .replace(/[\u200B-\u200D\uFEFF]/g, "")  // 移除零寬字元/BOM
-    .toLowerCase();                         // 統一小寫
+    .replace(/\u3000/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/^kpღ/i, "kpღ")
+    .replace(/^ᴷᴾღ/i, "kpღ")
+    .toLowerCase();
 }
     async function loadNameAliasMap() {
   try {
@@ -1832,7 +1834,6 @@ function applyAliasName(name, aliasMap) {
 
     async function updateGameName() {
   try {
-    const PREFIX = "ᴷᴾღ";
 
     const oldPart = cleanInput(document.getElementById("oldGameInput").value, "舊遊戲名字", 30);
     const newPart = cleanInput(document.getElementById("newGameInput").value, "新遊戲名字", 30);
@@ -1840,13 +1841,17 @@ function applyAliasName(name, aliasMap) {
     const snap = await getDocs(colRef);
 
     const target = [];
-    snap.forEach(docSnap => {
-      const d = docSnap.data();
-      const gameName = (d.gameName || "");
-      if (gameName.includes(oldPart)) {
-        target.push({ ref: docSnap.ref, gameName });
-      }
-    });
+const oldKey = normalizeNameKey(oldPart);
+
+snap.forEach(docSnap => {
+  const d = docSnap.data();
+  const gameName = (d.gameName || "");
+  const gameKey = normalizeNameKey(gameName);
+
+  if (gameKey.includes(oldKey)) {
+    target.push({ ref: docSnap.ref, gameName });
+  }
+});
 
     if (!target.length) return alert("找不到包含該文字的遊戲名字");
 

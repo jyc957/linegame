@@ -1678,27 +1678,55 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
     async function loadNameAliasMap() {
   try {
     const snap = await getDocs(aliasRef);
-    const aliasMap = new Map();
+
+    // 先收集每個 oldName 的最新一筆
+    const latestMap = new Map();
 
     snap.forEach(docSnap => {
       const d = docSnap.data();
       const oldName = normalizeNameKey(d.oldName || "");
       const newName = d.newName || "";
-      if (oldName && newName) {
-        aliasMap.set(oldName, newName);
+      const createdAt = Number(d.createdAt || 0);
+
+      if (!oldName || !newName) return;
+
+      const prev = latestMap.get(oldName);
+      if (!prev || createdAt > prev.createdAt) {
+        latestMap.set(oldName, { newName, createdAt });
       }
+    });
+
+    // 最後轉成單純 oldName -> newName
+    const aliasMap = new Map();
+    latestMap.forEach((value, key) => {
+      aliasMap.set(key, value.newName);
     });
 
     return aliasMap;
   } catch (e) {
     console.error("讀取 game_name_aliases 失敗：", e);
-    return new Map(); // ✅ 就算失敗也不要卡住排行榜
+    return new Map();
   }
 }
 
 function applyAliasName(name, aliasMap) {
-  const key = normalizeNameKey(name);
-  return aliasMap.get(key) || name;
+  let current = name;
+  const visited = new Set();
+
+  while (true) {
+    const key = normalizeNameKey(current);
+
+    // 避免循環卡死
+    if (visited.has(key)) break;
+    visited.add(key);
+
+    const next = aliasMap.get(key);
+    if (!next) break;
+
+    current = next;
+  }
+
+  return current;
 }
     function jumpToRankingByName(gameName) {
       openCurrentDataAndScroll();

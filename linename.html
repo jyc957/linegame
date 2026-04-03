@@ -1024,13 +1024,13 @@ function closeModal() {
   document.body.style.overflow = "";
 }
 
-uiModalOk.addEventListener("click", closeModal);
-uiModalX.addEventListener("click", closeModal);
-uiModal.addEventListener("click", (e) => {
+if (uiModalOk) uiModalOk.addEventListener("click", closeModal);
+if (uiModalX) uiModalX.addEventListener("click", closeModal);
+if (uiModal) uiModal.addEventListener("click", (e) => {
   if (e.target && e.target.dataset && e.target.dataset.close) closeModal();
 });
 window.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && uiModal.classList.contains("open")) closeModal();
+  if (e.key === "Escape" && uiModal && uiModal.classList.contains("open")) closeModal();
 });
 
 // ✅ 方便你用：這三個等同 alert
@@ -2245,20 +2245,13 @@ resetMapBtn?.addEventListener("click", () => {
     window.resetListUI = resetListUI;
     window.jumpToRankingByName = jumpToRankingByName;
 
-    updateTodayViewCount();
-    loadLastUpdateTime();
-    loadRanking();
-    renderList([], "目前資料（尚未載入）");
-    // 進頁面先顯示目前地圖總數（不抽，只更新 XX 張）
-(async () => {
-  try {
-    await loadMaps(); // loadMaps 裡面會更新 mapTotalCount
-  } catch (e) {
-    console.error(e);
-    // 你想要的話也可以顯示成「讀取失敗」
-    // showModal("地圖清單讀取失敗", { type: "error" });
-  }
-})();
+    (async function bootApp(){
+      try { renderList([], "目前資料（尚未載入）"); } catch (e) { console.error("renderList init failed", e); }
+      try { await updateTodayViewCount(); } catch (e) { console.error("updateTodayViewCount failed", e); }
+      try { await loadLastUpdateTime(); } catch (e) { console.error("loadLastUpdateTime failed", e); }
+      try { await loadRanking(); } catch (e) { console.error("loadRanking failed", e); }
+      try { await loadMaps(); } catch (e) { console.error("loadMaps failed", e); }
+    })();
    
   </script>
   <!-- ✅ 自訂提示視窗 -->

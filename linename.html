@@ -979,6 +979,7 @@
     const db = getFirestore(app);
 
     const colRef = collection(db, "line_game_records");
+    const aliasRef = collection(db, "game_name_aliases");
 
     // ✅ 自訂 Modal（取代 alert）
 const uiModal = document.getElementById("uiModal");
@@ -1319,13 +1320,15 @@ async function showFromRankingByGameName(gameName){
   }
 }
 
-  async function loadRanking() {
+ async function loadRanking() {
   const statusEl = document.getElementById("rankStatus");
   const listEl = document.getElementById("rankingList");
 
   try {
     if (statusEl) statusEl.textContent = "載入中...";
     if (listEl) listEl.innerHTML = "";
+
+    const aliasMap = await loadNameAliasMap();
 
     // ✅ Google 試算表 CSV（已公開）
     const SHEET_CSV_URL =
@@ -1340,16 +1343,22 @@ async function showFromRankingByGameName(gameName){
     const text = await res.text();
     const rows = parseCsvRows(text);
 
-    // rows[0] 是表頭，從 rows[1] 開始才是資料
     const list = rows
       .slice(1)
       .map((cols) => {
-        const name = (cols[0] || "").trim();
+        const rawName = (cols[0] || "").trim();
+        const displayName = applyAliasName(rawName, aliasMap);
         const timeStr = normalizeTimeString((cols[1] || "").trim());
         const cs = parseTimeToCs(timeStr);
-        return { name, time: timeStr, cs };
+
+        return {
+          rawName,
+          name: displayName,
+          time: timeStr,
+          cs
+        };
       })
-      .filter((x) => x.name && x.cs !== null);
+      .filter((x) => x.rawName && x.cs !== null);
 
     if (!list.length) {
       if (statusEl) statusEl.textContent = "目前沒有有效成績（格式需為 MM:SS.xx）";
@@ -1666,6 +1675,26 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
     .replace(/[\u200B-\u200D\uFEFF]/g, "")  // 移除零寬字元/BOM
     .toLowerCase();                         // 統一小寫
 }
+    async function loadNameAliasMap() {
+  const snap = await getDocs(aliasRef);
+  const aliasMap = new Map();
+
+  snap.forEach(docSnap => {
+    const d = docSnap.data();
+    const oldName = normalizeNameKey(d.oldName || "");
+    const newName = d.newName || "";
+    if (oldName && newName) {
+      aliasMap.set(oldName, newName);
+    }
+  });
+
+  return aliasMap;
+}
+
+function applyAliasName(name, aliasMap) {
+  const key = normalizeNameKey(name);
+  return aliasMap.get(key) || name;
+}
     function jumpToRankingByName(gameName) {
       openCurrentDataAndScroll();
   const key = normalizeNameKey(gameName);
@@ -1803,7 +1832,6 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
     const oldPart = cleanInput(document.getElementById("oldGameInput").value, "舊遊戲名字", 30);
     const newPart = cleanInput(document.getElementById("newGameInput").value, "新遊戲名字", 30);
 
-    // ✅ 讀全部，做模糊比對
     const snap = await getDocs(colRef);
 
     const target = [];
@@ -1818,109 +1846,43 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
     if (!target.length) return alert("找不到包含該文字的遊戲名字");
 
     const now = Date.now();
-    const jobs = target.map(({ ref, gameName }) => {
+    const jobs = [];
+    const aliasJobs = [];
+
+    target.forEach(({ ref, gameName }) => {
       let nextName = "";
 
-      // ✅ 若原本有前綴，就保留前綴，後面改成新名字
       if (gameName.startsWith(PREFIX)) {
-        // 如果你新名字自己就有輸入前綴，也尊重你
         nextName = newPart.startsWith(PREFIX) ? newPart : (PREFIX + newPart);
       } else {
-        nextName = newPart; // 沒前綴就整個改
+        nextName = newPart;
       }
 
-      return updateDoc(ref, { gameName: nextName, updatedAt: now });
+      jobs.push(updateDoc(ref, {
+        gameName: nextName,
+        updatedAt: now
+      }));
+
+      // ✅ 額外記錄：舊名字 -> 新名字
+      aliasJobs.push(addDoc(aliasRef, {
+        oldName: gameName,
+        newName: nextName,
+        createdAt: now
+      }));
     });
 
-    await Promise.all(jobs);
+    await Promise.all([...jobs, ...aliasJobs]);
 
-    // 清空輸入框
     document.getElementById("oldGameInput").value = "";
     document.getElementById("newGameInput").value = "";
 
     alert(`修改完成！共更新 ${target.length} 筆`);
     await loadAll();
+    await loadRanking();
   } catch (e) {
     alert(e.message || "修改失敗");
   }
 }
-
-    function clearInputs() {
-      document.getElementById("lineInput").value = "";
-      document.getElementById("gameInput").value = "";
-    }
-
-    function resetListUI() {
-      document.getElementById("listTitle").textContent = "目前資料（尚未載入）";
-      document.getElementById("resultCount").textContent = "";
-      document.getElementById("listContainer").innerHTML = "";
-    }
-
-    async function updateTodayViewCount() {
-  try {
-    // ✅ 用台灣時區算「今天」
-    const today = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Taipei",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date()); // YYYY-MM-DD
-
-    const countSpan = document.getElementById("todayCount");
-    const docRef = doc(db, "daily_views", today);
-
-    const snap = await getDoc(docRef);
-    if (snap.exists()) {
-      await updateDoc(docRef, { count: increment(1) });
-    } else {
-      await setDoc(docRef, { count: 1 });
-    }
-
-    const newSnap = await getDoc(docRef);
-    countSpan.textContent = newSnap.exists() ? newSnap.data().count : "0";
-  } catch (e) {
-    console.error(e);
-    const countSpan = document.getElementById("todayCount");
-    if (countSpan) countSpan.textContent = "讀取失敗";
-  }
-}
-
-    /* ✅ GitHub 最後更新時間（只更新右下角那個 span） */
-    async function loadLastUpdateTime() {
-      const el = document.getElementById("lastUpdateTime");
-      if (!el) return;
-
-      try {
-        const owner = "jyc957";
-        const repo = "linegame";
-        const path = "linename.html";
-
-        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(path)}&per_page=1`;
-
-        const res = await fetch(apiUrl, { cache: "no-store" });
-        if (!res.ok) throw new Error("GitHub API 讀取失敗");
-
-        const data = await res.json();
-        if (!data || !data.length) {
-          el.textContent = "未知";
-          return;
-        }
-
-        const dateStr = data[0].commit.committer.date;
-        const d = new Date(dateStr);
-
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
-        const hh = String(d.getHours()).padStart(2, "0");
-        const mm = String(d.getMinutes()).padStart(2, "0");
-
-        el.textContent = `${y}/${m}/${day} ${hh}:${mm}`;
-      } catch (e) {
-        console.error(e);
-        el.textContent = "讀取失敗";
-      }
-    }
 
     /* 技巧訓練：滑到才載入 + 自動播放/暫停 */
     let trainingInited = false;

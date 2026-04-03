@@ -1124,9 +1124,9 @@ function closeToast(t) {
 
         // ✅ 新增這幾行
         main.style.cursor = "pointer";
-        main.title = "點一下跳I排行榜";
+        main.title = "點一下跳到排行榜";
         main.addEventListener("click", () => {
-          openCurrentDataAndScroll(item.gameName);
+           jumpToRankingByName(item.gameName);
         });
 
         const sub = document.createElement("div");
@@ -1142,7 +1142,6 @@ function closeToast(t) {
         div.appendChild(time);
         box.appendChild(div);
       });
-      openCurrentDataAndScroll();
     }
 
     // ===== 排行榜：時間字串轉成總毫秒（或百分之一秒）方便排序 =====
@@ -1729,7 +1728,6 @@ function applyAliasName(name, aliasMap) {
   return current;
 }
     function jumpToRankingByName(gameName) {
-      openCurrentDataAndScroll();
   const key = normalizeNameKey(gameName);
   if (!key) return;
 

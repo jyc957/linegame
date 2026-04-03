@@ -1676,19 +1676,24 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
     .toLowerCase();                         // 統一小寫
 }
     async function loadNameAliasMap() {
-  const snap = await getDocs(aliasRef);
-  const aliasMap = new Map();
+  try {
+    const snap = await getDocs(aliasRef);
+    const aliasMap = new Map();
 
-  snap.forEach(docSnap => {
-    const d = docSnap.data();
-    const oldName = normalizeNameKey(d.oldName || "");
-    const newName = d.newName || "";
-    if (oldName && newName) {
-      aliasMap.set(oldName, newName);
-    }
-  });
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const oldName = normalizeNameKey(d.oldName || "");
+      const newName = d.newName || "";
+      if (oldName && newName) {
+        aliasMap.set(oldName, newName);
+      }
+    });
 
-  return aliasMap;
+    return aliasMap;
+  } catch (e) {
+    console.error("讀取 game_name_aliases 失敗：", e);
+    return new Map(); // ✅ 就算失敗也不要卡住排行榜
+  }
 }
 
 function applyAliasName(name, aliasMap) {

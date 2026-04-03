@@ -2085,11 +2085,22 @@ function resetMapResultUI(){
 
 resetMapBtn?.addEventListener("click", () => {
   resetMapResultUI();
-  // 可選：給個提示，不要就刪掉這行
   // showToast("已清空抽籤結果");
 });
 
-    });
+// ✅ 等整個頁面元件都準備好後，再做初始化
+setTimeout(() => {
+  updateTodayViewCount();
+  loadLastUpdateTime();
+  loadRanking();
+  renderList([], "目前資料（尚未載入）");
+
+  loadMaps().catch((e) => {
+    console.error(e);
+  });
+}, 0);
+
+});
 
     window.saveRecord = saveRecord;
     window.searchRecords = searchRecords;

@@ -2089,17 +2089,6 @@ resetMapBtn?.addEventListener("click", () => {
 });
 
 // ✅ 等整個頁面元件都準備好後，再做初始化
-setTimeout(() => {
-  updateTodayViewCount();
-  loadLastUpdateTime();
-  loadRanking();
-  renderList([], "目前資料（尚未載入）");
-
-  loadMaps().catch((e) => {
-    console.error(e);
-  });
-}, 0);
-
 });
 
     window.saveRecord = saveRecord;
@@ -2111,21 +2100,40 @@ setTimeout(() => {
     window.resetListUI = resetListUI;
     window.jumpToRankingByName = jumpToRankingByName;
 
-    updateTodayViewCount();
-    loadLastUpdateTime();
-    loadRanking();
-    renderList([], "目前資料（尚未載入）");
-    // 進頁面先顯示目前地圖總數（不抽，只更新 XX 張）
-(async () => {
-  try {
-    await loadMaps(); // loadMaps 裡面會更新 mapTotalCount
-  } catch (e) {
-    console.error(e);
-    // 你想要的話也可以顯示成「讀取失敗」
-    // showModal("地圖清單讀取失敗", { type: "error" });
-  }
-})();
-   
+    function initPageData() {
+  console.log("initPageData 開始執行");
+
+  renderList([], "目前資料（尚未載入）");
+
+  updateTodayViewCount().catch((e) => {
+    console.error("updateTodayViewCount 失敗：", e);
+    const el = document.getElementById("todayCount");
+    if (el) el.textContent = "讀取失敗";
+  });
+
+  loadLastUpdateTime().catch((e) => {
+    console.error("loadLastUpdateTime 失敗：", e);
+    const el = document.getElementById("lastUpdateTime");
+    if (el) el.textContent = "讀取失敗";
+  });
+
+  loadRanking().catch((e) => {
+    console.error("loadRanking 失敗：", e);
+    const el = document.getElementById("rankStatus");
+    if (el) el.textContent = "讀取失敗";
+  });
+
+  loadMaps().catch((e) => {
+    console.error("loadMaps 失敗：", e);
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initPageData);
+} else {
+  initPageData();
+}
+    
   </script>
   <!-- ✅ 自訂提示視窗 -->
 <div id="uiModal" class="ui-modal" aria-hidden="true">

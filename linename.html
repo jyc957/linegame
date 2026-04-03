@@ -1888,7 +1888,82 @@ function applyAliasName(name, aliasMap) {
     alert(e.message || "修改失敗");
   }
 }
+function clearInputs() {
+  document.getElementById("lineInput").value = "";
+  document.getElementById("gameInput").value = "";
+}
 
+function resetListUI() {
+  document.getElementById("listTitle").textContent = "目前資料（尚未載入）";
+  document.getElementById("resultCount").textContent = "";
+  document.getElementById("listContainer").innerHTML = "";
+}
+
+async function updateTodayViewCount() {
+  try {
+    const today = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Taipei",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+
+    const countSpan = document.getElementById("todayCount");
+    const docRef = doc(db, "daily_views", today);
+
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      await updateDoc(docRef, { count: increment(1) });
+    } else {
+      await setDoc(docRef, { count: 1 });
+    }
+
+    const newSnap = await getDoc(docRef);
+    if (countSpan) {
+      countSpan.textContent = newSnap.exists() ? newSnap.data().count : "0";
+    }
+  } catch (e) {
+    console.error(e);
+    const countSpan = document.getElementById("todayCount");
+    if (countSpan) countSpan.textContent = "讀取失敗";
+  }
+}
+
+async function loadLastUpdateTime() {
+  const el = document.getElementById("lastUpdateTime");
+  if (!el) return;
+
+  try {
+    const owner = "jyc957";
+    const repo = "linegame";
+    const path = "linename.html";
+
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(path)}&per_page=1`;
+
+    const res = await fetch(apiUrl, { cache: "no-store" });
+    if (!res.ok) throw new Error("GitHub API 讀取失敗");
+
+    const data = await res.json();
+    if (!data || !data.length) {
+      el.textContent = "未知";
+      return;
+    }
+
+    const dateStr = data[0].commit.committer.date;
+    const d = new Date(dateStr);
+
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+
+    el.textContent = `${y}/${m}/${day} ${hh}:${mm}`;
+  } catch (e) {
+    console.error(e);
+    el.textContent = "讀取失敗";
+  }
+}
     /* 技巧訓練：滑到才載入 + 自動播放/暫停 */
     let trainingInited = false;
 

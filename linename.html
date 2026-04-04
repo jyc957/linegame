@@ -583,6 +583,17 @@
   border-top: 3px solid rgba(0,0,0,0.15);
   margin: 16px -12px 14px;
 }
+    .footer-logo {
+  cursor: pointer;
+}
+
+.admin-only {
+  display: none;
+}
+
+.admin-only.show {
+  display: block;
+}
  </style>
 </head>
 
@@ -1034,6 +1045,34 @@ function showError(msg, title="發生錯誤") { showModal(msg, { title, type:"er
 function showSuccess(msg, title="成功") { showModal(msg, { title, type:"success" }); }
 function showInfo(msg, title="提示") { showModal(msg, { title, type:"info" }); }
 
+    const ADMIN_PASSWORD = "2040417957"; // ← 你自己改成想要的密碼
+let isAdminMode = false;
+
+function setAdminMode(on) {
+  isAdminMode = on;
+
+  const adminBlocks = document.querySelectorAll(".admin-only");
+  adminBlocks.forEach(el => {
+    el.classList.toggle("show", on);
+  });
+
+  if (on) {
+    showSuccess("已進入管理員模式");
+  } else {
+    showInfo("已退出管理員模式");
+  }
+}
+
+function askAdminPassword() {
+  const pwd = window.prompt("請輸入密碼");
+  if (pwd === null) return; // 使用者按取消
+
+  if (pwd === ADMIN_PASSWORD) {
+    setAdminMode(true);
+  } else {
+    showError("密碼錯誤");
+  }
+}6
     function cleanInput(str, fieldName, maxLen = 14) {
       const s = (str || "").trim();
       if (!s) throw new Error(fieldName + " 不能空白");
@@ -2204,7 +2243,10 @@ resetMapBtn?.addEventListener("click", () => {
   resetMapResultUI();
   // showToast("已清空抽籤結果");
 });
-
+const adminEntry = document.getElementById("adminEntry");
+adminEntry?.addEventListener("click", () => {
+  askAdminPassword();
+});
 // ✅ 等整個頁面元件都準備好後，再做初始化
 });
 
@@ -2273,7 +2315,7 @@ if (document.readyState === "loading") {
   <!-- ✅ Toast 容器 -->
 <div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
   <footer class="site-footer">
-  <img src="team.png" alt="KP台灣民眾黨" class="footer-logo">
+  <img src="team.png" alt="KP台灣民眾黨" class="footer-logo" id="adminEntry">
   <div class="footer-text">
     KP台灣民眾黨<br>
     Taiwan People's Party<br>

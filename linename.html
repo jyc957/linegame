@@ -637,7 +637,7 @@
 
       <label>
         遊戲名字：
-        <input id="gameInput" type="text" value="ᴷᴾღ" placeholder="例：ᴷᴾღ帥帥哥" />
+        <input id="gameInput" type="text" placeholder="例：ᴷᴾღ帥帥哥" />
       </label>
 
       <button onclick="saveRecord()">儲存</button>
@@ -953,7 +953,7 @@
   <!-- ✅ 底部資訊列（左：瀏覽人次｜右：最後更新） -->
   <div class="footer-bar">
     <div>今日瀏覽人次：<span id="todayCount">載入中...</span></div>
-    <div>網頁最後更新於：<span id="lastUpdateTime">載入中...</span></div>
+    <div>版本更新於：<span id="lastUpdateTime">載入中...</span></div>
   </div>
 
   <script type="module">
@@ -1751,30 +1751,47 @@ function applyAliasName(name, aliasMap) {
   setTimeout(() => target.classList.remove("flash"), 900);
 }
     async function loadAll() {
-      try {
-        const snap = await getDocs(colRef);
-        const list = [];
-
-        snap.forEach(docSnap => {
-          const d = docSnap.data();
-          list.push({
-            id: docSnap.id,
-            lineId: d.lineId || "",
-            gameName: d.gameName || "",
-            updatedAt: d.updatedAt || d.createdAt || 0
-          });
-        });
-
-        list.sort((a, b) => b.updatedAt - a.updatedAt);
-        renderList(list, "全部資料（依修改時間）");
-      } catch (e) {
-        console.error(e);
-        document.getElementById("listTitle").textContent = "讀取失敗";
-        document.getElementById("resultCount").textContent = "";
-        document.getElementById("listContainer").innerHTML =
-          `<div class="empty-text">讀取資料失敗，請稍後再試。</div>`;
-      }
+  try {
+    // ✅ 先自動展開「新增 / 查詢」
+    const panel = document.getElementById("addPanel");
+    const btn = document.getElementById("toggleAdd");
+    if (panel && !panel.classList.contains("open")) {
+      panel.classList.add("open");
+      if (btn) btn.textContent = "▲ 收合";
     }
+
+    const snap = await getDocs(colRef);
+    const list = [];
+
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      list.push({
+        id: docSnap.id,
+        lineId: d.lineId || "",
+        gameName: d.gameName || "",
+        updatedAt: d.updatedAt || d.createdAt || 0
+      });
+    });
+
+    list.sort((a, b) => b.updatedAt - a.updatedAt);
+    renderList(list, "全部資料（依修改時間）");
+
+    // ✅ 自動捲到名單區
+    setTimeout(() => {
+      document.getElementById("listTitle")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }, 120);
+
+  } catch (e) {
+    console.error(e);
+    document.getElementById("listTitle").textContent = "讀取失敗";
+    document.getElementById("resultCount").textContent = "";
+    document.getElementById("listContainer").innerHTML =
+      `<div class="empty-text">讀取資料失敗，請稍後再試。</div>`;
+  }
+}
 
     async function saveRecord() {
       try {

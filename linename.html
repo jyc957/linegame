@@ -2249,7 +2249,13 @@ resetMapBtn?.addEventListener("click", () => {
 });
 const adminEntry = document.getElementById("adminEntry");
 adminEntry?.addEventListener("click", () => {
-  askAdminPassword();
+  if (isAdminMode) {
+    // 已經是管理員 → 直接退出
+    setAdminMode(false);
+  } else {
+    // 還不是 → 要求輸入密碼
+    askAdminPassword();
+  }
 });
 // ✅ 等整個頁面元件都準備好後，再做初始化
 });

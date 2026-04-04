@@ -597,7 +597,7 @@
 }
 .admin-banner {
   text-align: center;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: bold;
   color: #ffd700;
   margin-top: -8px;
@@ -607,13 +607,38 @@
     body.admin-mode {
   background-color: #f57dba;
 }
+  .item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.item-actions {
+  flex: 0 0 auto;
+}
+
+.delete-btn {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 8px;
+  border: 2px solid #c62828;
+  background: #ffdddd;
+  color: #8b0000;
+  cursor: pointer;
+}
+
+.delete-btn:active {
+  transform: scale(0.97);
+}
  </style>
 </head>
 
 <body>
   <h1>KP台灣民眾黨 黨部系統</h1>
   <div id="adminBanner" class="admin-only admin-banner">
-  ⚙ 管理模式
+  ⚙ 管理模式<br>再次點擊黨徽可退出管理模式
 </div>
   <!-- 🏁 成績排行榜（預設展開，可收合） -->
 <!-- 🏁 成績排行榜（最上方） -->
@@ -987,8 +1012,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
       getFirestore, collection, addDoc,
-      getDocs, query, where, updateDoc,
-      doc, getDoc, setDoc, increment
+  getDocs, query, where, updateDoc, deleteDoc,
+  doc, getDoc, setDoc, increment
     } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -1071,7 +1096,7 @@ function setAdminMode(on) {
   adminBlocks.forEach(el => {
     el.classList.toggle("show", on);
   });
-
+  loadAll().catch(console.error);
   if (on) {
     showSuccess("已進入管理員模式");
   } else {
@@ -1173,29 +1198,54 @@ function closeToast(t) {
         const div = document.createElement("div");
         div.className = "item";
 
-        const main = document.createElement("div");
-        main.className = "item-main";
-        main.textContent = `遊戲名字：${item.gameName}`;
+        const row = document.createElement("div");
+row.className = "item-row";
 
-        // ✅ 新增這幾行
-        main.style.cursor = "pointer";
-        main.title = "點一下跳到排行榜";
-        main.addEventListener("click", () => {
-           jumpToRankingByName(item.gameName);
-        });
+const leftBox = document.createElement("div");
+leftBox.style.flex = "1 1 auto";
+leftBox.style.minWidth = "0";
 
-        const sub = document.createElement("div");
-        sub.className = "item-sub";
-        sub.textContent = `LINE ID：${item.lineId}`;
+const main = document.createElement("div");
+main.className = "item-main";
+main.textContent = `遊戲名字：${item.gameName}`;
+main.style.cursor = "pointer";
+main.title = "點一下跳到排行榜";
+main.addEventListener("click", () => {
+  jumpToRankingByName(item.gameName);
+});
 
-        const time = document.createElement("div");
-        time.className = "item-time";
-        time.textContent = `修改時間：${formatTime(item.updatedAt)}`;
+const sub = document.createElement("div");
+sub.className = "item-sub";
+sub.textContent = `LINE ID：${item.lineId}`;
 
-        div.appendChild(main);
-        div.appendChild(sub);
-        div.appendChild(time);
-        box.appendChild(div);
+const time = document.createElement("div");
+time.className = "item-time";
+time.textContent = `修改時間：${formatTime(item.updatedAt)}`;
+
+leftBox.appendChild(main);
+leftBox.appendChild(sub);
+leftBox.appendChild(time);
+
+row.appendChild(leftBox);
+
+// ✅ 只有管理員模式才顯示刪除按鈕
+if (typeof isAdminMode !== "undefined" && isAdminMode) {
+  const actions = document.createElement("div");
+  actions.className = "item-actions";
+
+  const delBtn = document.createElement("button");
+  delBtn.className = "delete-btn";
+  delBtn.textContent = "刪除";
+  delBtn.addEventListener("click", () => {
+    deleteRecord(item.id, item.gameName);
+  });
+
+  actions.appendChild(delBtn);
+  row.appendChild(actions);
+}
+
+div.appendChild(row);
+box.appendChild(div);
       });
     }
 
@@ -1983,6 +2033,22 @@ function applyAliasName(name, aliasMap) {
   } catch (e) {
     console.error(e);
     showError(e.message || "修改失敗");
+  }
+}
+    async function deleteRecord(id, gameName) {
+  try {
+    const ok = window.confirm(`確定要刪除這筆資料嗎？\n\n遊戲名字：${gameName}`);
+    if (!ok) return;
+
+    await deleteDoc(doc(db, "line_game_records", id));
+
+    showSuccess(`已刪除：${gameName}`);
+
+    // 刪完後重新載入全部資料
+    await loadAll();
+  } catch (e) {
+    console.error(e);
+    showError(e.message || "刪除失敗");
   }
 }
 function clearInputs() {

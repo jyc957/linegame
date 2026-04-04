@@ -595,6 +595,9 @@
 .admin-only.show {
   display: block;
 }
+    body.admin-mode {
+  background-color: #f57dba;
+}
  </style>
 </head>
 
@@ -1051,7 +1054,7 @@ let isAdminMode = false;
 
 function setAdminMode(on) {
   isAdminMode = on;
-
+  document.body.classList.toggle("admin-mode", on);
   const adminBlocks = document.querySelectorAll(".admin-only");
   adminBlocks.forEach(el => {
     el.classList.toggle("show", on);

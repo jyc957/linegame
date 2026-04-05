@@ -639,7 +639,6 @@
   <div id="adminBanner" class="admin-only admin-banner">
   ⚙ 管理模式<br>再次點擊黨徽可退出管理模式
 </div>
-  <button id="importRankingBtn" class="admin-only" onclick="importRankingFromSheet()">📥 匯入排行榜</button>
   <!-- 🏁 成績排行榜（預設展開，可收合） -->
 <!-- 🏁 成績排行榜（最上方） -->
 <div class="section">
@@ -1262,39 +1261,6 @@ function parseTimeToCs(t){ // cs = centiseconds (1/100秒)
   const xx = Number(m[3].padEnd(2,'0')); // 1位補0
   return (mm*60 + ss)*100 + xx;
 }
-
-// 簡單 CSV parser（你的內容很單純：name,time,note...）
-function parseCsvRows(text) {
-  const lines = text.replace(/\r/g, "").split("\n").filter(l => l.trim() !== "");
-  if (!lines.length) return [];
-
-  // 簡單 CSV 解析：支援 "..." 內含逗號
-  const parseLine = (line) => {
-    line = line.replace(/^\uFEFF/, ""); // ✅ 去 BOM
-    const out = [];
-    let cur = "";
-    let inQ = false;
-
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (ch === '"') {
-        // 兩個 "" 視為一個 "
-        if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
-        else inQ = !inQ;
-      } else if (ch === "," && !inQ) {
-        out.push(cur.trim());
-        cur = "";
-      } else {
-        cur += ch;
-      }
-    }
-    out.push(cur.trim());
-    return out;
-  };
-
-  return lines.map(parseLine);
-}
-        // 🔧 修正全形 → 半形
 function normalizeTimeString(str) {
   if (!str) return "";
 
@@ -1422,70 +1388,7 @@ async function showFromRankingByGameName(gameName){
       `<div class="empty-text">查詢失敗，請稍後再試。</div>`;
   }
 }
-async function importRankingFromSheet() {
-  try {
-    const SHEET_CSV_URL =
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzrBZKoOZroOfo6ad-tamTCh0PYtfvEixvubyHvL8uo9qmTQZkzbwSOvIoVIjWHmDfv3JlqRUbAyy_/pub?output=csv";
 
-    const res = await fetch(SHEET_CSV_URL + "&t=" + Date.now());
-    if (!res.ok) throw new Error("試算表讀取失敗：" + res.status);
-
-    const text = await res.text();
-    const rows = parseCsvRows(text);
-
-    // 先讀 Firebase 現有排行榜，避免重複匯入
-    const existingSnap = await getDocs(leaderboardRef);
-    const existingKeys = new Set();
-
-    existingSnap.forEach(docSnap => {
-      const d = docSnap.data();
-      const key = d.recordKey || "";
-      if (key) existingKeys.add(key);
-    });
-
-    let imported = 0;
-    let skipped = 0;
-    const now = Date.now();
-
-    for (const cols of rows.slice(1)) {
-      const gameName = (cols[0] || "").trim();
-      const timeText = normalizeTimeString((cols[1] || "").trim());
-      const timeCs = parseTimeToCs(timeText);
-
-      if (!gameName || timeCs === null) {
-        skipped++;
-        continue;
-      }
-
-      const recordKey = `${normalizeNameKey(gameName)}__${timeCs}`;
-
-      if (existingKeys.has(recordKey)) {
-        skipped++;
-        continue;
-      }
-
-      await addDoc(leaderboardRef, {
-        gameName,
-        timeText,
-        timeCs,
-        track: "城鎮高速公路",
-        source: "imported_from_sheet",
-        recordKey,
-        createdAt: now,
-        updatedAt: now
-      });
-
-      existingKeys.add(recordKey);
-      imported++;
-    }
-
-    showSuccess(`匯入完成：新增 ${imported} 筆，略過 ${skipped} 筆`);
-    await loadRanking();
-  } catch (e) {
-    console.error(e);
-    showError(e.message || "匯入排行榜失敗");
-  }
-}
  async function loadRanking() {
   const statusEl = document.getElementById("rankStatus");
   const listEl = document.getElementById("rankingList");
@@ -2397,7 +2300,6 @@ adminEntry?.addEventListener("click", () => {
     window.clearInputs = clearInputs;
     window.resetListUI = resetListUI;
     window.jumpToRankingByName = jumpToRankingByName;
-    window.importRankingFromSheet = importRankingFromSheet;
 
     function initPageData() {
   console.log("initPageData 開始執行");

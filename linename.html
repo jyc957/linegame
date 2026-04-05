@@ -631,6 +631,13 @@
 .delete-btn:active {
   transform: scale(0.97);
 }
+    #adminScorePanel input {
+  margin-bottom: 6px;
+}
+
+#adminScorePanel button {
+  margin-top: 12px;
+}
  </style>
 </head>
 
@@ -638,6 +645,28 @@
   <h1>KP台灣民眾黨 黨部系統</h1>
   <div id="adminBanner" class="admin-only admin-banner">
   ⚙ 管理模式<br>再次點擊黨徽可退出管理模式
+</div>
+  <div class="section admin-only" id="adminScorePanel">
+  <div class="top-bar">
+    <h2>管理員成績輸入</h2>
+  </div>
+
+  <label>
+    輸入名字：
+    <input id="scoreNameInput" type="text" placeholder="例：小野梅" />
+  </label>
+
+  <label>
+    輸入成績：
+    <input id="scoreTimeInput" type="text" placeholder="例：01:35.28" />
+  </label>
+
+  <button onclick="addLeaderboardRecord()">確認</button>
+
+  <small><br>
+    ● 成績格式請輸入：MM:SS.xx<br>
+    ● 例如：01:35.28
+  </small>
 </div>
   <!-- 🏁 成績排行榜（預設展開，可收合） -->
 <!-- 🏁 成績排行榜（最上方） -->
@@ -1817,7 +1846,50 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
       `<div class="empty-text">讀取資料失敗，請稍後再試。</div>`;
   }
 }
+async function addLeaderboardRecord() {
+  try {
+    const gameName = cleanInput(
+      document.getElementById("scoreNameInput").value,
+      "名字",
+      30
+    );
 
+    const rawTime = cleanInput(
+      document.getElementById("scoreTimeInput").value,
+      "成績",
+      20
+    );
+
+    const timeText = normalizeTimeString(rawTime);
+    const timeCs = parseTimeToCs(timeText);
+
+    if (timeCs === null) {
+      showError("成績格式錯誤，請輸入 MM:SS.xx，例如 01:35.28");
+      return;
+    }
+
+    const now = Date.now();
+    const recordKey = `${normalizeNameKey(gameName)}__${timeCs}`;
+
+    await addDoc(leaderboardRef, {
+      gameName,
+      timeText,
+      timeCs,
+      track: "城鎮高速公路",
+      recordKey,
+      createdAt: now,
+      updatedAt: now
+    });
+
+    document.getElementById("scoreNameInput").value = "";
+    document.getElementById("scoreTimeInput").value = "";
+
+    showSuccess(`已新增成績：${gameName} ${timeText}`);
+  } catch (e) {
+    console.error(e);
+    showError(e.message || "新增成績失敗");
+  }
+}
     async function saveRecord() {
       try {
         const line = cleanInput(document.getElementById("lineInput").value, "LINE ID");
@@ -2264,6 +2336,7 @@ adminEntry?.addEventListener("click", () => {
     window.clearInputs = clearInputs;
     window.resetListUI = resetListUI;
     window.jumpToRankingByName = jumpToRankingByName;
+    window.addLeaderboardRecord = addLeaderboardRecord;
 
     function initPageData() {
   console.log("initPageData 開始執行");

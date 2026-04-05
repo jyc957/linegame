@@ -332,7 +332,6 @@
   border: 1px solid rgba(255,255,255,.12);
   display: flex;
   gap: 10px;
-  pointer-events: none;
   align-items: flex-start;
   pointer-events: auto; /* 允許點擊關閉 */
   transform: translateY(8px);
@@ -1115,7 +1114,7 @@ function askAdminPassword() {
   } else {
     showError("密碼錯誤");
   }
-}6
+}
     function cleanInput(str, fieldName, maxLen = 14) {
       const s = (str || "").trim();
       if (!s) throw new Error(fieldName + " 不能空白");
@@ -2021,9 +2020,8 @@ function applyAliasName(name, aliasMap) {
       }
     }
 
-    async function updateGameName() {
-  trasync function updateGameName() {
-  try {
+   async function updateGameName() {
+     try {
     const oldPart = cleanInput(document.getElementById("oldGameInput").value, "舊遊戲名字", 30);
     const newPart = cleanInput(document.getElementById("newGameInput").value, "新遊戲名字", 30);
 

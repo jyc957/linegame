@@ -638,6 +638,27 @@
 #adminScorePanel button {
   margin-top: 12px;
 }
+    .time-hint {
+  margin-top: 4px;
+  font-size: 12px;
+  min-height: 18px;
+  color: #666;
+}
+
+.time-hint.error {
+  color: #c62828;
+  font-weight: bold;
+}
+
+.time-hint.ok {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.input-error {
+  border: 2px solid #c62828 !important;
+  background: #fff5f5;
+}
  </style>
 </head>
 
@@ -658,7 +679,8 @@
 
   <label>
     輸入成績：
-    <input id="scoreTimeInput" type="text" placeholder="例：01:35.28" />
+    <input id="scoreTimeInput" type="text" placeholder="例：01:35.28" inputmode="decimal" />
+<div id="scoreTimeHint" class="time-hint"></div>
   </label>
 
   <button onclick="addLeaderboardRecord()">確認</button>
@@ -1288,6 +1310,39 @@ function parseTimeToCs(t){ // cs = centiseconds (1/100秒)
   const xx = Number(m[3].padEnd(2,'0')); // 1位補0
   return (mm*60 + ss)*100 + xx;
 }
+    function validateScoreTimeInput(showMessage = true) {
+  const input = document.getElementById("scoreTimeInput");
+  const hint = document.getElementById("scoreTimeHint");
+  if (!input || !hint) return false;
+
+  const raw = input.value || "";
+  const normalized = normalizeTimeString(raw);
+  const cs = parseTimeToCs(normalized);
+
+  input.classList.remove("input-error");
+  hint.classList.remove("error", "ok");
+
+  if (!raw.trim()) {
+    hint.textContent = "";
+    return false;
+  }
+
+  if (cs === null) {
+    input.classList.add("input-error");
+    if (showMessage) {
+      hint.textContent = "格式錯誤，請輸入 MM:SS.xx，例如 01:35.28";
+      hint.classList.add("error");
+    }
+    return false;
+  }
+
+  if (showMessage) {
+    hint.textContent = `格式正確：${normalized}`;
+    hint.classList.add("ok");
+  }
+
+  return true;
+}
 function normalizeTimeString(str) {
   return String(str || "")
     .trim()
@@ -1836,31 +1891,66 @@ async function addLeaderboardRecord() {
     );
 
     const timeText = normalizeTimeString(rawTime);
-    document.getElementById("scoreTimeInput").value = timeText;
     const timeCs = parseTimeToCs(timeText);
 
+    document.getElementById("scoreTimeInput").value = timeText;
+
     if (timeCs === null) {
-      showError("成績格式錯誤，請輸入 MM:SS.xx，例如 01:35.28");
+      validateScoreTimeInput(true);
+      showError("成績格式錯誤");
       return;
     }
 
     const now = Date.now();
-    const recordKey = `${normalizeNameKey(gameName)}__${timeCs}`;
+    const nameKey = normalizeNameKey(gameName);
 
-    await addDoc(leaderboardRef, {
-      gameName,
-      timeText,
-      timeCs,
-      track: "城鎮高速公路",
-      recordKey,
-      createdAt: now,
-      updatedAt: now
+    // 🔍 找這個人的成績
+    const snap = await getDocs(leaderboardRef);
+
+    let foundDoc = null;
+
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      if (normalizeNameKey(d.gameName) === nameKey) {
+        foundDoc = { id: docSnap.id, data: d };
+      }
     });
+
+    if (!foundDoc) {
+      // 🆕 沒有 → 新增
+      await addDoc(leaderboardRef, {
+        gameName,
+        timeText,
+        timeCs,
+        track: "城鎮高速公路",
+        createdAt: now,
+        updatedAt: now
+      });
+
+      showSuccess(`已新增成績：${gameName} ${timeText}`);
+    } else {
+      const oldCs = Number(foundDoc.data.timeCs || 0);
+
+      if (timeCs < oldCs) {
+        // 🚀 更快 → 覆蓋
+        await updateDoc(doc(db, "leaderboard_records", foundDoc.id), {
+          gameName,
+          timeText,
+          timeCs,
+          updatedAt: now
+        });
+
+        showSuccess(`刷新最佳成績！${gameName} ${timeText}`);
+      } else {
+        // 🐢 比較慢
+        showError("這筆成績沒有比原本更好");
+        return;
+      }
+    }
 
     document.getElementById("scoreNameInput").value = "";
     document.getElementById("scoreTimeInput").value = "";
 
-    showSuccess(`已新增成績：${gameName} ${timeText}`);
   } catch (e) {
     console.error(e);
     showError(e.message || "新增成績失敗");
@@ -2137,6 +2227,24 @@ async function loadLastUpdateTime() {
     }
 
     window.addEventListener("load", () => {
+      const scoreTimeInput = document.getElementById("scoreTimeInput");
+scoreTimeInput?.addEventListener("input", () => {
+  validateScoreTimeInput(true);
+});
+
+scoreTimeInput?.addEventListener("blur", () => {
+  const input = document.getElementById("scoreTimeInput");
+  if (!input) return;
+
+  const normalized = normalizeTimeString(input.value || "");
+  const cs = parseTimeToCs(normalized);
+
+  if (cs !== null) {
+    input.value = normalized; // 離開輸入框時自動修正格式
+  }
+
+  validateScoreTimeInput(true);
+});
       const addBtn = document.getElementById("toggleAdd");
       const addPanel = document.getElementById("addPanel");
       addBtn?.addEventListener("click", () => {

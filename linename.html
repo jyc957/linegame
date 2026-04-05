@@ -1447,29 +1447,39 @@ async function showFromRankingByGameName(gameName){
 }
     
  let stopRankingRealtime = null;
+ let stopRankingRealtime = null;
+ let stopPlayersRealtime = null;
+ let latestPlayersSnap = null;
+ let latestLeaderboardSnap = null;
     
  async function loadRanking() {
-  const statusEl = document.getElementById("rankStatus");
-  const listEl = document.getElementById("rankingList");
-
-  try {
-    if (statusEl) statusEl.textContent = "載入中...";
-    if (listEl) listEl.innerHTML = "";
-
-    const snap = await getDocs(leaderboardRef);
-    renderRankingFromSnapshot(snap);
-  } catch (e) {
-    console.error(e);
-    if (statusEl) statusEl.textContent = "排行榜讀取失敗";
-  }
+  startRankingRealtime();
 }
-  function renderRankingFromSnapshot(snap) {
+  function renderMergedRanking(playersSnap, leaderboardSnap) {
   const statusEl = document.getElementById("rankStatus");
   const listEl = document.getElementById("rankingList");
 
-  const list = [];
+  if (!playersSnap || !leaderboardSnap) {
+    if (statusEl) statusEl.textContent = "載入中...";
+    return;
+  }
 
-  snap.forEach(docSnap => {
+  const playerMap = new Map();
+  playersSnap.forEach(docSnap => {
+    const d = docSnap.data();
+    const gameName = (d.gameName || "").trim();
+    if (!gameName) return;
+
+    playerMap.set(normalizeNameKey(gameName), {
+      id: docSnap.id,
+      gameName,
+      lineId: d.lineId || "",
+      updatedAt: d.updatedAt || d.createdAt || 0
+    });
+  });
+
+  const bestScoreMap = new Map();
+  leaderboardSnap.forEach(docSnap => {
     const d = docSnap.data();
     const gameName = (d.gameName || "").trim();
     const timeText = normalizeTimeString((d.timeText || "").trim());
@@ -1477,50 +1487,81 @@ async function showFromRankingByGameName(gameName){
 
     if (!gameName || !Number.isFinite(timeCs)) return;
 
-    list.push({
-      id: docSnap.id,
-      name: gameName,
-      time: timeText,
-      cs: timeCs
+    const key = normalizeNameKey(gameName);
+    const prev = bestScoreMap.get(key);
+
+    if (!prev || timeCs < prev.cs) {
+      bestScoreMap.set(key, {
+        id: docSnap.id,
+        gameName,
+        time: timeText,
+        cs: timeCs
+      });
+    }
+  });
+
+  const merged = [];
+
+  // 先把名單的人全放進去
+  playerMap.forEach((player, key) => {
+    const score = bestScoreMap.get(key);
+
+    merged.push({
+      name: player.gameName,
+      lineId: player.lineId,
+      hasScore: !!score,
+      time: score ? score.time : "暫無成績",
+      cs: score ? score.cs : null
     });
   });
 
-  if (!list.length) {
-    if (listEl) listEl.innerHTML = "";
-    if (statusEl) statusEl.textContent = "目前沒有成績資料";
+  // 若排行榜裡有成績，但名單沒這個人，也補進去
+  bestScoreMap.forEach((score, key) => {
+    if (!playerMap.has(key)) {
+      merged.push({
+        name: score.gameName,
+        lineId: "",
+        hasScore: true,
+        time: score.time,
+        cs: score.cs
+      });
+    }
+  });
+
+  // 排序：有成績在前，沒成績在後；有成績按時間小到大
+  merged.sort((a, b) => {
+    if (a.hasScore && b.hasScore) return a.cs - b.cs;
+    if (a.hasScore && !b.hasScore) return -1;
+    if (!a.hasScore && b.hasScore) return 1;
+    return normalizeNameKey(a.name).localeCompare(normalizeNameKey(b.name));
+  });
+
+  if (listEl) listEl.innerHTML = "";
+
+  if (!merged.length) {
+    if (statusEl) statusEl.textContent = "目前沒有名單資料";
     return;
   }
 
-  list.sort((a, b) => a.cs - b.cs);
-
-  if (statusEl) statusEl.textContent = `已載入 ${list.length} 筆成績`;
-  if (listEl) listEl.innerHTML = "";
+  if (statusEl) {
+    const scoredCount = merged.filter(x => x.hasScore).length;
+    const noScoreCount = merged.length - scoredCount;
+    statusEl.textContent = `共 ${merged.length} 人，已有成績 ${scoredCount} 人，暫無成績 ${noScoreCount} 人`;
+  }
 
   let lastCs = null;
   let rank = 0;
   let shown = 0;
 
-  list.forEach((item) => {
-    shown++;
-
-    if (item.cs !== lastCs) {
-      rank = shown;
-      lastCs = item.cs;
-    }
-
+  merged.forEach((item) => {
     const row = document.createElement("div");
     row.className = "rank-row";
-
-    if (rank === 1) row.classList.add("top1");
-    if (rank === 2) row.classList.add("top2");
-    if (rank === 3) row.classList.add("top3");
 
     const left = document.createElement("div");
     left.className = "rank-left";
 
     const posEl = document.createElement("div");
     posEl.className = "rank-pos";
-    posEl.textContent = (rank <= 3) ? `第${rank}名` : `#${rank}`;
 
     const nameEl = document.createElement("div");
     nameEl.className = "rank-name";
@@ -1529,6 +1570,23 @@ async function showFromRankingByGameName(gameName){
     const timeEl = document.createElement("div");
     timeEl.className = "rank-time";
     timeEl.textContent = item.time;
+
+    if (item.hasScore) {
+      shown++;
+      if (item.cs !== lastCs) {
+        rank = shown;
+        lastCs = item.cs;
+      }
+
+      posEl.textContent = (rank <= 3) ? `第${rank}名` : `#${rank}`;
+
+      if (rank === 1) row.classList.add("top1");
+      if (rank === 2) row.classList.add("top2");
+      if (rank === 3) row.classList.add("top3");
+    } else {
+      posEl.textContent = "--";
+      row.style.opacity = "0.75";
+    }
 
     left.appendChild(posEl);
     left.appendChild(nameEl);
@@ -1558,14 +1616,34 @@ function startRankingRealtime() {
     stopRankingRealtime();
     stopRankingRealtime = null;
   }
+  if (stopPlayersRealtime) {
+    stopPlayersRealtime();
+    stopPlayersRealtime = null;
+  }
+
+  latestPlayersSnap = null;
+  latestLeaderboardSnap = null;
 
   if (statusEl) statusEl.textContent = "載入中...";
   if (listEl) listEl.innerHTML = "";
 
+  stopPlayersRealtime = onSnapshot(
+    colRef,
+    (snap) => {
+      latestPlayersSnap = snap;
+      renderMergedRanking(latestPlayersSnap, latestLeaderboardSnap);
+    },
+    (error) => {
+      console.error(error);
+      if (statusEl) statusEl.textContent = "名單即時同步失敗";
+    }
+  );
+
   stopRankingRealtime = onSnapshot(
     leaderboardRef,
     (snap) => {
-      renderRankingFromSnapshot(snap);
+      latestLeaderboardSnap = snap;
+      renderMergedRanking(latestPlayersSnap, latestLeaderboardSnap);
     },
     (error) => {
       console.error(error);
@@ -1897,19 +1975,40 @@ async function addLeaderboardRecord() {
 
     if (timeCs === null) {
       validateScoreTimeInput(true);
-      showError("成績格式錯誤");
+      showError("成績格式錯誤，請輸入 MM:SS.xx，例如 01:35.28");
       return;
     }
 
     const now = Date.now();
     const nameKey = normalizeNameKey(gameName);
 
-    // 🔍 找這個人的成績
-    const snap = await getDocs(leaderboardRef);
+    // ✅ 先確認這個名字有沒有在名單裡
+    const playerSnap = await getDocs(colRef);
+    let matchedPlayer = null;
+
+    playerSnap.forEach(docSnap => {
+      const d = docSnap.data();
+      const playerName = d.gameName || "";
+
+      if (normalizeNameKey(playerName) === nameKey) {
+        matchedPlayer = {
+          id: docSnap.id,
+          gameName: playerName
+        };
+      }
+    });
+
+    if (!matchedPlayer) {
+      showError("這個名字不在名單裡，請先新增名單資料");
+      return;
+    }
+
+    // ✅ 找這個人的排行榜資料（只保留最佳成績）
+    const rankSnap = await getDocs(leaderboardRef);
 
     let foundDoc = null;
 
-    snap.forEach(docSnap => {
+    rankSnap.forEach(docSnap => {
       const d = docSnap.data();
       if (normalizeNameKey(d.gameName) === nameKey) {
         foundDoc = { id: docSnap.id, data: d };
@@ -1917,32 +2016,33 @@ async function addLeaderboardRecord() {
     });
 
     if (!foundDoc) {
-      // 🆕 沒有 → 新增
+      // 沒有成績 → 新增
       await addDoc(leaderboardRef, {
-        gameName,
+        gameName: matchedPlayer.gameName, // 用名單裡的正式名字
         timeText,
         timeCs,
         track: "城鎮高速公路",
+        recordKey: `${normalizeNameKey(matchedPlayer.gameName)}__${timeCs}`,
         createdAt: now,
         updatedAt: now
       });
 
-      showSuccess(`已新增成績：${gameName} ${timeText}`);
+      showSuccess(`已新增成績：${matchedPlayer.gameName} ${timeText}`);
     } else {
       const oldCs = Number(foundDoc.data.timeCs || 0);
 
       if (timeCs < oldCs) {
-        // 🚀 更快 → 覆蓋
+        // 新成績更快 → 覆蓋最佳
         await updateDoc(doc(db, "leaderboard_records", foundDoc.id), {
-          gameName,
+          gameName: matchedPlayer.gameName,
           timeText,
           timeCs,
+          recordKey: `${normalizeNameKey(matchedPlayer.gameName)}__${timeCs}`,
           updatedAt: now
         });
 
-        showSuccess(`刷新最佳成績！${gameName} ${timeText}`);
+        showSuccess(`已更新最佳成績：${matchedPlayer.gameName} ${timeText}`);
       } else {
-        // 🐢 比較慢
         showError("這筆成績沒有比原本更好");
         return;
       }
@@ -1950,6 +2050,11 @@ async function addLeaderboardRecord() {
 
     document.getElementById("scoreNameInput").value = "";
     document.getElementById("scoreTimeInput").value = "";
+    const hint = document.getElementById("scoreTimeHint");
+    if (hint) {
+      hint.textContent = "";
+      hint.classList.remove("error", "ok");
+    }
 
   } catch (e) {
     console.error(e);

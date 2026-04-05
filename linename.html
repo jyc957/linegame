@@ -1310,6 +1310,39 @@ function parseTimeToCs(t){ // cs = centiseconds (1/100秒)
   const xx = Number(m[3].padEnd(2,'0')); // 1位補0
   return (mm*60 + ss)*100 + xx;
 }
+    function parseCsvRows(text) {
+  const lines = text.replace(/\r/g, "").split("\n").filter(l => l.trim() !== "");
+  if (!lines.length) return [];
+
+  const parseLine = (line) => {
+    line = line.replace(/^\uFEFF/, "");
+    const out = [];
+    let cur = "";
+    let inQ = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQ && line[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQ = !inQ;
+        }
+      } else if (ch === "," && !inQ) {
+        out.push(cur.trim());
+        cur = "";
+      } else {
+        cur += ch;
+      }
+    }
+
+    out.push(cur.trim());
+    return out;
+  };
+
+  return lines.map(parseLine);
+}
     function validateScoreTimeInput(showMessage = true) {
   const input = document.getElementById("scoreTimeInput");
   const hint = document.getElementById("scoreTimeHint");
@@ -1445,8 +1478,6 @@ async function showFromRankingByGameName(gameName){
       `<div class="empty-text">查詢失敗，請稍後再試。</div>`;
   }
 }
-    
- let stopRankingRealtime = null;
  let stopRankingRealtime = null;
  let stopPlayersRealtime = null;
  let latestPlayersSnap = null;

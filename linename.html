@@ -1159,11 +1159,15 @@ let isAdminMode = false;
 function setAdminMode(on) {
   isAdminMode = on;
   document.body.classList.toggle("admin-mode", on);
+
   const adminBlocks = document.querySelectorAll(".admin-only");
   adminBlocks.forEach(el => {
     el.classList.toggle("show", on);
   });
+
   loadAll().catch(console.error);
+  loadRanking().catch(console.error); // ✅ 這行一定要加
+
   if (on) {
     showSuccess("已進入管理員模式");
   } else {

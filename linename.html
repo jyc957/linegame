@@ -640,6 +640,7 @@
   <div id="adminBanner" class="admin-only admin-banner">
   ⚙ 管理模式<br>再次點擊黨徽可退出管理模式
 </div>
+  <button id="importRankingBtn" class="admin-only" onclick="importRankingFromSheet()">📥 匯入排行榜</button>
   <!-- 🏁 成績排行榜（預設展開，可收合） -->
 <!-- 🏁 成績排行榜（最上方） -->
 <div class="section">
@@ -1030,6 +1031,7 @@
 
     const colRef = collection(db, "line_game_records");
     const aliasRef = collection(db, "game_name_aliases");
+    const leaderboardRef = collection(db, "leaderboard_records");
 
     // ✅ 自訂 Modal（取代 alert）
 const uiModal = document.getElementById("uiModal");
@@ -1421,7 +1423,70 @@ async function showFromRankingByGameName(gameName){
       `<div class="empty-text">查詢失敗，請稍後再試。</div>`;
   }
 }
+async function importRankingFromSheet() {
+  try {
+    const SHEET_CSV_URL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzrBZKoOZroOfo6ad-tamTCh0PYtfvEixvubyHvL8uo9qmTQZkzbwSOvIoVIjWHmDfv3JlqRUbAyy_/pub?output=csv";
 
+    const res = await fetch(SHEET_CSV_URL + "&t=" + Date.now());
+    if (!res.ok) throw new Error("試算表讀取失敗：" + res.status);
+
+    const text = await res.text();
+    const rows = parseCsvRows(text);
+
+    // 先讀 Firebase 現有排行榜，避免重複匯入
+    const existingSnap = await getDocs(leaderboardRef);
+    const existingKeys = new Set();
+
+    existingSnap.forEach(docSnap => {
+      const d = docSnap.data();
+      const key = d.recordKey || "";
+      if (key) existingKeys.add(key);
+    });
+
+    let imported = 0;
+    let skipped = 0;
+    const now = Date.now();
+
+    for (const cols of rows.slice(1)) {
+      const gameName = (cols[0] || "").trim();
+      const timeText = normalizeTimeString((cols[1] || "").trim());
+      const timeCs = parseTimeToCs(timeText);
+
+      if (!gameName || timeCs === null) {
+        skipped++;
+        continue;
+      }
+
+      const recordKey = `${normalizeNameKey(gameName)}__${timeCs}`;
+
+      if (existingKeys.has(recordKey)) {
+        skipped++;
+        continue;
+      }
+
+      await addDoc(leaderboardRef, {
+        gameName,
+        timeText,
+        timeCs,
+        track: "城鎮高速公路",
+        source: "imported_from_sheet",
+        recordKey,
+        createdAt: now,
+        updatedAt: now
+      });
+
+      existingKeys.add(recordKey);
+      imported++;
+    }
+
+    showSuccess(`匯入完成：新增 ${imported} 筆，略過 ${skipped} 筆`);
+    await loadRanking();
+  } catch (e) {
+    console.error(e);
+    showError(e.message || "匯入排行榜失敗");
+  }
+}
  async function loadRanking() {
   const statusEl = document.getElementById("rankStatus");
   const listEl = document.getElementById("rankingList");
@@ -1430,59 +1495,43 @@ async function showFromRankingByGameName(gameName){
     if (statusEl) statusEl.textContent = "載入中...";
     if (listEl) listEl.innerHTML = "";
 
-    const aliasMap = await loadNameAliasMap();
+    const snap = await getDocs(leaderboardRef);
+    const list = [];
 
-    // ✅ Google 試算表 CSV（已公開）
-    const SHEET_CSV_URL =
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzrBZKoOZroOfo6ad-tamTCh0PYtfvEixvubyHvL8uo9qmTQZkzbwSOvIoVIjWHmDfv3JlqRUbAyy_/pub?output=csv";
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const gameName = (d.gameName || "").trim();
+      const timeText = normalizeTimeString((d.timeText || "").trim());
+      const timeCs = Number(d.timeCs);
 
-    // 破快取
-    const url = SHEET_CSV_URL + "&t=" + Date.now();
+      if (!gameName || !Number.isFinite(timeCs)) return;
 
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("讀取失敗：" + res.status);
-
-    const text = await res.text();
-    const rows = parseCsvRows(text);
-
-    const list = rows
-      .slice(1)
-      .map((cols) => {
-        const rawName = (cols[0] || "").trim();
-        const displayName = applyAliasName(rawName, aliasMap);
-        const timeStr = normalizeTimeString((cols[1] || "").trim());
-        const cs = parseTimeToCs(timeStr);
-
-        return {
-          rawName,
-          name: displayName,
-          time: timeStr,
-          cs
-        };
-      })
-      .filter((x) => x.rawName && x.cs !== null);
+      list.push({
+        id: docSnap.id,
+        name: gameName,
+        time: timeText,
+        cs: timeCs
+      });
+    });
 
     if (!list.length) {
-      if (statusEl) statusEl.textContent = "目前沒有有效成績（格式需為 MM:SS.xx）";
+      if (statusEl) statusEl.textContent = "目前沒有成績資料";
       return;
     }
 
-    // 依時間排序（越小越快）
     list.sort((a, b) => a.cs - b.cs);
 
     if (statusEl) statusEl.textContent = `已載入 ${list.length} 筆成績`;
 
-    // ===== 渲染排行榜（同成績並列名次：會跳號，例如 1,1,3）=====
     listEl.innerHTML = "";
 
-    let lastCs = null; // 上一筆成績（排序後）
-    let rank = 0;      // 目前名次（會跳號）
-    let shown = 0;     // 已渲染筆數
+    let lastCs = null;
+    let rank = 0;
+    let shown = 0;
 
     list.forEach((item) => {
       shown++;
 
-      // 同成績 => 名次不變；不同成績 => 名次更新成目前筆數（所以跳號）
       if (item.cs !== lastCs) {
         rank = shown;
         lastCs = item.cs;
@@ -1491,12 +1540,10 @@ async function showFromRankingByGameName(gameName){
       const row = document.createElement("div");
       row.className = "rank-row";
 
-      // 前三名底色：用 rank 判斷才符合並列
       if (rank === 1) row.classList.add("top1");
       if (rank === 2) row.classList.add("top2");
       if (rank === 3) row.classList.add("top3");
 
-      // ✅ 用 textContent 避免特殊字元影響 HTML
       const left = document.createElement("div");
       left.className = "rank-left";
 
@@ -1517,28 +1564,24 @@ async function showFromRankingByGameName(gameName){
       row.appendChild(left);
       row.appendChild(timeEl);
 
-      // ✅ 給 jumpToRankingByName 用（你那邊是用 dataset.nameKey 找）
       row.dataset.nameKey = normalizeNameKey(item.name);
 
-      // ✅ 點擊排行榜：下方顯示此人的遊戲名字+LINE ID
       row.style.cursor = "pointer";
       row.title = "點一下顯示此人的 LINE ID";
       row.addEventListener("click", () => {
-  // 1) 不管有沒有留資料，都先展開「目前資料」那塊並捲到位置
-  openCurrentDataAndScroll();
+        openCurrentDataAndScroll();
 
-  // 2) 等展開動畫跑完再做查詢/顯示（避免你說的「滾動卡一半」）
-  setTimeout(() => {
-    showFromRankingByGameName(item.name);
-  }, 450); // 這個時間要 >= 你的展開動畫時間
-});
+        setTimeout(() => {
+          showFromRankingByGameName(item.name);
+        }, 450);
+      });
 
       listEl.appendChild(row);
     });
 
   } catch (e) {
     console.error(e);
-    if (statusEl) statusEl.textContent = "排行榜：讀取失敗（請確認試算表為公開 CSV）";
+    if (statusEl) statusEl.textContent = "排行榜讀取失敗";
   }
 }
     // 抽幾張 -> 難度總和上限（固定規則）
@@ -1979,55 +2022,65 @@ function applyAliasName(name, aliasMap) {
     }
 
     async function updateGameName() {
+  trasync function updateGameName() {
   try {
     const oldPart = cleanInput(document.getElementById("oldGameInput").value, "舊遊戲名字", 30);
     const newPart = cleanInput(document.getElementById("newGameInput").value, "新遊戲名字", 30);
 
-    const snap = await getDocs(colRef);
-
-    const target = [];
     const oldKey = normalizeNameKey(oldPart);
+    const now = Date.now();
 
-    snap.forEach(docSnap => {
+    // 1. 改名單資料
+    const playerSnap = await getDocs(colRef);
+    const playerJobs = [];
+    let hitPlayers = 0;
+
+    playerSnap.forEach(docSnap => {
       const d = docSnap.data();
-      const gameName = (d.gameName || "");
+      const gameName = d.gameName || "";
       const gameKey = normalizeNameKey(gameName);
 
       if (gameKey.includes(oldKey)) {
-        target.push({ ref: docSnap.ref, gameName });
+        hitPlayers++;
+        playerJobs.push(updateDoc(docSnap.ref, {
+          gameName: newPart,
+          updatedAt: now
+        }));
       }
     });
 
-    if (!target.length) {
+    // 2. 改排行榜資料
+    const rankSnap = await getDocs(leaderboardRef);
+    const rankJobs = [];
+    let hitRanks = 0;
+
+    rankSnap.forEach(docSnap => {
+      const d = docSnap.data();
+      const gameName = d.gameName || "";
+      const gameKey = normalizeNameKey(gameName);
+
+      if (gameKey.includes(oldKey)) {
+        hitRanks++;
+        const timeCs = Number(d.timeCs || 0);
+        rankJobs.push(updateDoc(docSnap.ref, {
+          gameName: newPart,
+          recordKey: `${normalizeNameKey(newPart)}__${timeCs}`,
+          updatedAt: now
+        }));
+      }
+    });
+
+    if (!hitPlayers && !hitRanks) {
       showError("找不到包含該文字的遊戲名字");
       return;
     }
 
-    const now = Date.now();
-    const jobs = [];
-    const aliasJobs = [];
-
-    target.forEach(({ ref, gameName }) => {
-      const nextName = newPart; // ✅ 完全照你輸入，不自動補前綴
-
-      jobs.push(updateDoc(ref, {
-        gameName: nextName,
-        updatedAt: now
-      }));
-
-      aliasJobs.push(addDoc(aliasRef, {
-        oldName: gameName,
-        newName: nextName,
-        createdAt: now
-      }));
-    });
-
-    await Promise.all([...jobs, ...aliasJobs]);
+    await Promise.all([...playerJobs, ...rankJobs]);
 
     document.getElementById("oldGameInput").value = "";
     document.getElementById("newGameInput").value = "";
 
-    showSuccess(`修改完成！共更新 ${target.length} 筆`);
+    showSuccess(`修改完成！名單更新 ${hitPlayers} 筆，排行榜更新 ${hitRanks} 筆`);
     await loadAll();
     await loadRanking();
   } catch (e) {
@@ -2346,6 +2399,7 @@ adminEntry?.addEventListener("click", () => {
     window.clearInputs = clearInputs;
     window.resetListUI = resetListUI;
     window.jumpToRankingByName = jumpToRankingByName;
+    window.importRankingFromSheet = importRankingFromSheet;
 
     function initPageData() {
   console.log("initPageData 開始執行");

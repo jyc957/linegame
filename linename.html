@@ -645,12 +645,11 @@
   <div class="top-bar">
     <h2>成績排行榜</h2>
     <button id="toggleRanking">▲ 收合</button>
-    <button id="refreshRanking">🔄 刷新成績</button>
   </div>
 
   <!-- 可收合內容 -->
   <div id="rankingPanel" class="collapse-content open">
-    <div class="smword">若查無成績 請按“刷新成績”<br>(如果還是沒有就是副主席還沒空打成績上去）</div>
+    <div class="smword">(如果沒有成績那就是副主席還沒空打上去）</div>
     <!-- 賽道圖片 -->
     <img
       src="highway.jpg"
@@ -1011,7 +1010,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
   getFirestore, collection, addDoc,
-  getDocs, query, where, updateDoc, deleteDoc,
+  getDocs, query, where, updateDoc, deleteDoc, onSnapshot,
   doc, getDoc, setDoc, increment
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
@@ -1388,7 +1387,9 @@ async function showFromRankingByGameName(gameName){
       `<div class="empty-text">查詢失敗，請稍後再試。</div>`;
   }
 }
-
+    
+ let stopRankingRealtime = null;
+    
  async function loadRanking() {
   const statusEl = document.getElementById("rankStatus");
   const listEl = document.getElementById("rankingList");
@@ -1398,93 +1399,121 @@ async function showFromRankingByGameName(gameName){
     if (listEl) listEl.innerHTML = "";
 
     const snap = await getDocs(leaderboardRef);
-    const list = [];
-
-    snap.forEach(docSnap => {
-      const d = docSnap.data();
-      const gameName = (d.gameName || "").trim();
-      const timeText = normalizeTimeString((d.timeText || "").trim());
-      const timeCs = Number(d.timeCs);
-
-      if (!gameName || !Number.isFinite(timeCs)) return;
-
-      list.push({
-        id: docSnap.id,
-        name: gameName,
-        time: timeText,
-        cs: timeCs
-      });
-    });
-
-    if (!list.length) {
-      if (statusEl) statusEl.textContent = "目前沒有成績資料";
-      return;
-    }
-
-    list.sort((a, b) => a.cs - b.cs);
-
-    if (statusEl) statusEl.textContent = `已載入 ${list.length} 筆成績`;
-
-    listEl.innerHTML = "";
-
-    let lastCs = null;
-    let rank = 0;
-    let shown = 0;
-
-    list.forEach((item) => {
-      shown++;
-
-      if (item.cs !== lastCs) {
-        rank = shown;
-        lastCs = item.cs;
-      }
-
-      const row = document.createElement("div");
-      row.className = "rank-row";
-
-      if (rank === 1) row.classList.add("top1");
-      if (rank === 2) row.classList.add("top2");
-      if (rank === 3) row.classList.add("top3");
-
-      const left = document.createElement("div");
-      left.className = "rank-left";
-
-      const posEl = document.createElement("div");
-      posEl.className = "rank-pos";
-      posEl.textContent = (rank <= 3) ? `第${rank}名` : `#${rank}`;
-
-      const nameEl = document.createElement("div");
-      nameEl.className = "rank-name";
-      nameEl.textContent = item.name;
-
-      const timeEl = document.createElement("div");
-      timeEl.className = "rank-time";
-      timeEl.textContent = item.time;
-
-      left.appendChild(posEl);
-      left.appendChild(nameEl);
-      row.appendChild(left);
-      row.appendChild(timeEl);
-
-      row.dataset.nameKey = normalizeNameKey(item.name);
-
-      row.style.cursor = "pointer";
-      row.title = "點一下顯示此人的 LINE ID";
-      row.addEventListener("click", () => {
-        openCurrentDataAndScroll();
-
-        setTimeout(() => {
-          showFromRankingByGameName(item.name);
-        }, 450);
-      });
-
-      listEl.appendChild(row);
-    });
-
+    renderRankingFromSnapshot(snap);
   } catch (e) {
     console.error(e);
     if (statusEl) statusEl.textContent = "排行榜讀取失敗";
   }
+}
+  function renderRankingFromSnapshot(snap) {
+  const statusEl = document.getElementById("rankStatus");
+  const listEl = document.getElementById("rankingList");
+
+  const list = [];
+
+  snap.forEach(docSnap => {
+    const d = docSnap.data();
+    const gameName = (d.gameName || "").trim();
+    const timeText = normalizeTimeString((d.timeText || "").trim());
+    const timeCs = Number(d.timeCs);
+
+    if (!gameName || !Number.isFinite(timeCs)) return;
+
+    list.push({
+      id: docSnap.id,
+      name: gameName,
+      time: timeText,
+      cs: timeCs
+    });
+  });
+
+  if (!list.length) {
+    if (listEl) listEl.innerHTML = "";
+    if (statusEl) statusEl.textContent = "目前沒有成績資料";
+    return;
+  }
+
+  list.sort((a, b) => a.cs - b.cs);
+
+  if (statusEl) statusEl.textContent = `已載入 ${list.length} 筆成績`;
+  if (listEl) listEl.innerHTML = "";
+
+  let lastCs = null;
+  let rank = 0;
+  let shown = 0;
+
+  list.forEach((item) => {
+    shown++;
+
+    if (item.cs !== lastCs) {
+      rank = shown;
+      lastCs = item.cs;
+    }
+
+    const row = document.createElement("div");
+    row.className = "rank-row";
+
+    if (rank === 1) row.classList.add("top1");
+    if (rank === 2) row.classList.add("top2");
+    if (rank === 3) row.classList.add("top3");
+
+    const left = document.createElement("div");
+    left.className = "rank-left";
+
+    const posEl = document.createElement("div");
+    posEl.className = "rank-pos";
+    posEl.textContent = (rank <= 3) ? `第${rank}名` : `#${rank}`;
+
+    const nameEl = document.createElement("div");
+    nameEl.className = "rank-name";
+    nameEl.textContent = item.name;
+
+    const timeEl = document.createElement("div");
+    timeEl.className = "rank-time";
+    timeEl.textContent = item.time;
+
+    left.appendChild(posEl);
+    left.appendChild(nameEl);
+    row.appendChild(left);
+    row.appendChild(timeEl);
+
+    row.dataset.nameKey = normalizeNameKey(item.name);
+
+    row.style.cursor = "pointer";
+    row.title = "點一下顯示此人的 LINE ID";
+    row.addEventListener("click", () => {
+      openCurrentDataAndScroll();
+      setTimeout(() => {
+        showFromRankingByGameName(item.name);
+      }, 450);
+    });
+
+    listEl.appendChild(row);
+  });
+}
+
+function startRankingRealtime() {
+  const statusEl = document.getElementById("rankStatus");
+  const listEl = document.getElementById("rankingList");
+
+  if (stopRankingRealtime) {
+    stopRankingRealtime();
+    stopRankingRealtime = null;
+  }
+
+  if (statusEl) statusEl.textContent = "載入中...";
+  if (listEl) listEl.innerHTML = "";
+
+  stopRankingRealtime = onSnapshot(
+    leaderboardRef,
+    (snap) => {
+      renderRankingFromSnapshot(snap);
+    },
+    (error) => {
+      console.error(error);
+      if (statusEl) statusEl.textContent = "排行榜即時同步失敗";
+    }
+  );
 }
     // 抽幾張 -> 難度總和上限（固定規則）
 const LIMIT_BY_COUNT = {
@@ -2151,17 +2180,6 @@ async function loadLastUpdateTime() {
         const open = rankingPanel.classList.toggle("open");
         rankingBtn.textContent = open ? "▲ 收合" : "▼ 展開";
       });
-      const refreshBtn = document.getElementById("refreshRanking");
-      refreshBtn?.addEventListener("click", async () => {
-      refreshBtn.disabled = true;
-      refreshBtn.textContent = "刷新中...";
-      try {
-        await loadRanking();
-      } finally {
-        refreshBtn.disabled = false;
-        refreshBtn.textContent = "🔄 刷新成績";
-      }
-      });
       const drawMapBtn = document.getElementById("drawMapBtn");
       const mapCountSelect = document.getElementById("mapCountSelect");
       // ===== 地圖抽籤：收合控制（預設收合） =====
@@ -2318,11 +2336,13 @@ adminEntry?.addEventListener("click", () => {
     if (el) el.textContent = "讀取失敗";
   });
 
-  loadRanking().catch((e) => {
-    console.error("loadRanking 失敗：", e);
-    const el = document.getElementById("rankStatus");
-    if (el) el.textContent = "讀取失敗";
-  });
+  try {
+  startRankingRealtime();
+} catch (e) {
+  console.error("startRankingRealtime 失敗：", e);
+  const el = document.getElementById("rankStatus");
+  if (el) el.textContent = "讀取失敗";
+}
 
   loadMaps().catch((e) => {
     console.error("loadMaps 失敗：", e);

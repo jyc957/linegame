@@ -1027,7 +1027,6 @@
     const db = getFirestore(app);
 
     const colRef = collection(db, "line_game_records");
-    const aliasRef = collection(db, "game_name_aliases");
     const leaderboardRef = collection(db, "leaderboard_records");
 
     // ✅ 自訂 Modal（取代 alert）
@@ -1752,59 +1751,6 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
     .replace(/^kpღ/i, "kpღ")
     .replace(/^ᴷᴾღ/i, "kpღ")
     .toLowerCase();
-}
-    async function loadNameAliasMap() {
-  try {
-    const snap = await getDocs(aliasRef);
-
-    // 先收集每個 oldName 的最新一筆
-    const latestMap = new Map();
-
-    snap.forEach(docSnap => {
-      const d = docSnap.data();
-      const oldName = normalizeNameKey(d.oldName || "");
-      const newName = d.newName || "";
-      const createdAt = Number(d.createdAt || 0);
-
-      if (!oldName || !newName) return;
-
-      const prev = latestMap.get(oldName);
-      if (!prev || createdAt > prev.createdAt) {
-        latestMap.set(oldName, { newName, createdAt });
-      }
-    });
-
-    // 最後轉成單純 oldName -> newName
-    const aliasMap = new Map();
-    latestMap.forEach((value, key) => {
-      aliasMap.set(key, value.newName);
-    });
-
-    return aliasMap;
-  } catch (e) {
-    console.error("讀取 game_name_aliases 失敗：", e);
-    return new Map();
-  }
-}
-
-function applyAliasName(name, aliasMap) {
-  let current = name;
-  const visited = new Set();
-
-  while (true) {
-    const key = normalizeNameKey(current);
-
-    // 避免循環卡死
-    if (visited.has(key)) break;
-    visited.add(key);
-
-    const next = aliasMap.get(key);
-    if (!next) break;
-
-    current = next;
-  }
-
-  return current;
 }
     function jumpToRankingByName(gameName) {
   const key = normalizeNameKey(gameName);

@@ -659,6 +659,25 @@
   border: 2px solid #c62828 !important;
   background: #fff5f5;
 }
+    .rank-actions {
+  flex: 0 0 auto;
+  margin-left: 8px;
+}
+
+.rank-delete-btn {
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 8px;
+  border: 2px solid #c62828;
+  background: #ffdddd;
+  color: #8b0000;
+  cursor: pointer;
+}
+
+.rank-delete-btn:active {
+  transform: scale(0.97);
+}
  </style>
 </head>
 
@@ -2236,6 +2255,21 @@ async function addLeaderboardRecord() {
   } catch (e) {
     console.error(e);
     showError(e.message || "修改失敗");
+  }
+}
+    async function deleteLeaderboardRecord(id, gameName, timeText) {
+  try {
+    const ok = window.confirm(
+      `確定要刪除這筆排行榜成績嗎？\n\n名字：${gameName}\n成績：${timeText}`
+    );
+    if (!ok) return;
+
+    await deleteDoc(doc(db, "leaderboard_records", id));
+
+    showSuccess(`已刪除排行榜成績：${gameName} ${timeText}`);
+  } catch (e) {
+    console.error(e);
+    showError(e.message || "刪除排行榜成績失敗");
   }
 }
     async function deleteRecord(id, gameName) {

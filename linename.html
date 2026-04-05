@@ -1289,53 +1289,28 @@ function parseTimeToCs(t){ // cs = centiseconds (1/100秒)
   return (mm*60 + ss)*100 + xx;
 }
 function normalizeTimeString(str) {
-  if (!str) return "";
+  return String(str || "")
+    .trim()
 
-  let s = String(str).trim();
+    // 全形數字 → 半形
+    .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 65248))
 
-  // 全形 → 半形
-  s = s
-    .replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
-    .replace(/[：]/g, ":")
-    .replace(/[．。]/g, ".");
+    // 全形符號 → 半形
+    .replace(/：/g, ":")
+    .replace(/．/g, ".")
+    .replace(/，/g, ".")
+    .replace(/。/g, ".")
 
-  // ===== 關鍵修正在這 =====
-  // 允許三種輸入：
-  // 1) MM:SS.xx  （標準）
-  // 2) MM:SS:xx  （LINE 常見）
-  // 3) MM.SS.xx  （少數人習慣）
+    // 去除多餘空白
+    .replace(/\s+/g, "")
 
-  const colonCount = (s.match(/:/g) || []).length;
-  const dotCount = (s.match(/\./g) || []).length;
-
-  if (colonCount === 2 && dotCount === 0) {
-    // MM:SS:xx → MM:SS.xx
-    const [m, s2, x] = s.split(":");
-    s = `${m}:${s2}.${x}`;
-  } else if (dotCount === 2 && colonCount === 0) {
-    // MM.SS.xx → MM:SS.xx
-    const [m, s2, x] = s.split(".");
-    s = `${m}:${s2}.${x}`;
-  }
-
-  return s;
-}
-
-// ✅ 檢查是否為合法成績（MM:SS.xx）
-function isValidTimeFormat(str) {
-  // 00:00.00 ~ 99:59.99
-  return /^([0-9]{1,2}):([0-5][0-9])(\.[0-9]{1,2})$/.test(str);
-}
-
-// ⏱️ 將時間轉成毫秒（排序用）
-function timeToMs(str) {
-  const [m, rest] = str.split(":");
-  const [s, ms = "0"] = rest.split(".");
-  return (
-    parseInt(m, 10) * 60 * 1000 +
-    parseInt(s, 10) * 1000 +
-    parseInt(ms.padEnd(2, "0"), 10) * 10
-  );
+    // 如果只有秒（例如 95.28）→ 自動轉成 01:35.28
+    .replace(/^(\d+)\.(\d+)$/, (_, sec, ms) => {
+      const s = parseInt(sec, 10);
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return `${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}.${ms}`;
+    });
 }
     async function openCurrentDataAndScroll(gameName) {
   // 1) 永遠先展開「新增/查詢」區塊（裡面包含 目前資料）

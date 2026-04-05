@@ -1542,11 +1542,11 @@ async function showFromRankingByGameName(gameName){
 
     if (!prev || timeCs < prev.cs) {
       bestScoreMap.set(key, {
-        id: docSnap.id,
-        gameName,
-        time: timeText,
-        cs: timeCs
-      });
+  rankDocId: docSnap.id,
+  gameName,
+  time: timeText,
+  cs: timeCs
+});
     }
   });
 
@@ -1557,24 +1557,26 @@ async function showFromRankingByGameName(gameName){
     const score = bestScoreMap.get(key);
 
     merged.push({
-      name: player.gameName,
-      lineId: player.lineId,
-      hasScore: !!score,
-      time: score ? score.time : "暫無成績",
-      cs: score ? score.cs : null
-    });
+  name: player.gameName,
+  lineId: player.lineId,
+  hasScore: !!score,
+  time: score ? score.time : "暫無成績",
+  cs: score ? score.cs : null,
+  rankDocId: score ? score.rankDocId : null
+});
   });
 
   // 若排行榜裡有成績，但名單沒這個人，也補進去
   bestScoreMap.forEach((score, key) => {
     if (!playerMap.has(key)) {
       merged.push({
-        name: score.gameName,
-        lineId: "",
-        hasScore: true,
-        time: score.time,
-        cs: score.cs
-      });
+  name: score.gameName,
+  lineId: "",
+  hasScore: true,
+  time: score.time,
+  cs: score.cs,
+  rankDocId: score.rankDocId
+});
     }
   });
 
@@ -1639,9 +1641,26 @@ async function showFromRankingByGameName(gameName){
     }
 
     left.appendChild(posEl);
-    left.appendChild(nameEl);
-    row.appendChild(left);
-    row.appendChild(timeEl);
+left.appendChild(nameEl);
+row.appendChild(left);
+row.appendChild(timeEl);
+
+// ✅ 管理模式下，有成績才顯示刪除按鈕
+if (typeof isAdminMode !== "undefined" && isAdminMode && item.hasScore && item.rankDocId) {
+  const actions = document.createElement("div");
+  actions.className = "rank-actions";
+
+  const delBtn = document.createElement("button");
+  delBtn.className = "rank-delete-btn";
+  delBtn.textContent = "刪除";
+  delBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    deleteLeaderboardRecord(item.rankDocId, item.name, item.time);
+  });
+
+  actions.appendChild(delBtn);
+  row.appendChild(actions);
+}
 
     row.dataset.nameKey = normalizeNameKey(item.name);
 

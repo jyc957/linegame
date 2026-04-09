@@ -603,6 +603,17 @@
   margin-bottom: 10px;
   letter-spacing: 2px;
 }
+    .admin-mode-hint {
+  text-align: center;
+  font-size: 12px;
+  color: #c62828;
+  font-weight: bold;
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+    .admin-mode .hide-in-admin {
+  display: none !important;
+}
     body.admin-mode {
   background-color: #f57dba;
 }
@@ -763,11 +774,12 @@
       <button onclick="searchRecords()">查詢</button>
       <button onclick="clearInputs()">清除</button>
 
-      <small><br>
+      <small class="hide-in-admin"><br>
         ● 儲存：新增一筆新資料<br>
         ● 查詢：可輸入部分文字做模糊搜尋<br>
         ● 清除：將輸入框內的文字刪除
       </small>
+      <div id="adminModeHint" class="admin-mode-hint admin-only">將個人資料刪除後，上方的計時成績也會一併刪除</div>
       <hr class="data-divider">
       <!-- ✅ 目前資料：放在這裡（展開後出現） -->
       <div class="card" style="margin-top:12px;">
@@ -2350,15 +2362,32 @@ async function addLeaderboardRecord() {
 }
     async function deleteRecord(id, gameName) {
   try {
-    const ok = window.confirm(`確定要刪除這筆資料嗎？\n\n遊戲名字：${gameName}`);
+    const ok = window.confirm(
+      `確定要刪除這筆資料嗎？\n\n遊戲名字：${gameName}\n\n（排行榜成績也會一起刪除）`
+    );
     if (!ok) return;
 
+    // 1. 刪名單
     await deleteDoc(doc(db, "line_game_records", id));
+
+    // 2. 找排行榜同名資料一起刪
+    const rankSnap = await getDocs(leaderboardRef);
+    const jobs = [];
+
+    rankSnap.forEach(docSnap => {
+      const d = docSnap.data();
+      if (normalizeNameKey(d.gameName) === normalizeNameKey(gameName)) {
+        jobs.push(deleteDoc(docSnap.ref));
+      }
+    });
+
+    await Promise.all(jobs);
 
     showSuccess(`已刪除：${gameName}`);
 
-    // 刪完後重新載入全部資料
     await loadAll();
+    await loadRanking();
+
   } catch (e) {
     console.error(e);
     showError(e.message || "刪除失敗");

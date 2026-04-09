@@ -716,7 +716,7 @@
   <button onclick="addLeaderboardRecord()">確認</button>
 
   <small><br>
-    ● 成績格式請輸入：MM:SS.xx (例：01:35.28)
+    ● 成績格式：MM:SS.xx 或 MM.SS.xx 都可以
   </small>
 </div>
   <!-- 🏁 成績排行榜（預設展開，可收合） -->
@@ -1469,24 +1469,24 @@ function normalizeTimeString(str) {
     .trim()
 
     // 全形數字 → 半形
-    .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 65248))
+    .replace(/[０-９]/g, s =>
+      String.fromCharCode(s.charCodeAt(0) - 65248)
+    )
 
     // 全形符號 → 半形
     .replace(/：/g, ":")
     .replace(/．/g, ".")
-    .replace(/，/g, ".")
     .replace(/。/g, ".")
+    .replace(/，/g, ".")
 
-    // 去除多餘空白
+    // 去空白
     .replace(/\s+/g, "")
 
-    // 如果只有秒（例如 95.28）→ 自動轉成 01:35.28
-    .replace(/^(\d+)\.(\d+)$/, (_, sec, ms) => {
-      const s = parseInt(sec, 10);
-      const m = Math.floor(s / 60);
-      const r = s % 60;
-      return `${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}.${ms}`;
-    });
+    // ⭐ 支援 1.33.22 → 1:33.22
+    .replace(/^(\d+)\.(\d{2})\.(\d{1,2})$/, "$1:$2.$3")
+
+    // ⭐ 如果只有秒，例如 33.22 → 0:33.22
+    .replace(/^(\d{1,2})\.(\d{1,2})$/, "0:$1.$2");
 }
     async function openCurrentDataAndScroll(gameName) {
   // 1) 永遠先展開「新增/查詢」區塊（裡面包含 目前資料）

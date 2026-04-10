@@ -689,6 +689,17 @@
 .rank-delete-btn:active {
   transform: scale(0.97);
 }
+    .pick-score-btn.active {
+  background: #ffd54f;
+  border-color: #c79a00;
+}
+
+.pick-score-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #8b5e00;
+  font-weight: bold;
+}
  </style>
 </head>
 
@@ -713,7 +724,13 @@
 <div id="scoreTimeHint" class="time-hint"></div>
   </label>
 
-  <button onclick="addLeaderboardRecord()">確認</button>
+  <button type="button" onclick="togglePickScoreTargetMode()" id="pickScoreTargetBtn">
+  點排行榜帶入名字
+</button>
+<button type="button" onclick="addLeaderboardRecord()" class="admin-score-confirm">
+  確認
+</button>
+    <div id="pickScoreHint" class="pick-score-hint admin-only"></div>
 
   <small><br>
     ● 成績格式：MM:SS.xx 或 MM.SS.xx 都可以
@@ -1228,7 +1245,8 @@ function showInfo(msg, title="提示") { showModal(msg, { title, type:"info" });
 
     const ADMIN_PASSWORD = "881203"; // ← 你自己改成想要的密碼
 let isAdminMode = false;
-
+let isPickScoreTargetMode = false;
+    
 function setAdminMode(on) {
   isAdminMode = on;
   document.body.classList.toggle("admin-mode", on);
@@ -1238,8 +1256,13 @@ function setAdminMode(on) {
     el.classList.toggle("show", on);
   });
 
+  if (!on) {
+    isPickScoreTargetMode = false;
+  }
+  updatePickScoreTargetUI();
+
   loadAll().catch(console.error);
-  loadRanking().catch(console.error); // ✅ 這行一定要加
+  loadRanking().catch(console.error);
 
   if (on) {
     showSuccess("已進入管理員模式");
@@ -1736,11 +1759,16 @@ if (typeof isAdminMode !== "undefined" && isAdminMode && item.hasScore && item.r
     row.style.cursor = "pointer";
     row.title = "點一下顯示此人的 LINE ID";
     row.addEventListener("click", () => {
-      openCurrentDataAndScroll();
-      setTimeout(() => {
-        showFromRankingByGameName(item.name);
-      }, 450);
-    });
+  if (isAdminMode && isPickScoreTargetMode) {
+    fillScoreNameFromRanking(item.name);
+    return;
+  }
+
+  openCurrentDataAndScroll();
+  setTimeout(() => {
+    showFromRankingByGameName(item.name);
+  }, 450);
+});
 
     listEl.appendChild(row);
   });
@@ -2198,6 +2226,42 @@ async function addLeaderboardRecord() {
     console.error(e);
     showError(e.message || "新增成績失敗");
   }
+}
+    function updatePickScoreTargetUI() {
+  const btn = document.getElementById("pickScoreTargetBtn");
+  const hint = document.getElementById("pickScoreHint");
+
+  if (btn) {
+    btn.classList.toggle("active", isPickScoreTargetMode);
+    btn.textContent = isPickScoreTargetMode ? "取消點名帶入" : "點排行榜帶入名字";
+  }
+
+  if (hint) {
+    hint.textContent = isPickScoreTargetMode
+      ? "請到下方排行榜點選要更新成績的人名"
+      : "";
+  }
+}
+
+function togglePickScoreTargetMode() {
+  isPickScoreTargetMode = !isPickScoreTargetMode;
+  updatePickScoreTargetUI();
+}
+
+function fillScoreNameFromRanking(gameName) {
+  const input = document.getElementById("scoreNameInput");
+  if (!input) return;
+
+  input.value = gameName;
+  input.focus();
+
+  isPickScoreTargetMode = false;
+  updatePickScoreTargetUI();
+
+  const panel = document.getElementById("adminScorePanel");
+  panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  showSuccess(`已帶入名字：${gameName}`);
 }
     async function saveRecord() {
       try {

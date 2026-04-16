@@ -2055,6 +2055,14 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
     .replace(/^ᴷᴾღ/i, "kpღ")
     .toLowerCase();
 }
+    function normalizeSearchKey(str) {
+  return String(str || "")
+    .trim()
+    .replace(/\u3000/g, " ")
+    .replace(/\s+/g, "")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .toLowerCase();
+}
     async function jumpToRankingByName(gameName) {
   const key = normalizeNameKey(gameName);
   if (!key) return;
@@ -2303,39 +2311,46 @@ function fillScoreNameFromRanking(gameName) {
     }
 
     async function searchRecords() {
-      const line = document.getElementById("lineInput").value.trim().toLowerCase();
-      const game = document.getElementById("gameInput").value.trim().toLowerCase();
-      if (!line && !game) return showInfo("請至少輸入一項查詢");
+  const line = normalizeSearchKey(document.getElementById("lineInput").value);
+  const game = normalizeSearchKey(document.getElementById("gameInput").value);
 
-      try {
-        const snap = await getDocs(colRef);
-        const list = [];
+  if (!line && !game) {
+    return showInfo("請至少輸入一項查詢");
+  }
 
-        snap.forEach(docSnap => {
-          const d = docSnap.data();
-          const lineId = (d.lineId || "").toLowerCase();
-          const gameName = (d.gameName || "").toLowerCase();
-          const time = d.updatedAt || d.createdAt || 0;
+  try {
+    const snap = await getDocs(colRef);
+    const list = [];
 
-          if (line && !lineId.includes(line)) return;
-          if (game && !gameName.includes(game)) return;
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
 
-          list.push({
-            id: docSnap.id,
-            lineId: d.lineId || "",
-            gameName: d.gameName || "",
-            updatedAt: time
-          });
-        });
+      const lineIdRaw = d.lineId || "";
+      const gameNameRaw = d.gameName || "";
 
-        list.sort((a, b) => b.updatedAt - a.updatedAt);
-        renderList(list, "搜尋結果");
-      } catch (e) {
-        console.error(e);
-        showError("查詢失敗，請稍後再試。");
-      }
-    }
+      const lineId = normalizeSearchKey(lineIdRaw);
+      const gameName = normalizeSearchKey(gameNameRaw);
 
+      const time = d.updatedAt || d.createdAt || 0;
+
+      if (line && !lineId.includes(line)) return;
+      if (game && !gameName.includes(game)) return;
+
+      list.push({
+        id: docSnap.id,
+        lineId: lineIdRaw,
+        gameName: gameNameRaw,
+        updatedAt: time
+      });
+    });
+
+    list.sort((a, b) => b.updatedAt - a.updatedAt);
+    renderList(list, "搜尋結果");
+  } catch (e) {
+    console.error(e);
+    showError("查詢失敗，請稍後再試。");
+  }
+}
     async function updateLineId() {
       try {
         const oldLine = cleanInput(document.getElementById("oldLineInput").value, "舊 LINE ID", 30);

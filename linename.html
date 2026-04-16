@@ -2061,22 +2061,21 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
 
   const panel = document.getElementById("rankingPanel");
   const btn = document.getElementById("toggleRanking");
-  const rankingSection = document.getElementById("rankingList");
 
+  // 1. 如果目前是收合，先展開
   let justOpened = false;
-
-  // 1. 先展開排行榜
   if (panel && !panel.classList.contains("open")) {
     panel.classList.add("open");
     if (btn) btn.textContent = "▲ 收合";
     justOpened = true;
   }
 
-  // 2. 如果剛展開，先等動畫跑完
+  // 2. 如果剛展開，等動畫和版面撐開
   if (justOpened) {
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 550));
   }
 
+  // 3. 再找目標列
   const rows = Array.from(document.querySelectorAll("#rankingList .rank-row"));
   const target = rows.find(r => (r.dataset.nameKey || "") === key);
 
@@ -2085,39 +2084,16 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
     return;
   }
 
-  // 3. 先把排行榜區塊捲進視野
-  rankingSection?.scrollIntoView({
+  // 4. 先讓瀏覽器完成一次 reflow，再捲動
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+  target.scrollIntoView({
     behavior: "smooth",
-    block: "start"
+    block: "center"
   });
 
-  // 4. 再等一下，避免被第一次捲動吃掉
-  await new Promise(r => setTimeout(r, 350));
-
-  // 5. 用絕對座標精準捲到目標列
-  const rect = target.getBoundingClientRect();
-  const absoluteTop = window.scrollY + rect.top;
-  const offset = Math.max((window.innerHeight / 2) - (rect.height / 2), 80);
-
-  window.scrollTo({
-    top: Math.max(absoluteTop - offset, 0),
-    behavior: "smooth"
-  });
-
-  // 6. 再補一次，避免手機上第一次沒對準
-  setTimeout(() => {
-    const rect2 = target.getBoundingClientRect();
-    const absoluteTop2 = window.scrollY + rect2.top;
-    const offset2 = Math.max((window.innerHeight / 2) - (rect2.height / 2), 80);
-
-    window.scrollTo({
-      top: Math.max(absoluteTop2 - offset2, 0),
-      behavior: "smooth"
-    });
-
-    target.classList.add("flash");
-    setTimeout(() => target.classList.remove("flash"), 900);
-  }, 450);
+  target.classList.add("flash");
+  setTimeout(() => target.classList.remove("flash"), 900);
 }
     async function loadAll() {
   try {

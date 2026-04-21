@@ -2376,14 +2376,23 @@ function fillScoreNameFromRanking(gameName) {
     }
 
    async function updateGameName() {
-     try {
-    const oldPart = cleanInput(document.getElementById("oldGameInput").value, "舊遊戲名字", 30);
-    const newPart = cleanInput(document.getElementById("newGameInput").value, "新遊戲名字", 30);
+  try {
+    const oldPart = cleanInput(
+      document.getElementById("oldGameInput").value,
+      "舊遊戲名字",
+      30
+    );
+    const newPart = cleanInput(
+      document.getElementById("newGameInput").value,
+      "新遊戲名字",
+      30
+    );
 
     const oldKey = normalizeNameKey(oldPart);
+    const newKey = normalizeNameKey(newPart);
     const now = Date.now();
 
-    // 1. 改名單資料
+    // 1. 改名單資料（只改完全相同者）
     const playerSnap = await getDocs(colRef);
     const playerJobs = [];
     let hitPlayers = 0;
@@ -2393,7 +2402,7 @@ function fillScoreNameFromRanking(gameName) {
       const gameName = d.gameName || "";
       const gameKey = normalizeNameKey(gameName);
 
-      if (gameKey.includes(oldKey)) {
+      if (gameKey === oldKey) {
         hitPlayers++;
         playerJobs.push(updateDoc(docSnap.ref, {
           gameName: newPart,
@@ -2402,7 +2411,7 @@ function fillScoreNameFromRanking(gameName) {
       }
     });
 
-    // 2. 改排行榜資料
+    // 2. 改排行榜資料（只改完全相同者）
     const rankSnap = await getDocs(leaderboardRef);
     const rankJobs = [];
     let hitRanks = 0;
@@ -2412,19 +2421,19 @@ function fillScoreNameFromRanking(gameName) {
       const gameName = d.gameName || "";
       const gameKey = normalizeNameKey(gameName);
 
-      if (gameKey.includes(oldKey)) {
+      if (gameKey === oldKey) {
         hitRanks++;
         const timeCs = Number(d.timeCs || 0);
         rankJobs.push(updateDoc(docSnap.ref, {
           gameName: newPart,
-          recordKey: `${normalizeNameKey(newPart)}__${timeCs}`,
+          recordKey: `${newKey}__${timeCs}`,
           updatedAt: now
         }));
       }
     });
 
     if (!hitPlayers && !hitRanks) {
-      showError("找不到包含該文字的遊戲名字");
+      showError("找不到完全相同的遊戲名字");
       return;
     }
 

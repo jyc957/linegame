@@ -790,6 +790,9 @@
       <button onclick="saveRecord()">儲存</button>
       <button onclick="searchRecords()">查詢</button>
       <button onclick="clearInputs()">清除</button>
+      <button class="admin-only" onclick="comparePlayerAndRanking()">
+  比對名單/排行榜差異
+</button>
 
       <small class="hide-in-admin"><br>
         ● 儲存：新增一筆新資料<br>
@@ -1817,6 +1820,70 @@ function startRankingRealtime() {
     }
   );
 }
+    async function comparePlayerAndRanking() {
+  try {
+    const playerSnap = await getDocs(colRef);
+    const rankSnap = await getDocs(leaderboardRef);
+
+    const playerMap = new Map();
+    const rankMap = new Map();
+
+    playerSnap.forEach(docSnap => {
+      const d = docSnap.data();
+      const name = (d.gameName || "").trim();
+      if (!name) return;
+
+      const key = normalizeNameKey(name);
+      if (!playerMap.has(key)) {
+        playerMap.set(key, []);
+      }
+      playerMap.get(key).push(name);
+    });
+
+    rankSnap.forEach(docSnap => {
+      const d = docSnap.data();
+      const name = (d.gameName || "").trim();
+      if (!name) return;
+
+      const key = normalizeNameKey(name);
+      if (!rankMap.has(key)) {
+        rankMap.set(key, []);
+      }
+      rankMap.get(key).push(name);
+    });
+
+    const onlyInPlayers = [];
+    const onlyInRanking = [];
+
+    playerMap.forEach((names, key) => {
+      if (!rankMap.has(key)) {
+        onlyInPlayers.push(...names);
+      }
+    });
+
+    rankMap.forEach((names, key) => {
+      if (!playerMap.has(key)) {
+        onlyInRanking.push(...names);
+      }
+    });
+
+    onlyInPlayers.sort((a, b) => normalizeNameKey(a).localeCompare(normalizeNameKey(b)));
+    onlyInRanking.sort((a, b) => normalizeNameKey(a).localeCompare(normalizeNameKey(b)));
+
+    const msg =
+      `名單總人數：${playerMap.size}\n` +
+      `排行榜總人數：${rankMap.size}\n\n` +
+      `只在名單裡（${onlyInPlayers.length}）：\n` +
+      (onlyInPlayers.length ? onlyInPlayers.join("\n") : "無") +
+      `\n\n只在排行榜裡（${onlyInRanking.length}）：\n` +
+      (onlyInRanking.length ? onlyInRanking.join("\n") : "無");
+
+    showModal(msg, { title: "名單 / 排行榜差異", type: "info" });
+  } catch (e) {
+    console.error(e);
+    showError(e.message || "比對失敗");
+  }
+}
     // 抽幾張 -> 難度總和上限（固定規則）
 const LIMIT_BY_COUNT = {
   1: Infinity, // 1 不限制
@@ -2819,6 +2886,7 @@ adminPwdInput?.addEventListener("keydown", (e) => {
     window.togglePickScoreTargetMode = togglePickScoreTargetMode;
     window.fillScoreNameFromRanking = fillScoreNameFromRanking;
     window.updatePickScoreTargetUI = updatePickScoreTargetUI;
+    window.comparePlayerAndRanking = comparePlayerAndRanking;
 
     function initPageData() {
   console.log("initPageData 開始執行");

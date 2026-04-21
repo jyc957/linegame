@@ -706,18 +706,31 @@
   background: #f7fbfd;
   border: 1px solid #cfe7ef;
   overflow: hidden;
-  display: none;
+
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    max-height 0.25s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+
+  pointer-events: none;
 }
 
 .suggest-box.show {
-  display: block;
+  max-height: 260px;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
 }
 
 .suggest-item {
   padding: 8px 10px;
   font-size: 14px;
   cursor: pointer;
-  border-bottom: 1px solid #e6f1f5;
+  border-bottom: 1px solid #85aacb;
   word-break: break-all;
 }
 

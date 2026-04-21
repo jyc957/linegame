@@ -700,6 +700,35 @@
   color: #8b5e00;
   font-weight: bold;
 }
+    .suggest-box {
+  margin-top: 4px;
+  border-radius: 8px;
+  background: #f7fbfd;
+  border: 1px solid #cfe7ef;
+  overflow: hidden;
+  display: none;
+}
+
+.suggest-box.show {
+  display: block;
+}
+
+.suggest-item {
+  padding: 8px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #e6f1f5;
+  word-break: break-all;
+}
+
+.suggest-item:last-child {
+  border-bottom: none;
+}
+
+.suggest-item:hover,
+.suggest-item.active {
+  background: #dff3f8;
+}
  </style>
 </head>
 
@@ -820,8 +849,9 @@
 
     <div id="editPanel">
       <label>舊 LINE ID：
-        <input id="oldLineInput" type="text" placeholder="舊 LINE ID">
-      </label>
+  <input id="oldLineInput" type="text" placeholder="舊 LINE ID" autocomplete="off">
+  <div id="oldLineSuggestions" class="suggest-box"></div>
+</label>
 
       <label>新 LINE ID：
         <input id="newLineInput" type="text" placeholder="新 LINE ID">
@@ -832,8 +862,9 @@
       <hr>
 
       <label>舊遊戲名字：
-        <input id="oldGameInput" type="text" placeholder="舊遊戲名字">
-      </label>
+  <input id="oldGameInput" type="text" placeholder="舊遊戲名字" autocomplete="off">
+  <div id="oldGameSuggestions" class="suggest-box"></div>
+</label>
 
       <label>新遊戲名字：
         <input id="newGameInput" type="text" placeholder="新遊戲名字">
@@ -2418,6 +2449,92 @@ function fillScoreNameFromRanking(gameName) {
     showError("查詢失敗，請稍後再試。");
   }
 }
+    function normalizeSuggestKey(str) {
+  return String(str || "")
+    .trim()
+    .replace(/\u3000/g, " ")
+    .replace(/\s+/g, "")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .toLowerCase();
+}
+
+async function showSuggestions({
+  inputId,
+  boxId,
+  field
+}) {
+  const input = document.getElementById(inputId);
+  const box = document.getElementById(boxId);
+  if (!input || !box) return;
+
+  const keyword = normalizeSuggestKey(input.value);
+  box.innerHTML = "";
+
+  if (!keyword) {
+    box.classList.remove("show");
+    return;
+  }
+
+  try {
+    const snap = await getDocs(colRef);
+    const matched = [];
+    const seen = new Set();
+
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const raw = field === "lineId" ? (d.lineId || "") : (d.gameName || "");
+      const key = normalizeSuggestKey(raw);
+
+      if (!raw) return;
+      if (!key.includes(keyword)) return;
+
+      const uniqueKey = normalizeNameKey(raw);
+      if (seen.has(uniqueKey)) return;
+      seen.add(uniqueKey);
+
+      matched.push(raw);
+    });
+
+    matched.sort((a, b) =>
+      normalizeSuggestKey(a).localeCompare(normalizeSuggestKey(b))
+    );
+
+    const top = matched.slice(0, 8);
+
+    if (!top.length) {
+      box.classList.remove("show");
+      return;
+    }
+
+    top.forEach(text => {
+      const item = document.createElement("div");
+      item.className = "suggest-item";
+      item.textContent = text;
+
+      item.addEventListener("click", () => {
+        input.value = text;
+        box.innerHTML = "";
+        box.classList.remove("show");
+      });
+
+      box.appendChild(item);
+    });
+
+    box.classList.add("show");
+  } catch (e) {
+    console.error(e);
+    box.classList.remove("show");
+  }
+}
+
+function hideSuggestions(boxId) {
+  const box = document.getElementById(boxId);
+  if (!box) return;
+  setTimeout(() => {
+    box.classList.remove("show");
+    box.innerHTML = "";
+  }, 120);
+}
     async function updateLineId() {
       try {
         const oldLine = cleanInput(document.getElementById("oldLineInput").value, "舊 LINE ID", 30);
@@ -2691,6 +2808,32 @@ scoreTimeInput?.addEventListener("blur", () => {
   }
 
   validateScoreTimeInput(true);
+});
+  const oldLineInput = document.getElementById("oldLineInput");
+  const oldGameInput = document.getElementById("oldGameInput");
+
+oldLineInput?.addEventListener("input", () => {
+  showSuggestions({
+    inputId: "oldLineInput",
+    boxId: "oldLineSuggestions",
+    field: "lineId"
+  });
+});
+
+oldGameInput?.addEventListener("input", () => {
+  showSuggestions({
+    inputId: "oldGameInput",
+    boxId: "oldGameSuggestions",
+    field: "gameName"
+  });
+});
+
+oldLineInput?.addEventListener("blur", () => {
+  hideSuggestions("oldLineSuggestions");
+});
+
+oldGameInput?.addEventListener("blur", () => {
+  hideSuggestions("oldGameSuggestions");
 });
       const addBtn = document.getElementById("toggleAdd");
       const addPanel = document.getElementById("addPanel");

@@ -848,11 +848,6 @@ img, video {
     width: 100%;
     max-width: none;
   }
-
-  .skip-anim {
-    width: 100%;
-    justify-content: flex-start;
-  }
 }
 
 /* ✅ 電腦版看起來不要太寬 */
@@ -884,6 +879,50 @@ img, video {
   padding: 7px 6px;
   font-size: clamp(10px, 3vw, 13px);
   white-space: nowrap;
+}
+  /* ✅ 修正地圖抽籤 checkbox 跑版 */
+.skip-anim {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  width: auto;
+  max-width: 100%;
+  padding: 6px 0;
+  font-size: clamp(13px, 3.5vw, 16px);
+  white-space: nowrap;
+}
+
+.skip-anim input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.map-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.map-btn-row .btn {
+  flex: 1 1 140px;
+  min-width: 120px;
+}
+
+/* 手機版：按鈕上下排，checkbox 正常靠左 */
+@media (max-width: 480px) {
+  .map-btn-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .skip-anim {
+    align-self: flex-start;
+    width: auto;
+  }
 }
  </style>
 </head>

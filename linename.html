@@ -742,6 +742,129 @@
 .suggest-item.active {
   background: #dff3f8;
 }
+  /* ✅ 全站避免超出螢幕 */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ✅ 主內容最大寬度，手機滿版、電腦置中 */
+body {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ✅ 圖片影片自動縮放 */
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ✅ 文字太長自動換行 */
+.section,
+.item-main,
+.item-sub,
+.rank-name,
+.map-info,
+.smword {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* ✅ 按鈕區可以自動換行 */
+.top-bar,
+.panel-head,
+.panel-actions,
+.map-btn-row {
+  flex-wrap: wrap;
+}
+
+/* ✅ 手機上按鈕不要擠爆 */
+@media (max-width: 480px) {
+  body {
+    padding: 12px;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  .section {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .top-bar {
+    gap: 6px;
+  }
+
+  button {
+    font-size: 13px;
+    padding: 7px 9px;
+    white-space: normal;
+  }
+
+  input,
+  select {
+    font-size: 16px; /* 手機比較不會自動放大 */
+  }
+
+  .rank-row {
+    gap: 8px;
+    align-items: center;
+  }
+
+  .rank-left {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .rank-pos {
+    width: auto;
+    min-width: 45px;
+  }
+
+  .rank-name {
+    max-width: none;
+    white-space: normal;
+  }
+
+  .rank-time {
+    flex: 0 0 auto;
+  }
+
+  .map-btn-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .map-btn-row .btn,
+  .map-actions .select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .skip-anim {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* ✅ 電腦版看起來不要太寬 */
+@media (min-width: 768px) {
+  body {
+    max-width: 760px;
+  }
+
+  .section {
+    padding: 18px;
+  }
+}
  </style>
 </head>
 

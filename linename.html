@@ -1056,6 +1056,7 @@ img, video {
           <option value="5">抽 5 張</option>
           <option value="6">抽 6 張</option>
           <option value="8" selected>抽 8 張</option>
+          <option value="9">抽 9 張</option>
           <option value="10">抽 10 張</option>
           <option value="12">抽 12 張</option>
           <option value="15">抽 15 張</option>
@@ -2074,15 +2075,16 @@ function startRankingRealtime() {
     showError(e.message || "比對失敗");
   }
 }
-    // 抽幾張 -> 難度總和上限（固定規則）
+    // 抽幾張&難度總和上限
 const LIMIT_BY_COUNT = {
-  1: Infinity, // 1 不限制
+  1: 5,
   2: 6,
   3: 10,
   4: 14,
   5: 16,
   6: 22,
   8: 26,
+  9: 28,
   10: 30,
   12: 36,
   15: 45,

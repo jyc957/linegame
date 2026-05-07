@@ -74,7 +74,7 @@
       align-items: center;
       justify-content: flex-start;
       gap: 10px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
 
     /* 折疊區塊動畫（通用） */
@@ -865,6 +865,26 @@ img, video {
     padding: 18px;
   }
 }
+  .add-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-actions {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.add-actions button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 7px 6px;
+  font-size: clamp(10px, 3vw, 13px);
+  white-space: nowrap;
+}
  </style>
 </head>
 
@@ -934,13 +954,15 @@ img, video {
 <!-- 新增 / 查詢（可折疊） -->
 <div class="section">
   <div class="card">
-    <div class="top-bar">
-      <h2 style="margin-right:10px;">新增 / 查詢</h2>
-      <button id="toggleAdd">▼ 展開</button>
-      <button onclick="loadAll()">顯示全部</button>
-      <button onclick="resetListUI()">重新整理</button>
-    </div>
+   <div class="top-bar add-top-bar">
+  <h2 style="margin-right:10px;">新增 / 查詢</h2>
 
+  <div class="add-actions">
+    <button id="toggleAdd">▼ 展開</button>
+    <button onclick="loadAll()">顯示全部</button>
+    <button onclick="resetListUI()">重新整理</button>
+  </div>
+</div>
     <div id="addPanel" class="collapse-content">
       <label>
         LINE 名字：

@@ -908,8 +908,9 @@ img, video {
 }
 
 .map-btn-row .btn {
-  flex: 1 1 140px;
-  min-width: 120px;
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
 }
 
 /* 手機版：按鈕上下排，checkbox 正常靠左 */
@@ -917,6 +918,7 @@ img, video {
   .map-btn-row {
     flex-direction: column;
     align-items: stretch;
+    flex-wrap: nowrap;
   }
 
   .skip-anim {

@@ -879,6 +879,12 @@ img, video {
     max-width: 50%;
   }
 }
+  .map-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
  </style>
 </head>
 
@@ -1035,8 +1041,10 @@ img, video {
   <div class="card">
     <!-- 收合時只顯示這一行 -->
     <div class="panel-head">
-    <h2>🗺️ 地圖抽籤</h2>
-      <button id="toggleMapPanel" class="btn">▼ 展開</button>
+    <div class="map-header">
+  <h2>🗺️ 地圖抽籤</h2>
+  <button id="toggleMapPanel" class="btn">▲ 收合</button>
+</div>
     </div>
 
     <!-- 展開後才顯示：抽幾張/按鈕/總數/結果 -->

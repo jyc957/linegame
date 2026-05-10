@@ -862,9 +862,10 @@ img, video {
   overflow: hidden;
 
   box-shadow:
-    0 18px 40px rgba(0,0,0,.28);
+  0 0 0 3px rgba(32,145,198,.25),
+  0 25px 60px rgba(0,0,0,.35);
 
-  border: 1px solid #bdbdbd;
+  border: 1px solid #0080FF;
 
   animation: uiPop .16s ease-out;
 }
@@ -961,6 +962,10 @@ img, video {
 
 .ui-modal__btn:active{
   transform: scale(.98);
+}
+  .ui-modal__btn:hover{
+  filter: brightness(1.06);
+  transform: translateY(-1px);
 }
   /* ✅ Modal 預設隱藏，不要直接出現在頁面上 */
 .ui-modal {

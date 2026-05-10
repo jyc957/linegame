@@ -2165,27 +2165,29 @@ function startRankingRealtime() {
     onlyInPlayers.sort((a, b) => normalizeNameKey(a).localeCompare(normalizeNameKey(b)));
     onlyInRanking.sort((a, b) => normalizeNameKey(a).localeCompare(normalizeNameKey(b)));
 
-    const msg = `
-名單總人數：${playerMap.size}
-排行榜總人數：${rankMap.size}
+    const onlyPlayerText = onlyInPlayers.length
+  ? onlyInPlayers.map(v => `• ${v}`).join("\n")
+  : "無";
 
-────────────
+const onlyRankingText = onlyInRanking.length
+  ? onlyInRanking.map(v => `• ${v}`).join("\n")
+  : "無";
+
+const msg =
+`名單總人數：${playerMap.size}
+排行榜總人數：${rankMap.size}
 
 只在名單裡（${onlyInPlayers.length}）：
 
-${onlyInPlayers.length ? onlyInPlayers.join("\n") : "無"}
-
-────────────
-
+${onlyPlayerText}
 只在排行榜裡（${onlyInRanking.length}）：
 
-${onlyInRanking.length ? onlyInRanking.join("\n") : "無"}
-`;
+${onlyRankingText}`;
 
 showModal(msg, {
   title: "名單 / 排行榜差異",
   type: "info"
-}); } catch (e) {
+});} catch (e) {
     console.error(e);
     showError(e.message || "比對失敗");
   }

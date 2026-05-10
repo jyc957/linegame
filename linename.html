@@ -962,6 +962,23 @@ img, video {
 .ui-modal__btn:active{
   transform: scale(.98);
 }
+  /* ✅ Modal 預設隱藏，不要直接出現在頁面上 */
+.ui-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 9999;
+}
+
+.ui-modal.open {
+  display: block;
+}
+
+.ui-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
  </style>
 </head>
 

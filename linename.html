@@ -865,7 +865,7 @@ img, video {
   0 0 0 3px rgba(32,145,198,.25),
   0 25px 60px rgba(0,0,0,.35);
 
-  border: 2px solid #00FFFF;
+  border: 3px solid #46a3ff;
 
   animation: uiPop .16s ease-out;
 }
@@ -2165,15 +2165,25 @@ function startRankingRealtime() {
     onlyInPlayers.sort((a, b) => normalizeNameKey(a).localeCompare(normalizeNameKey(b)));
     onlyInRanking.sort((a, b) => normalizeNameKey(a).localeCompare(normalizeNameKey(b)));
 
-    const msg =
-      `名單總人數：${playerMap.size}\n` +
-      `排行榜總人數：${rankMap.size}\n\n` +
-      `只在名單裡（${onlyInPlayers.length}）：\n` +
-      (onlyInPlayers.length ? onlyInPlayers.join("\n") : "無") +
-      `\n\n只在排行榜裡（${onlyInRanking.length}）：\n` +
-      (onlyInRanking.length ? onlyInRanking.join("\n") : "無");
+    const msg = `
+名單總人數：${nameCount}
+排行榜總人數：${rankCount}
 
-    showModal(msg, { title: "名單 / 排行榜差異", type: "info" });
+────────────
+
+只在名單裡（${onlyInPlayers.length}）：
+
+${onlyInPlayers.length ? onlyInPlayers.join("\n") : "無"}
+
+────────────
+
+只在排行榜裡（${onlyInRanking.length}）：
+
+${onlyInRanking.length ? onlyInRanking.join("\n") : "無"}
+`;
+
+showAlert("名單 / 排行榜差異", msg);
+
   } catch (e) {
     console.error(e);
     showError(e.message || "比對失敗");

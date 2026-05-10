@@ -1433,9 +1433,15 @@ const uiModalOk = document.getElementById("uiModalOk");
 const uiModalX = document.getElementById("uiModalX");
 
 // type: "error" | "success" | "info"
-function showModal(msg, { title = "提示", type = "info" } = {}) {
+function showModal(msg, { title = "提示", type = "info", html = false } = {}) {
   uiModalTitle.textContent = title;
-  uiModalMsg.textContent = String(msg ?? "");
+
+  // ✅ 支援 HTML / 一般文字兩種模式
+  if (html) {
+    uiModalMsg.innerHTML = String(msg ?? "");
+  } else {
+    uiModalMsg.textContent = String(msg ?? "");
+  }
 
   // 顏色/圖示
   if (type === "error") {
@@ -1452,10 +1458,8 @@ function showModal(msg, { title = "提示", type = "info" } = {}) {
   uiModal.classList.add("open");
   uiModal.setAttribute("aria-hidden", "false");
 
-  // 鎖背景滾動（手機好用）
   document.body.style.overflow = "hidden";
 
-  // focus 到按鈕（可鍵盤 Enter）
   setTimeout(() => uiModalOk.focus(), 0);
 }
 const adminPwdModal = document.getElementById("adminPwdModal");
@@ -2166,28 +2170,29 @@ function startRankingRealtime() {
     onlyInRanking.sort((a, b) => normalizeNameKey(a).localeCompare(normalizeNameKey(b)));
 
     const onlyPlayerText = onlyInPlayers.length
-  ? onlyInPlayers.map(v => `• ${v}`).join("\n")
+  ? onlyInPlayers.map(v => `• ${v}`).join("<br>")
   : "無";
 
 const onlyRankingText = onlyInRanking.length
-  ? onlyInRanking.map(v => `• ${v}`).join("\n")
+  ? onlyInRanking.map(v => `• ${v}`).join("<br>")
   : "無";
 
-const msg =
-`名單總人數：${playerMap.size}
-排行榜總人數：${rankMap.size}
+const msg = `
+名單總人數：${playerMap.size}<br>
+排行榜總人數：${rankMap.size}<br><br>
 
-只在名單裡（${onlyInPlayers.length}）：
+只在名單裡（${onlyInPlayers.length}）：<br><br>
+${onlyPlayerText}<br><br>
 
-${onlyPlayerText}
-只在排行榜裡（${onlyInRanking.length}）：
-
-${onlyRankingText}`;
+只在排行榜裡（${onlyInRanking.length}）：<br><br>
+${onlyRankingText}
+`;
 
 showModal(msg, {
   title: "名單 / 排行榜差異",
-  type: "info"
-});} catch (e) {
+  type: "info",
+  html: true
+}); } catch (e) {
     console.error(e);
     showError(e.message || "比對失敗");
   }

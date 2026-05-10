@@ -2182,9 +2182,10 @@ ${onlyInPlayers.length ? onlyInPlayers.join("\n") : "無"}
 ${onlyInRanking.length ? onlyInRanking.join("\n") : "無"}
 `;
 
-showAlert("名單 / 排行榜差異", msg);
-
-  } catch (e) {
+showModal(msg, {
+  title: "名單 / 排行榜差異",
+  type: "info"
+}); } catch (e) {
     console.error(e);
     showError(e.message || "比對失敗");
   }

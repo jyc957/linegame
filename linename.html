@@ -991,18 +991,9 @@ img, video {
 }
 
 .top-logo{
-  width: 120px;
-  max-width: 40vw;
+  width: 220px;
+  max-width: 65vw;
   height: auto;
-
-  border-radius: 18px; /* 圓角 */
-  
-  /* 發光 */
-  box-shadow:
-    0 0 12px rgba(255,255,255,.7),
-    0 0 24px rgba(0,200,255,.45);
-
-  /* 漂浮感 */
   animation: logoFloat 3s ease-in-out infinite,glow 2s infinite alternate;
 }
 
@@ -1013,16 +1004,17 @@ img, video {
 }
   @keyframes glow{
   from{
-    box-shadow:
-      0 0 12px rgba(255,255,255,.5),
-      0 0 24px rgba(0,200,255,.3);
+    filter:
+      drop-shadow(0 0 6px rgba(255,255,255,.5))
+      drop-shadow(0 0 12px rgba(0,220,255,.4));
   }
 
   to{
-    box-shadow:
-      0 0 20px rgba(255,255,255,.9),
-      0 0 40px rgba(0,200,255,.8);
+    filter:
+      drop-shadow(0 0 12px rgba(255,255,255,.9))
+      drop-shadow(0 0 26px rgba(0,220,255,.8));
   }
+}
 }
  </style>
 </head>

@@ -1186,11 +1186,28 @@ body.admin-mode {
   width: 0%;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #00d2ff, #6af7ff, #00d2ff);
+  background: linear-gradient(90deg, #0072d3, #66b3ff, #4dffff);
   box-shadow:
-    0 0 10px rgba(0,210,255,.7),
-    0 0 18px rgba(0,210,255,.45);
+  0 0 10px rgba(255,193,7,.7),
+  0 0 18px rgba(255,193,7,.45);
   transition: width .25s ease;
+}
+  .loader-bar-inner.done {
+  background: linear-gradient(
+    90deg,
+    #ffcc00,
+    #fff3a3,
+    #ffcc00
+  );
+
+  box-shadow:
+    0 0 14px rgba(255,215,0,.95),
+    0 0 28px rgba(255,215,0,.65);
+
+  transition:
+    width .25s ease,
+    background .3s ease,
+    box-shadow .3s ease;
 }
 
 @keyframes loadingBar{
@@ -2936,7 +2953,8 @@ function startFakeLoaderProgress() {
 function finishLoaderProgress() {
   clearInterval(loaderTimer);
   setLoaderProgress(100);
-
+  const bar = document.getElementById("loaderBarInner");
+bar?.classList.add("done");
   setTimeout(() => {
     hidePageLoader();
   }, 350);

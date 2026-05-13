@@ -1620,6 +1620,55 @@ body.admin-mode {
     <div>今日瀏覽人次：<span id="todayCount">載入中...</span></div>
     <div>版本更新於：<span id="lastUpdateTime">載入中...</span></div>
   </div>
+  <!-- ✅ 自訂提示視窗 -->
+<div id="uiModal" class="ui-modal" aria-hidden="true">
+  <div class="ui-modal__backdrop" data-close="1"></div>
+
+  <div class="ui-modal__card" role="dialog" aria-modal="true" aria-labelledby="uiModalTitle">
+    <div class="ui-modal__head">
+      <div class="ui-modal__icon" id="uiModalIcon">!</div>
+      <div class="ui-modal__title" id="uiModalTitle">提示</div>
+      <button class="ui-modal__x" id="uiModalX" aria-label="關閉">✕</button>
+    </div>
+
+    <div class="ui-modal__body" id="uiModalMsg">內容</div>
+
+    <div class="ui-modal__foot">
+      <button class="ui-modal__btn" id="uiModalOk">確定</button>
+    </div>
+  </div>
+</div>
+  <div id="adminPwdModal" class="ui-modal" aria-hidden="true">
+  <div class="ui-modal__backdrop" data-close-admin="1"></div>
+
+  <div class="ui-modal__card" role="dialog" aria-modal="true" aria-labelledby="adminPwdTitle">
+    <div class="ui-modal__head">
+      <div class="ui-modal__icon" style="background:#007aff;">🔒</div>
+      <div class="ui-modal__title" id="adminPwdTitle">你還不錯 發現了管理模式</div>
+      <button class="ui-modal__x" id="adminPwdX" aria-label="關閉">✕</button>
+    </div>
+
+    <div class="ui-modal__body">
+      <div style="margin-bottom:10px;">請輸入密碼 （沒有提示這種東西 自己猜）</div>
+      <input
+        id="adminPwdInput"
+        type="password"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        placeholder="請輸入數字密碼"
+        style="font-size:18px;"
+      />
+      <div id="adminPwdHint" class="time-hint"></div>
+    </div>
+
+    <div class="ui-modal__foot">
+      <button class="ui-modal__btn" id="adminPwdCancel">取消</button>
+      <button class="ui-modal__btn" id="adminPwdOk">確定</button>
+    </div>
+  </div>
+</div>
+  <!-- ✅ Toast 容器 -->
+<div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
@@ -3414,14 +3463,6 @@ if (rankingPanel?.classList.contains("open")) {
 rankingBtn?.addEventListener("click", () => {
   toggleCollapse(rankingPanel, rankingBtn);
 });
-
-      // 🏁 成績排行榜收合
-      const rankingBtn = document.getElementById("toggleRanking");
-      const rankingPanel = document.getElementById("rankingPanel");
-
-      rankingBtn?.addEventListener("click", () => {
-        toggleCollapse(rankingPanel, rankingBtn);
-      });
       const drawMapBtn = document.getElementById("drawMapBtn");
       const mapCountSelect = document.getElementById("mapCountSelect");
       // ===== 地圖抽籤：收合控制（預設收合） =====
@@ -3618,55 +3659,6 @@ if (document.readyState === "loading") {
 }
     
   </script>
-  <!-- ✅ 自訂提示視窗 -->
-<div id="uiModal" class="ui-modal" aria-hidden="true">
-  <div class="ui-modal__backdrop" data-close="1"></div>
-
-  <div class="ui-modal__card" role="dialog" aria-modal="true" aria-labelledby="uiModalTitle">
-    <div class="ui-modal__head">
-      <div class="ui-modal__icon" id="uiModalIcon">!</div>
-      <div class="ui-modal__title" id="uiModalTitle">提示</div>
-      <button class="ui-modal__x" id="uiModalX" aria-label="關閉">✕</button>
-    </div>
-
-    <div class="ui-modal__body" id="uiModalMsg">內容</div>
-
-    <div class="ui-modal__foot">
-      <button class="ui-modal__btn" id="uiModalOk">確定</button>
-    </div>
-  </div>
-</div>
-  <div id="adminPwdModal" class="ui-modal" aria-hidden="true">
-  <div class="ui-modal__backdrop" data-close-admin="1"></div>
-
-  <div class="ui-modal__card" role="dialog" aria-modal="true" aria-labelledby="adminPwdTitle">
-    <div class="ui-modal__head">
-      <div class="ui-modal__icon" style="background:#007aff;">🔒</div>
-      <div class="ui-modal__title" id="adminPwdTitle">你還不錯 發現了管理模式</div>
-      <button class="ui-modal__x" id="adminPwdX" aria-label="關閉">✕</button>
-    </div>
-
-    <div class="ui-modal__body">
-      <div style="margin-bottom:10px;">請輸入密碼 （沒有提示這種東西 自己猜）</div>
-      <input
-        id="adminPwdInput"
-        type="password"
-        inputmode="numeric"
-        pattern="[0-9]*"
-        placeholder="請輸入數字密碼"
-        style="font-size:18px;"
-      />
-      <div id="adminPwdHint" class="time-hint"></div>
-    </div>
-
-    <div class="ui-modal__foot">
-      <button class="ui-modal__btn" id="adminPwdCancel">取消</button>
-      <button class="ui-modal__btn" id="adminPwdOk">確定</button>
-    </div>
-  </div>
-</div>
-  <!-- ✅ Toast 容器 -->
-<div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
   <footer class="site-footer">
   <img src="team.png" alt="KP台灣民眾黨" class="footer-logo" id="adminEntry">
   <div class="footer-text">

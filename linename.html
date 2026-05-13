@@ -77,24 +77,18 @@
       flex-wrap: nowrap;
     }
     /* ✅ 展開滑動動畫 */
-.collapse-content{
+.collapse-content {
   max-height: 0;
-  overflow: visible;
+  overflow: hidden;
   opacity: 0;
   transition:
-    max-height 0.35s ease,
-    opacity 0.25s ease,
-    padding 0.25s ease;
+    max-height 0.4s ease,
+    opacity 0.25s ease;
 }
 
-/* ✅ 展開後 */
-.collapse-content.open{
-  max-height: 99999px;
+.collapse-content.open {
   opacity: 1;
-  transform: translateY(0);
-  overflow: visible;
-}
-
+}    
     /* 更改資料折疊 */
     #editPanel {
       max-height: 0;
@@ -1136,9 +1130,69 @@ body.admin-mode {
     opacity: 1;
   }
 }
+.page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #70cce1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  transition: opacity .45s ease, visibility .45s ease;
+}
+
+.page-loader.hide {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loader-logo {
+  font-size: 54px;
+  animation: loaderBounce 0.9s ease-in-out infinite alternate;
+}
+
+.loader-text {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.loader-bar {
+  width: 180px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.55);
+  overflow: hidden;
+}
+
+.loader-bar-inner {
+  width: 45%;
+  height: 100%;
+  border-radius: 999px;
+  background: #2091c6;
+  animation: loaderMove 1.1s ease-in-out infinite;
+}
+
+@keyframes loaderBounce {
+  from { transform: translateY(0) scale(1); }
+  to { transform: translateY(-10px) scale(1.08); }
+}
+
+@keyframes loaderMove {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(260%); }
+}
  </style>
 </head>
-
+<div id="pageLoader" class="page-loader">
+  <div class="loader-logo">🏁</div>
+  <div class="loader-text">載入中...</div>
+  <div class="loader-bar">
+    <div class="loader-bar-inner"></div>
+  </div>
+</div>
 <body>
   <div class="top-logo-wrap">
   <img src="rush.png" class="top-logo">
@@ -1624,6 +1678,38 @@ const adminPwdHint = document.getElementById("adminPwdHint");
 const adminPwdOk = document.getElementById("adminPwdOk");
 const adminPwdCancel = document.getElementById("adminPwdCancel");
 const adminPwdX = document.getElementById("adminPwdX");
+
+function openCollapse(panel) {
+  if (!panel) return;
+
+  panel.classList.add("open");
+  panel.style.maxHeight = panel.scrollHeight + "px";
+}
+
+function closeCollapse(panel) {
+  if (!panel) return;
+
+  panel.style.maxHeight = panel.scrollHeight + "px";
+
+  requestAnimationFrame(() => {
+    panel.classList.remove("open");
+    panel.style.maxHeight = "0px";
+  });
+}
+
+function toggleCollapse(panel, btn) {
+  if (!panel) return;
+
+  const isOpen = panel.classList.contains("open");
+
+  if (isOpen) {
+    closeCollapse(panel);
+    if (btn) btn.textContent = "▼ 展開";
+  } else {
+    openCollapse(panel);
+    if (btn) btn.textContent = "▲ 收合";
+  }
+}
 
 function openAdminPasswordModal() {
   if (!adminPwdModal) return;
@@ -2683,6 +2769,16 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
       `<div class="empty-text">讀取資料失敗，請稍後再試。</div>`;
   }
 }
+  function hidePageLoader() {
+  const loader = document.getElementById("pageLoader");
+  if (!loader) return;
+  loader.classList.add("hide");
+  setTimeout(() => loader.remove(), 600);
+}
+
+window.addEventListener("load", () => {
+  setTimeout(hidePageLoader, 900);
+});
 async function addLeaderboardRecord() {
   try {
     const gameName = cleanInput(
@@ -3278,30 +3374,26 @@ oldGameInput?.addEventListener("blur", () => {
       const addBtn = document.getElementById("toggleAdd");
       const addPanel = document.getElementById("addPanel");
       addBtn?.addEventListener("click", () => {
-        const open = addPanel.classList.toggle("open");
-        addBtn.textContent = open ? "▲ 收合" : "▼ 展開";
+        toggleCollapse(addPanel, addBtn);
       });
 
       const editBtn = document.getElementById("toggleEdit");
       const editPanel = document.getElementById("editPanel");
       editBtn?.addEventListener("click", () => {
-        const open = editPanel.classList.toggle("open");
-        editBtn.textContent = open ? "▲ 收合" : "▼ 展開";
+        toggleCollapse(editPanel, editBtn);
       });
 
       const trainBtn = document.getElementById("toggleTraining");
       const trainPanel = document.getElementById("trainingPanel");
       trainBtn?.addEventListener("click", () => {
-        const open = trainPanel.classList.toggle("open");
-        trainBtn.textContent = open ? "▲ 收合" : "▼ 展開";
+        toggleCollapse(trainPanel, trainBtn);
         if (open) initTrainingVideosOnce();
       });
       // 成績排行榜（預設開啟）
       const rankBtn = document.getElementById("toggleRank");
       const rankPanel = document.getElementById("rankPanel");
       rankBtn?.addEventListener("click", () => {
-        const open = rankPanel.classList.toggle("open");
-        rankBtn.textContent = open ? "▲ 收合" : "▼ 展開";
+        toggleCollapse(rankPanel, rankBtn);
       });
 
       // 🏁 成績排行榜收合
@@ -3309,8 +3401,7 @@ oldGameInput?.addEventListener("blur", () => {
       const rankingPanel = document.getElementById("rankingPanel");
 
       rankingBtn?.addEventListener("click", () => {
-        const open = rankingPanel.classList.toggle("open");
-        rankingBtn.textContent = open ? "▲ 收合" : "▼ 展開";
+        toggleCollapse(rankingPanel, rankingBtn);
       });
       const drawMapBtn = document.getElementById("drawMapBtn");
       const mapCountSelect = document.getElementById("mapCountSelect");
@@ -3415,8 +3506,7 @@ function setMapPanelOpen(open) {
 setMapPanelOpen(false);
 
 mapToggleBtn?.addEventListener("click", () => {
-  const open = !mapPanel.classList.contains("open");
-  setMapPanelOpen(open);
+  toggleCollapse(mapPanel, mapToggleBtn);
 });
       // ===== 地圖抽籤：重製結果 =====
 const resetMapBtn = document.getElementById("resetMapBtn");

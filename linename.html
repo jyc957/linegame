@@ -2719,6 +2719,13 @@ if (mapPanel?.classList.contains("open")) {
 }
     await sleep(delayMs);
   }
+    const mapPanel = document.getElementById("mapPanel");
+
+if (mapPanel?.classList.contains("open")) {
+  requestAnimationFrame(() => {
+    mapPanel.style.maxHeight = mapPanel.scrollHeight + "px";
+  });
+}
 }
 async function revealMapsOneByOne(picked, count, delayMs = 3400){
   const box = document.getElementById("mapResult");
@@ -3397,14 +3404,14 @@ async function loadLastUpdateTime() {
               const src = v.getAttribute("data-src");
               if (src) {
                 v.setAttribute("src", src);
-                v.load();
-                const trainingPanel = document.getElementById("trainingPanel");
+                v.addEventListener("loadedmetadata", () => {
+  const trainingPanel = document.getElementById("trainingPanel");
 
-if (trainingPanel?.classList.contains("open")) {
-  setTimeout(() => {
+  if (trainingPanel?.classList.contains("open")) {
     trainingPanel.style.maxHeight = trainingPanel.scrollHeight + "px";
-  }, 300);
-}
+  }
+}, { once: true });
+                v.load();
               }
             }
             try { await v.play(); } catch (_) {}

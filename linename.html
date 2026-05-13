@@ -88,18 +88,7 @@
 
 .collapse-content.open {
   opacity: 1;
-}    
-    /* 更改資料折疊 */
-    #editPanel {
-      max-height: 0;
-      overflow: hidden;
-      margin-top: 10px;
-      transition: max-height 0.5s ease;
-    }
-    #editPanel.open {
-      max-height: 1200px;
-    }
-
+} 
     #toggleEdit, #toggleAdd, #toggleTraining {
       margin-left: 10px;
     }
@@ -1148,9 +1137,14 @@ body.admin-mode {
   visibility: hidden;
 }
 
-.loader-logo {
-  font-size: 54px;
-  animation: loaderBounce 0.9s ease-in-out infinite alternate;
+.loader-img {
+  width: 180px;
+  max-width: 65vw;
+  height: auto;
+
+  animation:
+    loaderBounce 0.9s ease-in-out infinite alternate,
+    glow 2s infinite alternate;
 }
 
 .loader-text {
@@ -1186,14 +1180,14 @@ body.admin-mode {
 }
  </style>
 </head>
-<div id="pageLoader" class="page-loader">
-  <div class="loader-logo">🏁</div>
+<body>
+  <div id="pageLoader" class="page-loader">
+  <img src="rush.png" class="team.png" alt="載入中">
   <div class="loader-text">載入中...</div>
   <div class="loader-bar">
     <div class="loader-bar-inner"></div>
   </div>
 </div>
-<body>
   <div class="top-logo-wrap">
   <img src="rush.png" class="top-logo">
 </div>
@@ -1314,7 +1308,7 @@ body.admin-mode {
       <button id="toggleEdit">▼ 展開</button>
     </h2>
 
-    <div id="editPanel">
+    <div id="editPanel" class="collapse-content">
       <label>舊 LINE ID：
   <input id="oldLineInput" type="text" placeholder="舊 LINE ID" autocomplete="off">
   <div id="oldLineSuggestions" class="suggest-box"></div>
@@ -2733,8 +2727,8 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
     const panel = document.getElementById("addPanel");
     const btn = document.getElementById("toggleAdd");
     if (panel && !panel.classList.contains("open")) {
-      panel.classList.add("open");
-      if (btn) btn.textContent = "▲ 收合";
+      openCollapse(panel);
+if (btn) btn.textContent = "▲ 收合";
     }
 
     const snap = await getDocs(colRef);
@@ -3387,14 +3381,23 @@ oldGameInput?.addEventListener("blur", () => {
       const trainPanel = document.getElementById("trainingPanel");
       trainBtn?.addEventListener("click", () => {
         toggleCollapse(trainPanel, trainBtn);
-        if (open) initTrainingVideosOnce();
+        if (trainPanel.classList.contains("open")) {
+  initTrainingVideosOnce();
+}
       });
       // 成績排行榜（預設開啟）
-      const rankBtn = document.getElementById("toggleRank");
-      const rankPanel = document.getElementById("rankPanel");
-      rankBtn?.addEventListener("click", () => {
-        toggleCollapse(rankPanel, rankBtn);
-      });
+      const rankingBtn = document.getElementById("toggleRanking");
+const rankingPanel = document.getElementById("rankingPanel");
+
+// ✅ 因為排行榜預設是 open，要手動補高度
+if (rankingPanel?.classList.contains("open")) {
+  openCollapse(rankingPanel);
+  if (rankingBtn) rankingBtn.textContent = "▲ 收合";
+}
+
+rankingBtn?.addEventListener("click", () => {
+  toggleCollapse(rankingPanel, rankingBtn);
+});
 
       // 🏁 成績排行榜收合
       const rankingBtn = document.getElementById("toggleRanking");
@@ -3415,7 +3418,7 @@ const mapPanel = document.getElementById("mapPanel");
     resetMapResultUI?.();
 
     // 先讀 skip（要不要動畫）
-    const skip = document.getElementById("skipMapAnim")?.checked;
+    const skip = document.getElementById("skipAnimation")?.checked;
     console.log("[DEBUG] skip =", skip);
 
     // 只有 skip=true 才顯示「載入中...」
@@ -3425,7 +3428,7 @@ const mapPanel = document.getElementById("mapPanel");
     }
 
     const count = Number(mapCountSelect.value);
-    const hell = document.getElementById("hellMode")?.checked;
+    const hell = document.getElementById("hardMode")?.checked;
 
     // 規則預設
     let maxSum = LIMIT_BY_COUNT[count] ?? Infinity;

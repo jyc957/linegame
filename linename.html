@@ -984,10 +984,43 @@ img, video {
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
 }
+    .top-logo-wrap{
+  text-align:center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.top-logo{
+  width: 120px;
+  max-width: 40vw;
+  height: auto;
+
+  border-radius: 18px; /* 圓角 */
+  
+  /* 發光 */
+  box-shadow:
+    0 0 12px rgba(255,255,255,.7),
+    0 0 24px rgba(0,200,255,.45);
+
+  /* 漂浮感 */
+  animation: logoFloat 3s ease-in-out infinite;
+  animation: glow 2s infinite alternate;
+}
+
+@keyframes logoFloat{
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
  </style>
 </head>
 
 <body>
+  <div class="top-logo-wrap">
+  <img src="rush" class="top-logo">
+</div>
+
+<h1>KP台灣民眾黨 黨部系統</h1>
   <h1>KP台灣民眾黨 黨部系統</h1>
   <div id="adminBanner" class="admin-only admin-banner">
   ★管理模式★<br>再次點擊黨徽可退出管理模式

@@ -2375,6 +2375,13 @@ if (typeof isAdminMode !== "undefined" && isAdminMode && item.hasScore && item.r
 
     listEl.appendChild(row);
   });
+    const rankingPanel = document.getElementById("rankingPanel");
+
+if (rankingPanel?.classList.contains("open")) {
+  requestAnimationFrame(() => {
+    rankingPanel.style.maxHeight = rankingPanel.scrollHeight + "px";
+  });
+}
 }
 
 function startRankingRealtime() {

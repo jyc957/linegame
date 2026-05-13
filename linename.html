@@ -2602,6 +2602,13 @@ setTimeout(() => {
       { type: "info" }
     );
   }
+    const mapPanel = document.getElementById("mapPanel");
+
+if (mapPanel?.classList.contains("open")) {
+  requestAnimationFrame(() => {
+    mapPanel.style.maxHeight = mapPanel.scrollHeight + "px";
+  });
+}
 }
     function shuffleCopy(arr){
   const a = arr.slice();
@@ -2695,6 +2702,11 @@ function drawRandomMapsWithLimit(maps, count, maxSum, minSum = 0){
 
     div.appendChild(main);
     box.appendChild(div);
+    const mapPanel = document.getElementById("mapPanel");
+
+if (mapPanel?.classList.contains("open")) {
+  mapPanel.style.maxHeight = mapPanel.scrollHeight + "px";
+}
 
     // ✅ 強制瀏覽器先計算一次樣式（關鍵！）
     div.getBoundingClientRect();
@@ -3386,6 +3398,13 @@ async function loadLastUpdateTime() {
               if (src) {
                 v.setAttribute("src", src);
                 v.load();
+                const trainingPanel = document.getElementById("trainingPanel");
+
+if (trainingPanel?.classList.contains("open")) {
+  setTimeout(() => {
+    trainingPanel.style.maxHeight = trainingPanel.scrollHeight + "px";
+  }, 300);
+}
               }
             }
             try { await v.play(); } catch (_) {}

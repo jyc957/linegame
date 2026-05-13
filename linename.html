@@ -1003,14 +1003,26 @@ img, video {
     0 0 24px rgba(0,200,255,.45);
 
   /* 漂浮感 */
-  animation: logoFloat 3s ease-in-out infinite;
-  animation: glow 2s infinite alternate;
+  animation: logoFloat 3s ease-in-out infinite,glow 2s infinite alternate;
 }
 
 @keyframes logoFloat{
   0%   { transform: translateY(0px); }
   50%  { transform: translateY(-6px); }
   100% { transform: translateY(0px); }
+}
+  @keyframes glow{
+  from{
+    box-shadow:
+      0 0 12px rgba(255,255,255,.5),
+      0 0 24px rgba(0,200,255,.3);
+  }
+
+  to{
+    box-shadow:
+      0 0 20px rgba(255,255,255,.9),
+      0 0 40px rgba(0,200,255,.8);
+  }
 }
  </style>
 </head>

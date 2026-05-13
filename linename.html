@@ -1015,6 +1015,21 @@ img, video {
       drop-shadow(0 0 26px rgba(0,220,255,.8));
   }
 }
+    /* ✅ 卡片浮起效果 */
+.section {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.section:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+}
+
+/* 手機按下也有一點浮動感 */
+.section:active {
+  transform: translateY(-2px);
 }
  </style>
 </head>

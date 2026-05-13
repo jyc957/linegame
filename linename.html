@@ -3369,20 +3369,22 @@ const mapPanel = document.getElementById("mapPanel");
 
 function setMapPanelOpen(open) {
   if (!mapPanel) return;
-  mapPanel.classList.toggle("open");
-  if (mapToggleBtn) mapToggleBtn.textContent = open ? "▲ 收合" : "▼ 展開";
 
-  // 展開時先載入一次地圖數量，讓你抽之前就看到「目前共有XX張」
+  mapPanel.classList.toggle("open", open);
+
+  if (mapToggleBtn) {
+    mapToggleBtn.textContent = open ? "▲ 收合" : "▼ 展開";
+  }
+
   if (open) {
     loadMaps().catch(console.error);
   }
 }
-
-// 進頁面：預設收合
 setMapPanelOpen(false);
 
 mapToggleBtn?.addEventListener("click", () => {
   const open = !mapPanel.classList.contains("open");
+  setMapPanelOpen(open);
 });
       // ===== 地圖抽籤：重製結果 =====
 const resetMapBtn = document.getElementById("resetMapBtn");

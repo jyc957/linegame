@@ -80,9 +80,7 @@
 .collapse-content{
   max-height: 0;
   overflow: hidden;
-
   opacity: 0;
-
   transition:
     max-height 0.35s ease,
     opacity 0.25s ease,
@@ -92,7 +90,6 @@
 /* ✅ 展開後 */
 .collapse-content.open{
   max-height: 3000px;
-
   opacity: 1;
 }
 
@@ -403,7 +400,6 @@
 }
     /* 地圖抽籤：預設收合 */
 .map-panel {
-  display: none;
   margin-top: 12px;
 }
 
@@ -1039,6 +1035,61 @@ img, video {
 .section:active {
   transform: translateY(-2px);
 }
+  /* ✅ 名次數字徽章 */
+.rank-pos {
+  width: 52px;
+  height: 34px;
+  border-radius: 999px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255,255,255,0.55);
+  font-weight: 900;
+  flex: 0 0 auto;
+}
+
+/* 一般名次徽章 */
+.rank-row:not(.top1):not(.top2):not(.top3) .rank-pos {
+  background: #222;
+  color: #fff;
+}
+
+/* ✅ 前三名徽章 */
+.rank-row.top1 .rank-pos {
+  background: #fff3b0;
+  color: #7a5200;
+}
+
+.rank-row.top2 .rank-pos {
+  background: #e8f1f8;
+  color: #405466;
+}
+
+.rank-row.top3 .rank-pos {
+  background: #ffe0c2;
+  color: #8a3d00;
+}
+
+/* ✅ 排行榜前三發光 */
+.rank-row.top1 {
+  box-shadow:
+    0 0 0 2px rgba(255,215,0,.35),
+    0 0 18px rgba(255,215,0,.55);
+}
+
+.rank-row.top2 {
+  box-shadow:
+    0 0 0 2px rgba(180,210,230,.35),
+    0 0 16px rgba(160,190,210,.5);
+}
+
+.rank-row.top3 {
+  box-shadow:
+    0 0 0 2px rgba(255,150,80,.35),
+    0 0 16px rgba(255,140,60,.5);
+}
  </style>
 </head>
 
@@ -1206,7 +1257,7 @@ img, video {
     </div>
 
     <!-- 展開後才顯示：抽幾張/按鈕/總數/結果 -->
-    <div id="mapPanel" class="map-panel">
+    <div id="mapPanel" class="map-panel collapse-content">
       <div class="map-actions">
         <select id="mapCountSelect" class="select">
           <option value="1">抽 1 張</option>
@@ -3304,7 +3355,7 @@ const mapPanel = document.getElementById("mapPanel");
 
 function setMapPanelOpen(open) {
   if (!mapPanel) return;
-  mapPanel.style.display = open ? "block" : "none";
+  mapPanel.classList.toggle("open");
   if (mapToggleBtn) mapToggleBtn.textContent = open ? "▲ 收合" : "▼ 展開";
 
   // 展開時先載入一次地圖數量，讓你抽之前就看到「目前共有XX張」

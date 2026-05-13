@@ -76,17 +76,25 @@
       gap: 10px;
       flex-wrap: nowrap;
     }
+    /* ✅ 展開滑動動畫 */
+.collapse-content{
+  max-height: 0;
+  overflow: hidden;
 
-    /* 折疊區塊動畫（通用） */
-    .collapse-content {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.5s ease;
-      margin-top: 10px;
-    }
-    .collapse-content.open {
-      max-height: 20000px; /* 給大一點避免內容多被截 */
-    }
+  opacity: 0;
+
+  transition:
+    max-height 0.35s ease,
+    opacity 0.25s ease,
+    padding 0.25s ease;
+}
+
+/* ✅ 展開後 */
+.collapse-content.open{
+  max-height: 3000px;
+
+  opacity: 1;
+}
 
     /* 更改資料折疊 */
     #editPanel {

@@ -1090,6 +1090,20 @@ img, video {
     0 0 0 2px rgba(255,150,80,.35),
     0 0 16px rgba(255,140,60,.5);
 }
+.rank-row.top1,
+.rank-row.top2,
+.rank-row.top3 {
+  animation: rankGlow 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes rankGlow {
+  from {
+    filter: brightness(1);
+  }
+  to {
+    filter: brightness(1.08);
+  }
+}
  </style>
 </head>
 
@@ -3368,8 +3382,7 @@ function setMapPanelOpen(open) {
 setMapPanelOpen(false);
 
 mapToggleBtn?.addEventListener("click", () => {
-  const open = mapPanel.style.display === "none";
-  setMapPanelOpen(open);
+  const open = !mapPanel.classList.contains("open");
 });
       // ===== 地圖抽籤：重製結果 =====
 const resetMapBtn = document.getElementById("resetMapBtn");

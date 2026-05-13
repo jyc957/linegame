@@ -79,7 +79,7 @@
     /* ✅ 展開滑動動畫 */
 .collapse-content{
   max-height: 0;
-  overflow: hidden;
+  overflow: visible;
   opacity: 0;
   transition:
     max-height 0.35s ease,
@@ -89,8 +89,10 @@
 
 /* ✅ 展開後 */
 .collapse-content.open{
-  max-height: 3000px;
+  max-height: 99999px;
   opacity: 1;
+  transform: translateY(0);
+  overflow: visible;
 }
 
     /* 更改資料折疊 */

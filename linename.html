@@ -390,6 +390,21 @@
     opacity: 1;
   }
 }
+.ui-modal.closing .ui-modal__card {
+  animation: uiClose .16s ease-in forwards;
+}
+
+@keyframes uiClose {
+  from {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: scale(0.92) translateY(10px);
+    opacity: 0;
+  }
+}
     /* 地圖抽籤：預設收合 */
 .map-panel {
   margin-top: 12px;
@@ -1797,9 +1812,13 @@ function openAdminPasswordModal() {
 function closeAdminPasswordModal() {
   if (!adminPwdModal) return;
 
-  adminPwdModal.classList.remove("open");
-  adminPwdModal.setAttribute("aria-hidden", "true");
-  document.body.style.overflow = "";
+  adminPwdModal.classList.add("closing");
+
+  setTimeout(() => {
+    adminPwdModal.classList.remove("open", "closing");
+    adminPwdModal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }, 160);
 }
 
 function submitAdminPassword() {
@@ -1827,11 +1846,13 @@ function submitAdminPassword() {
   }
 }
 function closeModal() {
-  uiModal.classList.remove("open");
-  uiModal.setAttribute("aria-hidden", "true");
-  document.body.style.overflow = "";
-}
+  uiModal.classList.add("closing");
 
+  setTimeout(() => {
+    uiModal.classList.remove("open", "closing");
+    uiModal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }, 160);}
 uiModalOk.addEventListener("click", closeModal);
 uiModalX.addEventListener("click", closeModal);
 uiModal.addEventListener("click", (e) => {

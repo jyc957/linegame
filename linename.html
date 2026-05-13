@@ -2818,6 +2818,13 @@ if (btn) btn.textContent = "▲ 收合";
 
     list.sort((a, b) => b.updatedAt - a.updatedAt);
     renderList(list, "全部資料（依修改時間）");
+    const panel = document.getElementById("addPanel");
+
+if (panel?.classList.contains("open")) {
+  requestAnimationFrame(() => {
+    panel.style.maxHeight = panel.scrollHeight + "px";
+  });
+}
 
     // ✅ 自動捲到名單區
     setTimeout(() => {

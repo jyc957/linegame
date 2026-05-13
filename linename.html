@@ -1143,7 +1143,7 @@ body.admin-mode {
   height: auto;
 
   animation:
-    loaderBounce 0.9s ease-in-out infinite alternate,
+    floatLogo 2.5s ease-in-out infinite,
     glow 2s infinite alternate;
 }
 
@@ -1178,20 +1178,37 @@ body.admin-mode {
   0% { transform: translateX(-120%); }
   100% { transform: translateX(260%); }
 }
+  @keyframes floatLogo {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
  </style>
 </head>
-  <div id="pageLoader" class="page-loader">
+
+<body>
+
+<div id="pageLoader" class="page-loader">
   <img src="team.png" class="loader-img" alt="載入中">
   <div class="loader-text">載入中...</div>
   <div class="loader-bar">
     <div class="loader-bar-inner"></div>
   </div>
 </div>
-  <div class="top-logo-wrap">
+
+<div class="top-logo-wrap">
   <img src="team.png" class="top-logo">
 </div>
-<body>
-  <h1>🍀KP台灣民眾黨 黨部系統🍀</h1>
+
+<h1>🍀KP台灣民眾黨 黨部系統🍀</h1>
   <div id="adminBanner" class="admin-only admin-banner">
   ★管理模式★<br>再次點擊黨徽可退出管理模式
 </div>

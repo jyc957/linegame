@@ -3051,6 +3051,27 @@ window.addEventListener("load", () => {
   pageLoadedOnce = true;
   tryFinishLoader();
 });
+  document.querySelectorAll(".training-video").forEach(v => {
+  v.addEventListener("click", async () => {
+
+    // 手機取消靜音（可選）
+    v.muted = false;
+
+    // 進全螢幕
+    if (v.requestFullscreen) {
+      await v.requestFullscreen();
+    }
+
+    // iPhone Safari
+    else if (v.webkitEnterFullscreen) {
+      v.webkitEnterFullscreen();
+    }
+    // 播放
+    try {
+  await v.play();
+} catch (_) {}
+  });
+});
 async function addLeaderboardRecord() {
   try {
     const gameName = cleanInput(

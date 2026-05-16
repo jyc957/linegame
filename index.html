@@ -1299,11 +1299,12 @@ body.admin-mode {
   .no-jump{
   animation:none !important;
 }
+  /*--公告背景--*/
   #announcementBox {
     display: none;
-    margin: 12px 0 20px;
-    padding: 12px 18px;
-    border-radius: 18px;
+    margin: 8px 0 14px;
+    padding: 6px 12px;
+    border-radius: 14px;
     background: rgba(255, 255, 255, 0.18);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -1312,9 +1313,10 @@ body.admin-mode {
         0 4px 18px rgba(0,0,0,0.15);
     overflow: hidden;
 }
+/*公告文字*/
 #announcementText {
     display: inline-block;
-    font-size: 22px;
+    font-size: 18px;
     font-weight: bold;
     color: #ffffff;
     text-shadow:
@@ -1334,7 +1336,7 @@ body.admin-mode {
 }
 @keyframes marqueeMove {
   from {
-    transform: translateX(0);
+    transform: translateX(100vw);
   }
   to {
     transform: translateX(-100%);

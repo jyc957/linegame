@@ -1299,22 +1299,14 @@ body.admin-mode {
   .no-jump{
   animation:none !important;
 }
-  .announcement-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  margin: 0 auto 14px;
-  padding: 10px 12px;
-
-  max-width: 100%;
-  border-radius: 999px;
-
-  background: rgba(255,255,255,.9);
-  border: 2px solid #2091c6;
-  box-shadow: 0 8px 18px rgba(0,0,0,.12);
-
-  overflow: hidden;
+  #announcementBox {
+    display: none;
+    margin: 10px 0 18px;
+    text-align: center;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
 }
 
 .announcement-label {
@@ -1381,7 +1373,7 @@ body.admin-mode {
 
 <h1>🍀KP台灣民眾黨 黨部系統🍀</h1>
   <div id="announcementBox" class="announcement-box" style="display:none;">
-  <div class="announcement-label">📢 公告</div>
+  <div class="announcement-label">📢 最新公告</div>
   <div class="announcement-marquee">
     <span id="announcementText"></span>
   </div>

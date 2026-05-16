@@ -3391,6 +3391,13 @@ function fillScoreNameFromRanking(gameName) {
 
     list.sort((a, b) => b.updatedAt - a.updatedAt);
     renderList(list, "搜尋結果");
+    const panel = document.getElementById("addPanel");
+
+if (panel?.classList.contains("open")) {
+  requestAnimationFrame(() => {
+    panel.style.maxHeight = panel.scrollHeight + "px";
+  });
+}
   } catch (e) {
     console.error(e);
     showError("查詢失敗，請稍後再試。");

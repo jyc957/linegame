@@ -2867,6 +2867,13 @@ setTimeout(() => {
 if (mapPanel?.classList.contains("open")) {
   requestAnimationFrame(() => {
     mapPanel.style.maxHeight = mapPanel.scrollHeight + "px";
+
+    setTimeout(() => {
+      box.lastElementChild?.scrollIntoView({
+        behavior: "smooth",
+        block: "end"
+      });
+    }, 80);
   });
 }
 }

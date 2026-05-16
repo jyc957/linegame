@@ -1342,6 +1342,45 @@ body.admin-mode {
     transform: translateX(-100%);
   }
 }
+.announce-time-box {
+  margin-top: 10px;
+}
+
+.announce-time-title {
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.announce-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin: 8px 0;
+  font-size: 15px;
+}
+
+.announce-option input[type="radio"] {
+  width: auto;
+  margin: 0;
+}
+
+#announcementAmount {
+  width: 90px;
+  padding: 6px 8px;
+}
+
+#announcementUnit {
+  width: 72px;
+  padding: 6px 8px;
+  font-size: 15px;
+}
+
+#announcementEndTime {
+  width: min(220px, 100%);
+  padding: 6px 8px;
+  font-size: 15px;
+}
  </style>
 </head>
 
@@ -1385,6 +1424,7 @@ body.admin-mode {
   <div id="adminBanner" class="admin-only admin-banner">
   ★管理模式★<br>再次點擊黨徽可退出管理模式</div>
   <div class="section admin-only" id="adminAnnouncementPanel">
+  <div class="section admin-only" id="adminAnnouncementPanel">
   <h2>公告設定</h2>
 
   <label>
@@ -1392,21 +1432,26 @@ body.admin-mode {
     <input id="announcementInput" type="text" placeholder="例：今晚 9 點開始比賽報名">
   </label>
 
-  <label>
-    公告時間：
-    <select id="announcementDuration">
-      <option value="1">1 小時</option>
-      <option value="2">2 小時</option>
-      <option value="6">6 小時</option>
-      <option value="24">1 天</option>
-      <option value="custom">自訂結束時間</option>
-    </select>
-  </label>
+  <div class="announce-time-box">
+    <div class="announce-time-title">公告時間：</div>
 
-  <label>
-    自訂結束時間：
-    <input id="announcementEndTime" type="datetime-local">
-  </label>
+    <label class="announce-option">
+      <input type="radio" name="announcementTimeType" value="duration" checked>
+      <input id="announcementAmount" type="number" min="1" step="1" inputmode="numeric" placeholder="數字">
+      <select id="announcementUnit">
+        <option value="second">秒</option>
+        <option value="minute">分</option>
+        <option value="hour" selected>時</option>
+        <option value="day">天</option>
+      </select>
+    </label>
+
+    <label class="announce-option">
+      <input type="radio" name="announcementTimeType" value="custom">
+      <span>自訂日期</span>
+      <input id="announcementEndTime" type="datetime-local">
+    </label>
+  </div>
 
   <button onclick="saveAnnouncement()">發布公告</button>
   <button onclick="clearAnnouncement()">清除公告</button>
@@ -3988,20 +4033,48 @@ if (document.readyState === "loading") {
       80
     );
 
-    const duration = document.getElementById("announcementDuration").value;
-    const customEnd = document.getElementById("announcementEndTime").value;
+    const type = document.querySelector('input[name="announcementTimeType"]:checked')?.value;
 
-    let endAt;
+    let endAt = 0;
 
-    if (duration === "custom") {
+    if (type === "duration") {
+      const amount = Number(document.getElementById("announcementAmount").value);
+      const unit = document.getElementById("announcementUnit").value;
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        showError("請輸入正確的公告時間數字");
+        return;
+      }
+
+      const unitMsMap = {
+        second: 1000,
+        minute: 60 * 1000,
+        hour: 60 * 60 * 1000,
+        day: 24 * 60 * 60 * 1000
+      };
+
+      endAt = Date.now() + amount * unitMsMap[unit];
+    }
+
+    else if (type === "custom") {
+      const customEnd = document.getElementById("announcementEndTime").value;
+
       if (!customEnd) {
-        showError("請選擇自訂結束時間");
+        showError("請選擇自訂結束日期");
         return;
       }
 
       endAt = new Date(customEnd).getTime();
-    } else {
-      endAt = Date.now() + Number(duration) * 60 * 60 * 1000;
+
+      if (!Number.isFinite(endAt) || endAt <= Date.now()) {
+        showError("自訂結束時間必須晚於現在");
+        return;
+      }
+    }
+
+    else {
+      showError("請選擇公告時間類型");
+      return;
     }
 
     await setDoc(announcementRef, {
@@ -4015,7 +4088,6 @@ if (document.readyState === "loading") {
     showError(e.message || "公告發布失敗");
   }
 }
-
 async function clearAnnouncement() {
   try {
     await setDoc(announcementRef, {

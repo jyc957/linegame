@@ -1299,6 +1299,53 @@ body.admin-mode {
   .no-jump{
   animation:none !important;
 }
+  .announcement-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin: 0 auto 14px;
+  padding: 10px 12px;
+
+  max-width: 100%;
+  border-radius: 999px;
+
+  background: rgba(255,255,255,.9);
+  border: 2px solid #2091c6;
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+
+  overflow: hidden;
+}
+
+.announcement-label {
+  flex: 0 0 auto;
+  font-weight: 900;
+  color: #074783;
+}
+
+.announcement-marquee {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.announcement-marquee span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: marqueeMove 12s linear infinite;
+  font-weight: 800;
+  color: #c62828;
+}
+
+@keyframes marqueeMove {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
+}
  </style>
 </head>
 
@@ -1333,8 +1380,40 @@ body.admin-mode {
 </div>
 
 <h1>🍀KP台灣民眾黨 黨部系統🍀</h1>
+  <div id="announcementBox" class="announcement-box" style="display:none;">
+  <div class="announcement-label">📢 公告</div>
+  <div class="announcement-marquee">
+    <span id="announcementText"></span>
+  </div>
+</div>
   <div id="adminBanner" class="admin-only admin-banner">
-  ★管理模式★<br>再次點擊黨徽可退出管理模式
+  ★管理模式★<br>再次點擊黨徽可退出管理模式</div>
+  <div class="section admin-only" id="adminAnnouncementPanel">
+  <h2>公告設定</h2>
+
+  <label>
+    公告內容：
+    <input id="announcementInput" type="text" placeholder="例：今晚 9 點開始比賽報名">
+  </label>
+
+  <label>
+    公告時間：
+    <select id="announcementDuration">
+      <option value="1">1 小時</option>
+      <option value="2">2 小時</option>
+      <option value="6">6 小時</option>
+      <option value="24">1 天</option>
+      <option value="custom">自訂結束時間</option>
+    </select>
+  </label>
+
+  <label>
+    自訂結束時間：
+    <input id="announcementEndTime" type="datetime-local">
+  </label>
+
+  <button onclick="saveAnnouncement()">發布公告</button>
+  <button onclick="clearAnnouncement()">清除公告</button>
 </div>
   <div class="section admin-only" id="adminScorePanel">
   <div class="top-bar">
@@ -2333,7 +2412,9 @@ if (panel?.classList.contains("open")) {
  let stopPlayersRealtime = null;
  let latestPlayersSnap = null;
  let latestLeaderboardSnap = null;
-    
+
+const announcementRef = doc(db, "site_settings", "announcement");
+
  async function loadRanking() {
   startRankingRealtime();
 }
@@ -3831,7 +3912,7 @@ adminEntry?.addEventListener("click", () => {
     askAdminPassword();
   }
 });
-      adminPwdOk?.addEventListener("click", submitAdminPassword);
+adminPwdOk?.addEventListener("click", submitAdminPassword);
 adminPwdCancel?.addEventListener("click", closeAdminPasswordModal);
 adminPwdX?.addEventListener("click", closeAdminPasswordModal);
 
@@ -3893,11 +3974,92 @@ adminPwdInput?.addEventListener("keydown", (e) => {
   });
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initPageData);
-} else {
+function startAllSystems() {
   initPageData();
+  startAnnouncementRealtime();
 }
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", startAllSystems);
+} else {
+  startAllSystems();
+}
+  async function saveAnnouncement() {
+  try {
+    const text = cleanInput(
+      document.getElementById("announcementInput").value,
+      "公告內容",
+      80
+    );
+
+    const duration = document.getElementById("announcementDuration").value;
+    const customEnd = document.getElementById("announcementEndTime").value;
+
+    let endAt;
+
+    if (duration === "custom") {
+      if (!customEnd) {
+        showError("請選擇自訂結束時間");
+        return;
+      }
+
+      endAt = new Date(customEnd).getTime();
+    } else {
+      endAt = Date.now() + Number(duration) * 60 * 60 * 1000;
+    }
+
+    await setDoc(announcementRef, {
+      text,
+      endAt,
+      updatedAt: Date.now()
+    });
+
+    showSuccess("公告已發布");
+  } catch (e) {
+    showError(e.message || "公告發布失敗");
+  }
+}
+
+async function clearAnnouncement() {
+  try {
+    await setDoc(announcementRef, {
+      text: "",
+      endAt: 0,
+      updatedAt: Date.now()
+    });
+
+    showSuccess("公告已清除");
+  } catch (e) {
+    showError(e.message || "清除公告失敗");
+  }
+}
+function startAnnouncementRealtime() {
+  onSnapshot(announcementRef, (snap) => {
+    const box = document.getElementById("announcementBox");
+    const textEl = document.getElementById("announcementText");
+
+    if (!box || !textEl) return;
+
+    if (!snap.exists()) {
+      box.style.display = "none";
+      return;
+    }
+
+    const data = snap.data();
+    const text = data.text || "";
+    const endAt = Number(data.endAt || 0);
+
+    if (!text || Date.now() > endAt) {
+      box.style.display = "none";
+      return;
+    }
+
+    textEl.textContent = text;
+    box.style.display = "flex";
+  });
+}
+  window.saveAnnouncement = saveAnnouncement;
+  window.clearAnnouncement = clearAnnouncement;
     
   </script>
   <footer class="site-footer">

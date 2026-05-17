@@ -2795,15 +2795,24 @@ const LIMIT_BY_COUNT = {
   const maps = rows.slice(1)
     .map(r => ({
       name: (r[0] || "").trim(),
-      difficulty: Number(r[1]) || 0
+      difficulty: Number(r[1]) || 0,
+
+      pro: (r[2] || "").trim(),        // 職業
+      strongMain: (r[3] || "").trim(), // 強主
+      main: (r[4] || "").trim(),       // 主力
+      line1: (r[5] || "").trim(),      // 一線
+      line2: (r[6] || "").trim(),      // 二線
+      line3: (r[7] || "").trim(),      // 三線
+      fun: (r[8] || "").trim(),        // 娛樂
+      line5: (r[9] || "").trim()       // 五線
     }))
     .filter(m => m.name);
 
-  // ✅ 顯示總地圖數
   const el = document.getElementById("mapTotalCount");
   if (el) el.textContent = maps.length;
 
-  // ✅ 回傳「去重複後」的地圖
+  console.log("地圖資料：", maps); // 測試用，確認後可刪
+  alert(JSON.stringify(maps[0], null, 2));
   return dedupeMaps(maps);
 }
 

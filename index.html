@@ -2810,9 +2810,6 @@ const LIMIT_BY_COUNT = {
 
   const el = document.getElementById("mapTotalCount");
   if (el) el.textContent = maps.length;
-
-  console.log("地圖資料：", maps); // 測試用，確認後可刪
-  alert(JSON.stringify(maps[0], null, 2));
   return dedupeMaps(maps);
 }
 

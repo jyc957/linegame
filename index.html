@@ -1416,6 +1416,17 @@ body.admin-mode {
 .suggest-box.show {
   display: block;
 }
+.skill-btn-row{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+
+.gray-btn{
+  background:#d9d9d9;
+  border-color:#999;
+  color:#333;
+}
  </style>
 </head>
 
@@ -1655,7 +1666,12 @@ body.admin-mode {
       </div>
     </label>
 
-    <button type="button" onclick="judgeSkillLine()">查詢分線</button>
+    <div class="skill-btn-row">
+  <button type="button" onclick="judgeSkillLine()">查詢分線</button>
+  <button type="button" onclick="clearSkillQuery()" class="gray-btn">
+    清除
+  </button>
+</div>
 
   </div>
 </div>
@@ -3342,6 +3358,22 @@ async function initSkillMapSuggest() {
   btn.addEventListener("click", () => {
     toggleCollapse(panel, btn);
   });
+}
+  function clearSkillQuery() {
+  document.getElementById("skillMapInput").value = "";
+  document.getElementById("skillMinInput").value = "";
+  document.getElementById("skillSecInput").value = "";
+  document.getElementById("skillMsInput").value = "";
+
+  // 清掉建議選單
+  const suggest = document.getElementById("skillMapSuggest");
+  if (suggest) {
+    suggest.innerHTML = "";
+    suggest.style.display = "none";
+  }
+
+  // 游標回到賽道名稱
+  document.getElementById("skillMapInput").focus();
 }
     function normalizeNameKey(name) {
   return String(name || "")

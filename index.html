@@ -1629,37 +1629,34 @@ body.admin-mode {
       </small>
     </div>
   </div>
-div class="section">
-
+  <div class="section">
   <div class="top-bar">
     <h2>賽道成績分線查詢</h2>
-
-    <button id="toggleSkillQuery">
-      ▼ 展開
-    </button>
+    <button id="toggleSkillQuery">▼ 展開</button>
   </div>
 
   <div id="skillQueryPanel" class="collapse-content">
 
-  <label>
-    請輸入賽道名稱：
-    <input id="skillMapInput" type="text" placeholder="例：城鎮高速公路" autocomplete="off">
-  </label>
-  <div id="skillMapSuggest" class="suggest-box"></div>
+    <label>
+      請輸入賽道名稱：
+      <input id="skillMapInput" type="text" placeholder="例：城鎮高速公路" autocomplete="off">
+    </label>
+    <div id="skillMapSuggest" class="suggest-box"></div>
 
-  <label>
-    請輸入成績：
-    <div class="skill-time-row">
-      <input id="skillMinInput" type="number" min="0" inputmode="numeric" placeholder="分">
-      <span>分</span>
-      <input id="skillSecInput" type="number" min="0" max="59" inputmode="numeric" placeholder="秒">
-      <span>秒</span>
-      <input id="skillMsInput" type="number" min="0" max="99" inputmode="numeric" placeholder="xx">
-    </div>
-  </label>
+    <label>
+      請輸入成績：
+      <div class="skill-time-row">
+        <input id="skillMinInput" type="number" min="0" inputmode="numeric" placeholder="分">
+        <span>分</span>
+        <input id="skillSecInput" type="number" min="0" max="59" inputmode="numeric" placeholder="秒">
+        <span>秒</span>
+        <input id="skillMsInput" type="number" min="0" max="99" inputmode="numeric" placeholder="xx">
+      </div>
+    </label>
 
-  <button type="button" onclick="judgeSkillLine()">查詢分線</button>
-</div>
+    <button type="button" onclick="judgeSkillLine()">查詢分線</button>
+
+  </div>
 </div>
 <!-- 地圖抽籤 -->
 <div class="section">

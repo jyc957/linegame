@@ -3243,7 +3243,7 @@ async function initSkillMapSuggest() {
     box.innerHTML = "";
 
     if (!key) {
-      box.style.display = "none";
+      box.classList.remove("show");
       return;
     }
 
@@ -3252,7 +3252,7 @@ async function initSkillMapSuggest() {
       .slice(0, 8);
 
     if (!matched.length) {
-      box.style.display = "none";
+      box.classList.remove("show");
       return;
     }
 
@@ -3263,13 +3263,13 @@ async function initSkillMapSuggest() {
 
       div.addEventListener("click", () => {
         input.value = m.name;
-        box.style.display = "none";
+        box.classList.remove("show");
       });
 
       box.appendChild(div);
     });
 
-    box.style.display = "block";
+    box.classList.add("show");
   });
 }
   function initOldDataSuggestions() {

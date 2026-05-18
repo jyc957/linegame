@@ -3225,61 +3225,7 @@ async function judgeSkillLine() {
 }
 
 window.judgeSkillLine = judgeSkillLine;
-async function initGameNameSuggest() {
-  const input = document.getElementById("oldGameNameInput");
-  const box = document.getElementById("oldGameNameSuggest");
 
-  if (!input || !box) return;
-
-  input.addEventListener("input", async () => {
-    const key = normalizeSearchKey(input.value);
-
-    box.innerHTML = "";
-
-    if (!key) {
-      box.style.display = "none";
-      return;
-    }
-
-    try {
-      const snap = await getDocs(colRef);
-
-      const matched = [];
-
-      snap.forEach(docSnap => {
-        const d = docSnap.data();
-        const name = d.gameName || "";
-
-        if (
-          normalizeSearchKey(name).includes(key)
-          && !matched.includes(name)
-        ) {
-          matched.push(name);
-        }
-      });
-
-      matched.slice(0, 8).forEach(name => {
-        const div = document.createElement("div");
-
-        div.className = "suggest-item";
-        div.textContent = name;
-
-        div.addEventListener("click", () => {
-          input.value = name;
-          box.style.display = "none";
-        });
-
-        box.appendChild(div);
-      });
-
-      box.style.display =
-        matched.length ? "block" : "none";
-
-    } catch (e) {
-      console.error(e);
-    }
-  });
-}
 async function initSkillMapSuggest() {
   const input = document.getElementById("skillMapInput");
   const box = document.getElementById("skillMapSuggest");
@@ -3321,6 +3267,35 @@ async function initSkillMapSuggest() {
     });
 
     box.style.display = "block";
+  });
+}
+  function initOldDataSuggestions() {
+  const configs = [
+    {
+      inputId: "oldLineInput",
+      boxId: "oldLineSuggestions",
+      field: "lineId"
+    },
+    {
+      inputId: "oldGameInput",
+      boxId: "oldGameSuggestions",
+      field: "gameName"
+    }
+  ];
+
+  configs.forEach(({ inputId, boxId, field }) => {
+    const input = document.getElementById(inputId);
+    const box = document.getElementById(boxId);
+
+    if (!input || !box) return;
+
+    input.addEventListener("input", () => {
+      showSuggestions({ inputId, boxId, field });
+    });
+
+    input.addEventListener("blur", () => {
+      hideSuggestions(boxId);
+    });
   });
 }
     function normalizeNameKey(name) {
@@ -4332,7 +4307,7 @@ function startAllSystems() {
   initPageData();
   startAnnouncementRealtime();
   initSkillMapSuggest();
-  initGameNameSuggest();
+  initOldDataSuggestions();
 }
 
 if (document.readyState === "loading") {

@@ -3184,7 +3184,7 @@ async function judgeSkillLine() {
       resultLine = levels[0].name;
       message =
         `🏁賽道：${map.name}\n\n` +
-        `⏱️您的成績為 ${msToTimeText(playerMs)}\n\n` +
+        `⏱️您的成績為:${msToTimeText(playerMs)}\n\n` +
         `📊分線為 ${resultLine}\n\n` +
         `已經到頂啦~ 你好棒≧ω≦`;
     }
@@ -3192,7 +3192,7 @@ async function judgeSkillLine() {
     else if (playerMs > levels[levels.length - 1].ms) {
       message =
         `🏁賽道：${map.name}\n\n` +
-        `⏱️您的成績為 ${msToTimeText(playerMs)}\n\n` +
+        `⏱️您的成績為:${msToTimeText(playerMs)}\n\n` +
         `📊分線為 不及格\n\n` +
         `繼續加油吧~ 你可以進步更多ฅ'ω'ฅ`;
     }
@@ -3207,9 +3207,9 @@ async function judgeSkillLine() {
 
           message =
             `🏁賽道：${map.name}\n\n` +
-            `⏱️您的成績為 ${msToTimeText(playerMs)}\n\n` +
+            `⏱️您的成績為:${msToTimeText(playerMs)}\n\n` +
             `📊分線為 ${resultLine}\n\n` +
-            🚀`距離下一階段 ${nextLevel.name}\n\n` +
+            `🚀距離下一階段 ${nextLevel.name}\n\n` +
             `還有 ${diffMsToSecText(diff)} 秒`;
 
           break;

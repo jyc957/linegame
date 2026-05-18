@@ -3225,6 +3225,61 @@ async function judgeSkillLine() {
 }
 
 window.judgeSkillLine = judgeSkillLine;
+async function initGameNameSuggest() {
+  const input = document.getElementById("oldGameNameInput");
+  const box = document.getElementById("oldGameNameSuggest");
+
+  if (!input || !box) return;
+
+  input.addEventListener("input", async () => {
+    const key = normalizeSearchKey(input.value);
+
+    box.innerHTML = "";
+
+    if (!key) {
+      box.style.display = "none";
+      return;
+    }
+
+    try {
+      const snap = await getDocs(colRef);
+
+      const matched = [];
+
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const name = d.gameName || "";
+
+        if (
+          normalizeSearchKey(name).includes(key)
+          && !matched.includes(name)
+        ) {
+          matched.push(name);
+        }
+      });
+
+      matched.slice(0, 8).forEach(name => {
+        const div = document.createElement("div");
+
+        div.className = "suggest-item";
+        div.textContent = name;
+
+        div.addEventListener("click", () => {
+          input.value = name;
+          box.style.display = "none";
+        });
+
+        box.appendChild(div);
+      });
+
+      box.style.display =
+        matched.length ? "block" : "none";
+
+    } catch (e) {
+      console.error(e);
+    }
+  });
+}
 async function initSkillMapSuggest() {
   const input = document.getElementById("skillMapInput");
   const box = document.getElementById("skillMapSuggest");
@@ -4277,6 +4332,7 @@ function startAllSystems() {
   initPageData();
   startAnnouncementRealtime();
   initSkillMapSuggest();
+  initGameNameSuggest();
 }
 
 if (document.readyState === "loading") {

@@ -1411,6 +1411,9 @@ body.admin-mode {
 .suggest-item:hover {
   background: #e8f7ff;
 }
+.suggest-box.show {
+  display: block;
+}
  </style>
 </head>
 
@@ -4054,32 +4057,6 @@ scoreTimeInput?.addEventListener("blur", () => {
   }
 
   validateScoreTimeInput(true);
-});
-  const oldLineInput = document.getElementById("oldLineInput");
-  const oldGameInput = document.getElementById("oldGameInput");
-
-oldLineInput?.addEventListener("input", () => {
-  showSuggestions({
-    inputId: "oldLineInput",
-    boxId: "oldLineSuggestions",
-    field: "lineId"
-  });
-});
-
-oldGameInput?.addEventListener("input", () => {
-  showSuggestions({
-    inputId: "oldGameInput",
-    boxId: "oldGameSuggestions",
-    field: "gameName"
-  });
-});
-
-oldLineInput?.addEventListener("blur", () => {
-  hideSuggestions("oldLineSuggestions");
-});
-
-oldGameInput?.addEventListener("blur", () => {
-  hideSuggestions("oldGameSuggestions");
 });
       const addBtn = document.getElementById("toggleAdd");
       const addPanel = document.getElementById("addPanel");

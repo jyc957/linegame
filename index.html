@@ -1381,6 +1381,36 @@ body.admin-mode {
   padding: 6px 8px;
   font-size: 15px;
 }
+.skill-time-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.skill-time-row input {
+  width: 80px;
+  text-align: center;
+}
+
+.suggest-box {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-top: -4px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  display: none;
+}
+
+.suggest-item {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.suggest-item:hover {
+  background: #e8f7ff;
+}
  </style>
 </head>
 
@@ -1594,7 +1624,30 @@ body.admin-mode {
       </small>
     </div>
   </div>
+<div class="section">
+  <div class="top-bar">
+    <h2>賽道成績分線查詢</h2>
+  </div>
 
+  <label>
+    請輸入賽道名稱：
+    <input id="skillMapInput" type="text" placeholder="例：城鎮高速公路" autocomplete="off">
+  </label>
+  <div id="skillMapSuggest" class="suggest-box"></div>
+
+  <label>
+    請輸入成績：
+    <div class="skill-time-row">
+      <input id="skillMinInput" type="number" min="0" inputmode="numeric" placeholder="分">
+      <span>分</span>
+      <input id="skillSecInput" type="number" min="0" max="59" inputmode="numeric" placeholder="秒">
+      <span>秒</span>
+      <input id="skillMsInput" type="number" min="0" max="99" inputmode="numeric" placeholder="xx">
+    </div>
+  </label>
+
+  <button type="button" onclick="judgeSkillLine()">查詢分線</button>
+</div>
 <!-- 地圖抽籤 -->
 <div class="section">
   <div class="card">
@@ -3027,6 +3080,194 @@ async function revealMapsOneByOne(picked, count, delayMs = 3400){
     await sleep(delayMs);
   }
 }
+  let cachedSkillMaps = [];
+
+function timeTextToMs(str) {
+  const s = String(str || "").trim().replace("：", ":");
+
+  const match = s.match(/^(\d+):(\d{1,2})\.(\d{1,2})$/);
+  if (!match) return null;
+
+  const min = Number(match[1]);
+  const sec = Number(match[2]);
+  const cs = Number(match[3].padEnd(2, "0"));
+
+  return min * 60000 + sec * 1000 + cs * 10;
+}
+
+function inputSkillTimeToMs() {
+  const min = Number(document.getElementById("skillMinInput").value || 0);
+  const sec = Number(document.getElementById("skillSecInput").value || 0);
+  const cs = Number(document.getElementById("skillMsInput").value || 0);
+
+  if (!Number.isFinite(min) || !Number.isFinite(sec) || !Number.isFinite(cs)) return null;
+  if (min < 0 || sec < 0 || sec >= 60 || cs < 0 || cs > 99) return null;
+
+  return min * 60000 + sec * 1000 + cs * 10;
+}
+
+function msToTimeText(ms) {
+  const min = Math.floor(ms / 60000);
+  const sec = Math.floor((ms % 60000) / 1000);
+  const cs = Math.floor((ms % 1000) / 10);
+
+  return `${min}:${String(sec).padStart(2, "0")}.${String(cs).padStart(2, "0")}`;
+}
+
+function diffMsToSecText(ms) {
+  return (ms / 1000).toFixed(2);
+}
+
+async function loadSkillMapsOnce() {
+  if (cachedSkillMaps.length) return cachedSkillMaps;
+
+  const maps = await loadMaps();
+
+  cachedSkillMaps = maps.filter(m =>
+    m.pro && m.strongMain && m.main && m.line1 &&
+    m.line2 && m.line3 && m.fun && m.line5
+  );
+
+  return cachedSkillMaps;
+}
+
+async function judgeSkillLine() {
+  try {
+    const maps = await loadSkillMapsOnce();
+
+    const inputName = document.getElementById("skillMapInput").value.trim();
+    const playerMs = inputSkillTimeToMs();
+
+    if (!inputName) {
+      showError("請輸入賽道名稱");
+      return;
+    }
+
+    if (playerMs === null) {
+      showError("請輸入正確成績");
+      return;
+    }
+
+    const key = normalizeSearchKey(inputName);
+
+    const map = maps.find(m =>
+      normalizeSearchKey(m.name).includes(key) ||
+      key.includes(normalizeSearchKey(m.name))
+    );
+
+    if (!map) {
+      showError("找不到這張賽道");
+      return;
+    }
+
+    const levels = [
+      { name: "1", time: map.pro },
+      { name: "2", time: map.strongMain },
+      { name: "3", time: map.main },
+      { name: "4", time: map.line1 },
+      { name: "5", time: map.line2 },
+      { name: "6", time: map.line3 },
+      { name: "7", time: map.fun },
+      { name: "8", time: map.line5 }
+    ].map(x => ({
+      name: x.name,
+      ms: timeTextToMs(x.time)
+    })).filter(x => x.ms !== null);
+
+    let resultLine = "";
+    let message = "";
+
+    if (playerMs <= levels[0].ms) {
+      resultLine = levels[0].name;
+      message =
+        `賽道：${map.name}\n` +
+        `您的成績為 ${msToTimeText(playerMs)}\n` +
+        `分線為 ${resultLine}\n` +
+        `已經到頂啦~`;
+    }
+
+    else if (playerMs > levels[levels.length - 1].ms) {
+      message =
+        `賽道：${map.name}\n` +
+        `您的成績為 ${msToTimeText(playerMs)}\n` +
+        `分線為 不及格\n` +
+        `繼續加油吧~`;
+    }
+
+    else {
+      for (let i = 1; i < levels.length; i++) {
+        if (playerMs <= levels[i].ms) {
+          resultLine = levels[i].name;
+
+          const nextLevel = levels[i - 1];
+          const diff = playerMs - nextLevel.ms;
+
+          message =
+            `賽道：${map.name}\n` +
+            `您的成績為 ${msToTimeText(playerMs)}\n` +
+            `分線為 ${resultLine}\n` +
+            `距離下一階段 ${nextLevel.name} 還有 ${diffMsToSecText(diff)} 秒`;
+
+          break;
+        }
+      }
+    }
+
+    showModal(message, {
+      title: "分線查詢結果",
+      type: "info"
+    });
+
+  } catch (e) {
+    console.error(e);
+    showError("分線查詢失敗");
+  }
+}
+
+window.judgeSkillLine = judgeSkillLine;
+async function initSkillMapSuggest() {
+  const input = document.getElementById("skillMapInput");
+  const box = document.getElementById("skillMapSuggest");
+
+  if (!input || !box) return;
+
+  const maps = await loadSkillMapsOnce();
+
+  input.addEventListener("input", () => {
+    const key = normalizeSearchKey(input.value);
+
+    box.innerHTML = "";
+
+    if (!key) {
+      box.style.display = "none";
+      return;
+    }
+
+    const matched = maps
+      .filter(m => normalizeSearchKey(m.name).includes(key))
+      .slice(0, 8);
+
+    if (!matched.length) {
+      box.style.display = "none";
+      return;
+    }
+
+    matched.forEach(m => {
+      const div = document.createElement("div");
+      div.className = "suggest-item";
+      div.textContent = m.name;
+
+      div.addEventListener("click", () => {
+        input.value = m.name;
+        box.style.display = "none";
+      });
+
+      box.appendChild(div);
+    });
+
+    box.style.display = "block";
+  });
+}
     function normalizeNameKey(name) {
   return String(name || "")
     .trim()
@@ -4035,6 +4276,7 @@ adminPwdInput?.addEventListener("keydown", (e) => {
 function startAllSystems() {
   initPageData();
   startAnnouncementRealtime();
+  initSkillMapSuggest();
 }
 
 if (document.readyState === "loading") {

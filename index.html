@@ -1100,26 +1100,10 @@ img, video {
 }
 
 /* ✅ 排行榜前三發光 */
-.rank-row.top1 {
-  box-shadow:
-    0 0 0 2px rgba(255,215,0,.35),
-    0 0 18px rgba(255,215,0,.55);
-}
-
-.rank-row.top2 {
-  box-shadow:
-    0 0 0 2px rgba(180,210,230,.35),
-    0 0 16px rgba(160,190,210,.5);
-}
-
-.rank-row.top3 {
-  box-shadow:
-    0 0 0 2px rgba(255,150,80,.35),
-    0 0 16px rgba(255,140,60,.5);
-}
 .rank-row.top1,
 .rank-row.top2,
 .rank-row.top3 {
+  box-shadow: none;
   animation: rankGlow 2.0s ease-in-out infinite alternate;
 }
 

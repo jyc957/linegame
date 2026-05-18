@@ -3164,14 +3164,14 @@ async function judgeSkillLine() {
     }
 
     const levels = [
-      { name: "1", time: map.pro },
-      { name: "2", time: map.strongMain },
-      { name: "3", time: map.main },
-      { name: "4", time: map.line1 },
-      { name: "5", time: map.line2 },
-      { name: "6", time: map.line3 },
-      { name: "7", time: map.fun },
-      { name: "8", time: map.line5 }
+      { name: "職業", time: map.pro },
+      { name: "強主", time: map.strongMain },
+      { name: "主力", time: map.main },
+      { name: "一線", time: map.line1 },
+      { name: "二線", time: map.line2 },
+      { name: "三線", time: map.line3 },
+      { name: "娛樂", time: map.fun },
+      { name: "五線", time: map.line5 }
     ].map(x => ({
       name: x.name,
       ms: timeTextToMs(x.time)
@@ -3186,7 +3186,7 @@ async function judgeSkillLine() {
         `賽道：${map.name}\n` +
         `您的成績為 ${msToTimeText(playerMs)}\n` +
         `分線為 ${resultLine}\n` +
-        `已經到頂啦~`;
+        `已經到頂啦~ 你好棒!!`;
     }
 
     else if (playerMs > levels[levels.length - 1].ms) {
@@ -3194,7 +3194,7 @@ async function judgeSkillLine() {
         `賽道：${map.name}\n` +
         `您的成績為 ${msToTimeText(playerMs)}\n` +
         `分線為 不及格\n` +
-        `繼續加油吧~`;
+        `繼續加油吧~ 你可以進步更多`;
     }
 
     else {
@@ -3270,6 +3270,25 @@ async function initSkillMapSuggest() {
     });
 
     box.classList.add("show");
+  });
+}
+  function initSkillTimeAutoJump() {
+  const minInput = document.getElementById("skillMinInput");
+  const secInput = document.getElementById("skillSecInput");
+  const msInput = document.getElementById("skillMsInput");
+
+  if (!minInput || !secInput || !msInput) return;
+
+  minInput.addEventListener("input", () => {
+    if (minInput.value.length >= 1) {
+      secInput.focus();
+    }
+  });
+
+  secInput.addEventListener("input", () => {
+    if (secInput.value.length >= 2) {
+      msInput.focus();
+    }
   });
 }
   function initOldDataSuggestions() {
@@ -4285,6 +4304,7 @@ function startAllSystems() {
   startAnnouncementRealtime();
   initSkillMapSuggest();
   initOldDataSuggestions();
+  initSkillTimeAutoJump();
 }
 
 if (document.readyState === "loading") {

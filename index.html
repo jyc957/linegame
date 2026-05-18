@@ -1629,10 +1629,17 @@ body.admin-mode {
       </small>
     </div>
   </div>
-<div class="section">
+div class="section">
+
   <div class="top-bar">
     <h2>賽道成績分線查詢</h2>
+
+    <button id="toggleSkillQuery">
+      ▼ 展開
+    </button>
   </div>
+
+  <div id="skillQueryPanel" class="collapse-content">
 
   <label>
     請輸入賽道名稱：
@@ -1652,6 +1659,7 @@ body.admin-mode {
   </label>
 
   <button type="button" onclick="judgeSkillLine()">查詢分線</button>
+</div>
 </div>
 <!-- 地圖抽籤 -->
 <div class="section">
@@ -3323,6 +3331,26 @@ async function initSkillMapSuggest() {
     });
   });
 }
+  function initSkillQueryCollapse() {
+  const btn = document.getElementById("toggleSkillQuery");
+  const panel = document.getElementById("skillQueryPanel");
+
+  if (!btn || !panel) return;
+
+  panel.style.display = "none";
+
+  btn.addEventListener("click", () => {
+    const isOpen = panel.style.display !== "none";
+
+    if (isOpen) {
+      panel.style.display = "none";
+      btn.textContent = "▼ 展開";
+    } else {
+      panel.style.display = "block";
+      btn.textContent = "▲ 收合";
+    }
+  });
+}
     function normalizeNameKey(name) {
   return String(name || "")
     .trim()
@@ -4308,6 +4336,7 @@ function startAllSystems() {
   initSkillMapSuggest();
   initOldDataSuggestions();
   initSkillTimeAutoJump();
+  initSkillQueryCollapse();
 }
 
 if (document.readyState === "loading") {

@@ -651,6 +651,15 @@ content="website">
   transform: translateY(0);
   pointer-events: auto;
   box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.suggest-box.show::-webkit-scrollbar {
+  width: 6px;
+}
+.suggest-box.show::-webkit-scrollbar-thumb {
+  background: #7cc7e8;
+  border-radius: 10px;
 }
 
 .suggest-item {
@@ -3251,7 +3260,7 @@ async function initSkillMapSuggest() {
 
     const matched = maps
       .filter(m => normalizeSearchKey(m.name).includes(key))
-      .slice(0, 8);
+      .slice(0, 30);
 
     if (!matched.length) {
       box.classList.remove("show");
@@ -3792,7 +3801,7 @@ async function showSuggestions({
       normalizeSuggestKey(a).localeCompare(normalizeSuggestKey(b))
     );
 
-    const top = matched.slice(0, 8);
+    const top = matched.slice(0, 30);
 
     if (!top.length) {
       box.classList.remove("show");

@@ -646,13 +646,13 @@ content="website">
 }
 
 .suggest-box.show {
-  max-height: 260px;
+  max-height: 180px;
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
 }
 .suggest-box.show::-webkit-scrollbar {
   width: 6px;
@@ -668,6 +668,10 @@ content="website">
   cursor: pointer;
   border-bottom: 1px solid #91c3d7;
   word-break: break-all;
+  min-height: 44px;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
 }
 
 .suggest-item:last-child {
@@ -1386,23 +1390,6 @@ body.admin-mode {
   width: 80px;
   text-align: center;
 }
-
-.suggest-box {
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  margin-top: -4px;
-  margin-bottom: 10px;
-  overflow: hidden;
-  display: none;
-}
-
-.suggest-item {
-  padding: 8px 10px;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-}
-
 .suggest-item:hover {
   background: #e8f7ff;
 }

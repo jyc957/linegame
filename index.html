@@ -493,26 +493,43 @@ content="website">
 }
 .slot-box {
   margin-top: 12px;
-  padding: 18px 12px;
+  padding: 16px 12px;
   border-radius: 16px;
-  background: rgba(255,255,255,0.75);
+  background: rgba(255,255,255,0.8);
   border: 3px solid #2091c6;
   text-align: center;
   overflow: hidden;
 }
-
 .slot-title {
   font-size: 16px;
   font-weight: 900;
   color: #074783;
   margin-bottom: 10px;
 }
-
-.slot-name {
-  font-size: 24px;
+.slot-window {
+  height: 54px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 2px solid rgba(0,0,0,0.15);
+}
+.slot-reel {
+  transition: transform 0.2s ease-out;
+}
+.slot-item {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
   font-weight: 900;
   color: #111;
-  min-height: 38px;
+}
+#mapPanel {
+  overflow: visible;
+}
+#mapResult {
+  overflow: visible;
 }
     /* 疊積木：由下往上滑入 */
 .item{
@@ -3076,49 +3093,52 @@ if (mapPanel?.classList.contains("open")) {
   });
 }
 }
-async function animateSlotMapDraw(pool, finalMap, duration = 1800) {
+async function animateSlotMapDraw(pool, finalMap) {
   const box = document.getElementById("mapResult");
-  if (!box) return;
+  if (!box || !finalMap) return;
+
+  const reelList = [];
+
+  for (let i = 0; i < 35; i++) {
+    const randomMap = pool[Math.floor(Math.random() * pool.length)];
+    if (randomMap) reelList.push(randomMap.name);
+  }
+
+  reelList.push(finalMap.name);
 
   box.innerHTML = `
     <div class="slot-box">
       <div class="slot-title">🎰 地圖抽籤中...</div>
-      <div id="slotMapName" class="slot-name">---</div>
+      <div class="slot-window">
+        <div id="slotReel" class="slot-reel">
+          ${reelList.map(name => `
+            <div class="slot-item">${name}</div>
+          `).join("")}
+        </div>
+      </div>
     </div>
   `;
 
-  const nameEl = document.getElementById("slotMapName");
-  const start = Date.now();
+  const reel = document.getElementById("slotReel");
+  if (!reel) return;
 
-  return new Promise(resolve => {
-    const timer = setInterval(() => {
-      const elapsed = Date.now() - start;
-      const randomMap = pool[Math.floor(Math.random() * pool.length)];
+  const itemHeight = 54;
+  let index = 0;
 
-      if (nameEl && randomMap) {
-        nameEl.textContent = randomMap.name;
-      }
+  while (index < reelList.length - 1) {
+    index++;
 
-      if (elapsed >= duration) {
-        clearInterval(timer);
+    reel.style.transform = `translateY(-${index * itemHeight}px)`;
 
-        if (nameEl) {
-          nameEl.textContent = finalMap.name;
-        }
+    let delay = 35 + index * 7;
 
-        box.innerHTML = `
-          <div class="item">
-            <div class="item-main">地圖抽籤結果（抽 1 張）</div>
-          </div>
-          <div class="item">
-            <div class="item-main">第 1 張 ${finalMap.name}</div>
-          </div>
-        `;
+    if (index > 22) delay += (index - 22) * 18;
+    if (index > 30) delay += (index - 30) * 45;
 
-        resolve();
-      }
-    }, 70);
-  });
+    await sleep(delay);
+  }
+
+  document.querySelector(".slot-title").textContent = "🎉 抽籤結果";
 }
 async function revealMapsOneByOne(picked, count, delayMs = 3400){
   const box = document.getElementById("mapResult");

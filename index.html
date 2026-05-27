@@ -3109,13 +3109,6 @@ async function animateSlotMapDraw(pool, finalMap) {
 
   box.innerHTML = `
     <div class="slot-box">
-    const mapPanel = document.getElementById("mapPanel");
-
-if (mapPanel?.classList.contains("open")) {
-  requestAnimationFrame(() => {
-    mapPanel.style.maxHeight = mapPanel.scrollHeight + "px";
-  });
-}
       <div class="slot-title">🎰 地圖抽籤中...</div>
       <div class="slot-window">
         <div id="slotReel" class="slot-reel">

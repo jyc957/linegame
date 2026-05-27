@@ -2906,7 +2906,14 @@ const LIMIT_BY_COUNT = {
   if (el) el.textContent = maps.length;
   return dedupeMaps(maps);
 }
+let cachedMaps = null;
 
+async function loadMapsCached() {
+  if (cachedMaps) return cachedMaps;
+
+  cachedMaps = await loadMaps();
+  return cachedMaps;
+}
 function dedupeMaps(maps) {
   const seen = new Set();
   const out = [];
@@ -3214,7 +3221,7 @@ function diffMsToSecText(ms) {
 async function loadSkillMapsOnce() {
   if (cachedSkillMaps.length) return cachedSkillMaps;
 
-  const maps = await loadMaps();
+  const maps = await loadMapsCached();
 
   cachedSkillMaps = maps.filter(m =>
     m.pro && m.strongMain && m.main && m.line1 &&
@@ -4328,8 +4335,8 @@ function setMapPanelOpen(open) {
   }
 
   if (open) {
-    loadMaps().catch(console.error);
-  }
+  loadMapsCached().catch(console.error);
+}
 }
 setMapPanelOpen(false);
 

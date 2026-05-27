@@ -491,6 +491,29 @@ content="website">
   font-size:17px;
   padding:10px 12px;
 }
+.slot-box {
+  margin-top: 12px;
+  padding: 18px 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.75);
+  border: 3px solid #2091c6;
+  text-align: center;
+  overflow: hidden;
+}
+
+.slot-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #074783;
+  margin-bottom: 10px;
+}
+
+.slot-name {
+  font-size: 24px;
+  font-weight: 900;
+  color: #111;
+  min-height: 38px;
+}
     /* 疊積木：由下往上滑入 */
 .item{
   transition: transform 400ms ease, opacity 400ms ease;
@@ -3053,6 +3076,50 @@ if (mapPanel?.classList.contains("open")) {
   });
 }
 }
+async function animateSlotMapDraw(pool, finalMap, duration = 1800) {
+  const box = document.getElementById("mapResult");
+  if (!box) return;
+
+  box.innerHTML = `
+    <div class="slot-box">
+      <div class="slot-title">🎰 地圖抽籤中...</div>
+      <div id="slotMapName" class="slot-name">---</div>
+    </div>
+  `;
+
+  const nameEl = document.getElementById("slotMapName");
+  const start = Date.now();
+
+  return new Promise(resolve => {
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - start;
+      const randomMap = pool[Math.floor(Math.random() * pool.length)];
+
+      if (nameEl && randomMap) {
+        nameEl.textContent = randomMap.name;
+      }
+
+      if (elapsed >= duration) {
+        clearInterval(timer);
+
+        if (nameEl) {
+          nameEl.textContent = finalMap.name;
+        }
+
+        box.innerHTML = `
+          <div class="item">
+            <div class="item-main">地圖抽籤結果（抽 1 張）</div>
+          </div>
+          <div class="item">
+            <div class="item-main">第 1 張 ${finalMap.name}</div>
+          </div>
+        `;
+
+        resolve();
+      }
+    }, 70);
+  });
+}
 async function revealMapsOneByOne(picked, count, delayMs = 3400){
   const box = document.getElementById("mapResult");
   if (!box) return;
@@ -4209,13 +4276,13 @@ const mapPanel = document.getElementById("mapPanel");
 
     // 顯示
     if (skip) {
-      // 不動畫：一次顯示
-      renderMapResult(picked, { count });
-    } else {
-      // 有動畫：由下往上滑入、堆積木
-      console.log("use stacked anim");
-      await revealMapsStacked(picked, count, 280);
-    }
+  renderMapResult(picked, { count });
+} else if (count === 1) {
+  await animateSlotMapDraw(pool, picked[0], 1800);
+} else {
+  console.log("use stacked anim");
+  await revealMapsStacked(picked, count, 280);
+}
   } catch (err) {
     console.error(err);
     showModal?.("抽取失敗，請稍後再試", { type: "error" });

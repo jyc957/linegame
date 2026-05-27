@@ -530,7 +530,7 @@ content="website">
   white-space: nowrap;
 }
 #mapResult {
-  overflow: hidden;
+  overflow: visible;
 }
     /* 疊積木：由下往上滑入 */
 .item{
@@ -3109,6 +3109,13 @@ async function animateSlotMapDraw(pool, finalMap) {
 
   box.innerHTML = `
     <div class="slot-box">
+    const mapPanel = document.getElementById("mapPanel");
+
+if (mapPanel?.classList.contains("open")) {
+  requestAnimationFrame(() => {
+    mapPanel.style.maxHeight = mapPanel.scrollHeight + "px";
+  });
+}
       <div class="slot-title">🎰 地圖抽籤中...</div>
       <div class="slot-window">
         <div id="slotReel" class="slot-reel">
@@ -3140,6 +3147,11 @@ async function animateSlotMapDraw(pool, finalMap) {
   }
 
   document.querySelector(".slot-title").textContent = "🎉 抽籤結果";
+  if (mapPanel?.classList.contains("open")) {
+  requestAnimationFrame(() => {
+    mapPanel.style.maxHeight = mapPanel.scrollHeight + "px";
+  });
+}
 }
 async function revealMapsOneByOne(picked, count, delayMs = 3400){
   const box = document.getElementById("mapResult");

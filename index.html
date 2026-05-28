@@ -3127,15 +3127,27 @@ async function animateSlotMapDraw(pool, finalMap) {
     </div>
   `;
 
-  const reel = document.getElementById("slotReel");
-  if (!reel) return;
+ const reel = document.getElementById("slotReel");
+if (!reel) return;
 
-  const itemHeight = 54;
-  let index = 0;
+const mapPanel = document.getElementById("mapPanel");
+if (mapPanel?.classList.contains("open")) {
+  mapPanel.style.maxHeight = mapPanel.scrollHeight + "px";
+}
+
+// ✅ 關鍵：強制瀏覽器先畫出老虎機畫面
+reel.style.transform = "translateY(0px)";
+reel.getBoundingClientRect();
+
+await sleep(200);
+
+const itemHeight = 54;
+let index = 0;
 
   while (index < reelList.length - 1) {
     index++;
 
+    reel.style.transition = `transform ${Math.min(0.08 + index * 0.015, 0.45)}s ease-out`;
     reel.style.transform = `translateY(-${index * itemHeight}px)`;
 
     let delay = 35 + index * 7;

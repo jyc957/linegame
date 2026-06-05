@@ -4223,6 +4223,17 @@ function initTrainingVideosOnce() {
   }
 }, { once: true });
   });
+  const trainingPanel = document.getElementById("trainingPanel");
+
+if (trainingPanel?.classList.contains("open")) {
+  requestAnimationFrame(() => {
+    trainingPanel.style.maxHeight = trainingPanel.scrollHeight + "px";
+
+    setTimeout(() => {
+      trainingPanel.style.maxHeight = trainingPanel.scrollHeight + "px";
+    }, 300);
+  });
+}
 }
     window.addEventListener("load", () => {
       const scoreTimeInput = document.getElementById("scoreTimeInput");

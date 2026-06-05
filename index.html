@@ -4201,15 +4201,16 @@ function initTrainingVideosOnce() {
       realVideo.src = src;
       realVideo.controls = true;
       realVideo.playsInline = true;
-      realVideo.autoplay = true;
+      realVideo.autoplay = false;
       realVideo.preload = "auto";
-
       box.replaceWith(realVideo);
+      realVideo.load();
 
-      try {
+realVideo.addEventListener("canplay", async () => {
+  try {
     await realVideo.play();
-} catch (_) {}
-    }, { once: true });
+  } catch (_) {}
+}, { once: true });
   });
 }
     window.addEventListener("load", () => {

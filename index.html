@@ -190,6 +190,47 @@ content="website">
       display: block;
       max-height: 360px;
     }
+    .video-container {
+  position: relative;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  background: linear-gradient(135deg, #e9fbff, #70cce1);
+  min-height: 210px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-cover-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #074783;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(255,255,255,.8);
+}
+
+.play-overlay {
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.55);
+  color: white;
+  font-size: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-hint {
+  position: absolute;
+  bottom: 12px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #074783;
+}
 
     .smword {
       font-size: 12px;
@@ -3613,27 +3654,6 @@ window.addEventListener("load", () => {
   pageLoadedOnce = true;
   tryFinishLoader();
 });
-  document.querySelectorAll(".training-video").forEach(v => {
-  v.addEventListener("click", async () => {
-
-    // 手機取消靜音（可選）
-    v.muted = false;
-
-    // 進全螢幕
-    if (v.requestFullscreen) {
-      await v.requestFullscreen();
-    }
-
-    // iPhone Safari
-    else if (v.webkitEnterFullscreen) {
-      v.webkitEnterFullscreen();
-    }
-    // 播放
-    try {
-  await v.play();
-} catch (_) {}
-  });
-});
 async function addLeaderboardRecord() {
   try {
     const gameName = cleanInput(
@@ -4160,21 +4180,48 @@ async function loadLastUpdateTime() {
     /* 技巧訓練：點擊才載入影片 */
 let trainingInited = false;
 
+let trainingInited = false;
+
 function initTrainingVideosOnce() {
   if (trainingInited) return;
   trainingInited = true;
-  const videos = document.querySelectorAll("video.lazy-video");
-  videos.forEach(video => {
-    video.setAttribute("controls", "");
-    video.addEventListener("play", function () {
-      if (!this.src) {
-        this.src = this.dataset.src;
-        this.load();
-        this.addEventListener("loadeddata", () => {
-          this.play();
-        }, { once: true });
+
+  document.querySelectorAll("video.lazy-video").forEach(video => {
+    const src = video.dataset.src;
+    const item = video.closest(".training-item");
+    const title = item?.querySelector(".training-text")?.textContent?.trim() || "技巧教學";
+
+    const box = document.createElement("div");
+    box.className = "video-container";
+    box.innerHTML = `
+      <div class="video-cover-title">${title}</div>
+      <div class="play-overlay">▶</div>
+      <div class="video-hint">點擊播放影片</div>
+    `;
+
+    video.replaceWith(box);
+
+    box.addEventListener("click", async () => {
+      const realVideo = document.createElement("video");
+      realVideo.className = "training-video";
+      realVideo.src = src;
+      realVideo.controls = true;
+      realVideo.playsInline = true;
+      realVideo.autoplay = true;
+      realVideo.preload = "auto";
+
+      box.replaceWith(realVideo);
+
+      try {
+        await realVideo.play();
+      } catch (_) {}
+
+      if (realVideo.requestFullscreen) {
+        try { await realVideo.requestFullscreen(); } catch (_) {}
+      } else if (realVideo.webkitEnterFullscreen) {
+        realVideo.webkitEnterFullscreen();
       }
-    });
+    }, { once: true });
   });
 }
     window.addEventListener("load", () => {

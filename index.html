@@ -4204,8 +4204,19 @@ function initTrainingVideosOnce() {
       realVideo.autoplay = false;
       realVideo.preload = "auto";
       box.replaceWith(realVideo);
-      realVideo.load();
 
+const trainingPanel = document.getElementById("trainingPanel");
+
+function updateTrainingHeight() {
+  if (trainingPanel?.classList.contains("open")) {
+    trainingPanel.style.maxHeight = trainingPanel.scrollHeight + "px";
+  }
+};
+updateTrainingHeight();
+realVideo.addEventListener("loadedmetadata", updateTrainingHeight);
+realVideo.addEventListener("loadeddata", updateTrainingHeight);
+realVideo.addEventListener("canplay", updateTrainingHeight);
+realVideo.load();
 realVideo.addEventListener("canplay", async () => {
   try {
     await realVideo.play();

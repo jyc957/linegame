@@ -4194,33 +4194,33 @@ function initTrainingVideosOnce() {
       <div class="play-overlay">▶</div>`;
 
     video.replaceWith(box);
-
     box.addEventListener("click", async () => {
-      const realVideo = document.createElement("video");
-      realVideo.className = "training-video";
-      realVideo.src = src;
-      realVideo.controls = true;
-      realVideo.playsInline = true;
-      realVideo.autoplay = true;
-      realVideo.preload = "auto";
-      box.replaceWith(realVideo);
-
-const trainingPanel = document.getElementById("trainingPanel");
-
-function updateTrainingHeight() {
-  if (trainingPanel?.classList.contains("open")) {
-    trainingPanel.style.maxHeight = trainingPanel.scrollHeight + "px";
+  const realVideo = document.createElement("video");
+  realVideo.className = "training-video";
+  realVideo.src = src;
+  realVideo.controls = true;
+  realVideo.playsInline = true;
+  realVideo.autoplay = true;
+  realVideo.preload = "auto";
+  box.replaceWith(realVideo);
+  const trainingPanel = document.getElementById("trainingPanel");
+  function updateTrainingHeight() {
+    if (trainingPanel?.classList.contains("open")) {
+      trainingPanel.style.maxHeight = trainingPanel.scrollHeight + "px";
+    }
   }
-};
-updateTrainingHeight();
-realVideo.addEventListener("loadedmetadata", updateTrainingHeight);
-realVideo.addEventListener("loadeddata", updateTrainingHeight);
-realVideo.addEventListener("canplay", updateTrainingHeight);
-realVideo.load();
-try {
-  await realVideo.play();
-} catch (_) {}
-  });
+
+  updateTrainingHeight();
+  realVideo.addEventListener("loadedmetadata", updateTrainingHeight);
+  realVideo.addEventListener("loadeddata", updateTrainingHeight);
+  realVideo.addEventListener("canplay", updateTrainingHeight);
+
+  try {
+    await realVideo.play();
+  } catch (_) {
+    // 如果手機瀏覽器擋掉，就讓使用者再按一次播放
+  }
+}, { once: true });
   });
 }
     window.addEventListener("load", () => {

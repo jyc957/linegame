@@ -196,8 +196,9 @@ content="website">
   border-radius: 10px;
   overflow: hidden;
   cursor: pointer;
-  background: linear-gradient(135deg, #e9fbff, #70cce1);
-  min-height: 210px;
+  background: #000;
+  height: 360px;
+  max-height: 360px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -206,9 +207,9 @@ content="website">
 .video-cover-title {
   font-size: 28px;
   font-weight: 900;
-  color: #074783;
+  color: #fff;
   text-align: center;
-  text-shadow: 0 2px 8px rgba(255,255,255,.8);
+  text-shadow: none;
 }
 
 .play-overlay {
@@ -4191,9 +4192,7 @@ function initTrainingVideosOnce() {
     box.className = "video-container";
     box.innerHTML = `
       <div class="video-cover-title">${title}</div>
-      <div class="play-overlay">▶</div>
-      <div class="video-hint">點擊播放影片</div>
-    `;
+      <div class="play-overlay">▶</div>`;
 
     video.replaceWith(box);
 
@@ -4209,14 +4208,8 @@ function initTrainingVideosOnce() {
       box.replaceWith(realVideo);
 
       try {
-        await realVideo.play();
-      } catch (_) {}
-
-      if (realVideo.requestFullscreen) {
-        try { await realVideo.requestFullscreen(); } catch (_) {}
-      } else if (realVideo.webkitEnterFullscreen) {
-        realVideo.webkitEnterFullscreen();
-      }
+    await realVideo.play();
+} catch (_) {}
     }, { once: true });
   });
 }

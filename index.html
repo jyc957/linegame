@@ -1561,7 +1561,8 @@ body.admin-mode {
 
   <label>
     輸入名字：
-    <input id="scoreNameInput" type="text" placeholder="例：ᴷᴾღ小野梅" />
+    <input id="scoreNameInput" type="text" placeholder="例：KPღ小野梅" autocomplete="off">
+<div id="scoreNameSuggestions" class="suggest-box"></div>
   </label>
 
   <label>
@@ -3441,17 +3442,22 @@ async function initSkillMapSuggest() {
 }
   function initOldDataSuggestions() {
   const configs = [
-    {
-      inputId: "oldLineInput",
-      boxId: "oldLineSuggestions",
-      field: "lineId"
-    },
-    {
-      inputId: "oldGameInput",
-      boxId: "oldGameSuggestions",
-      field: "gameName"
-    }
-  ];
+  {
+    inputId: "scoreNameInput",
+    boxId: "scoreNameSuggestions",
+    field: "gameName"
+  },
+  {
+    inputId: "oldLineInput",
+    boxId: "oldLineSuggestions",
+    field: "lineId"
+  },
+  {
+    inputId: "oldGameInput",
+    boxId: "oldGameSuggestions",
+    field: "gameName"
+  }
+];
 
   configs.forEach(({ inputId, boxId, field }) => {
     const input = document.getElementById(inputId);

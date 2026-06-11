@@ -3001,7 +3001,7 @@ async function initCustomMapPoolOnce() {
         type="checkbox"
         class="custom-map-check"
         value="${m.name}">
-      ${m.difficulty}⭐ ${m.name}
+      ${m.name}
     </label>
   `).join("");
 }
@@ -4351,7 +4351,10 @@ document.getElementById("closeCustomMapModal")
 ?.addEventListener("click", () => {
   customMapModal?.classList.remove("show");
 });
-
+document.getElementById("confirmCustomMapsBtn")
+?.addEventListener("click", () => {
+    customMapModal?.classList.remove("show");
+});
 document.getElementById("selectAllMapsBtn")
 ?.addEventListener("click", async () => {
 
@@ -4718,7 +4721,7 @@ function startAnnouncementRealtime() {
         <h3>選擇地圖</h3>
 
         <div class="map-btn-row">
-            <button id="selectAllMapsBtn" class="btn">全選</button>
+            <button type="button" id="confirmCustomMapsBtn" class="btn">確定</button>
             <button id="clearAllMapsBtn" class="btn">清空</button>
         </div>
 

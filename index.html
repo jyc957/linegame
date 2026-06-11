@@ -1483,6 +1483,17 @@ body.admin-mode {
   gap:10px;
   margin-top:10px;
 }
+.custom-map-item{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 0;
+  font-size:14px;
+}
+
+.custom-map-item input{
+  width:auto;
+}
  </style>
 </head>
 
@@ -1774,6 +1785,18 @@ body.admin-mode {
     <input type="checkbox" id="hardMode">
     ⚠高難度模式⚠
   </label>
+  <button type="button" id="toggleCustomMapPool" class="btn">▼ 自訂圖池</button>
+
+<div id="customMapPoolPanel" class="collapse-content">
+  <div class="smword">勾選後，抽籤只會從勾選的地圖中抽取</div>
+
+  <div class="map-btn-row">
+    <button type="button" id="selectAllMapsBtn" class="btn">全選</button>
+    <button type="button" id="clearAllMapsBtn" class="btn">清空</button>
+  </div>
+
+  <div id="customMapList"></div>
+</div>
 </div>
 </div>
       <!-- 你要的：抽籤前就能看到總地圖數（但要展開才看得到） -->
@@ -2945,8 +2968,26 @@ const LIMIT_BY_COUNT = {
   if (el) el.textContent = maps.length;
   return dedupeMaps(maps);
 }
+    
 let cachedMaps = null;
+let customMapPoolInited = false;
+    
+async function initCustomMapPoolOnce() {
+  if (customMapPoolInited) return;
+  customMapPoolInited = true;
 
+  const listBox = document.getElementById("customMapList");
+  if (!listBox) return;
+
+  const maps = await loadMapsCached();
+
+  listBox.innerHTML = maps.map(m => `
+    <label class="custom-map-item">
+      <input type="checkbox" class="custom-map-check" value="${m.name}">
+      ${m.difficulty}⭐ ${m.name}
+    </label>
+  `).join("");
+}
 async function loadMapsCached() {
   if (cachedMaps) return cachedMaps;
 

@@ -1814,14 +1814,13 @@ body.admin-mode {
         目前共有 <b id="mapTotalCount">0</b> 張地圖
       </div>
 
-      <div class="smword">※ 圖池為排位競速圖（不含 1 星地圖）</div>
-      <div class="smword">⚠高難度模式⚠：地圖均為3星以上</div>
+      <div class="smword">※ 圖池為排位競速圖（不含1⭐地圖）</div>
+      <div class="smword">⚠高難度模式⚠：地圖均為3星以上（無法自訂圖池)</div>
       <div id="mapLoading" class="map-loading" style="display:none;">
   載入中...
 </div>
 </div>
 </div>
-      
       <div id="mapResult"></div>
     </div>
   </div>
@@ -4706,20 +4705,12 @@ function startAnnouncementRealtime() {
 </footer>
 <div id="customMapModal" class="modal">
     <div class="modal-content">
-
         <h3>選擇地圖</h3>
-
         <div class="map-btn-row">
             <button type="button" id="confirmCustomMapsBtn" class="btn">確定</button>
             <button id="clearAllMapsBtn" class="btn">清空</button>
         </div>
-
         <div id="customMapList"></div>
-
-        <button id="closeCustomMapModal" class="btn">
-            確定
-        </button>
-
     </div>
 </div>
 </body>

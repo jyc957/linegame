@@ -4337,6 +4337,16 @@ toggleCustomMapPool?.addEventListener("click", async () => {
     customMapPoolPanel,
     toggleCustomMapPool
   );
+
+  const mapPanel = document.getElementById("mapPanel");
+
+  setTimeout(() => {
+    if (mapPanel?.classList.contains("open")) {
+      mapPanel.style.maxHeight =
+        mapPanel.scrollHeight + "px";
+    }
+  }, 300);
+
 });
 
 document.getElementById("selectAllMapsBtn")

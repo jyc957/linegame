@@ -1795,7 +1795,17 @@ body.admin-mode {
     <button type="button" id="clearAllMapsBtn" class="btn">清空</button>
   </div>
 
-  <div id="customMapList"></div>
+  <select
+  id="customMapSelect"
+  multiple
+  size="10"
+  style="
+    width:100%;
+    min-height:250px;
+    margin-top:10px;
+    font-size:16px;
+  ">
+</select>
 </div>
 </div>
 </div>
@@ -2971,21 +2981,20 @@ const LIMIT_BY_COUNT = {
     
 let cachedMaps = null;
 let customMapPoolInited = false;
-    
+
 async function initCustomMapPoolOnce() {
   if (customMapPoolInited) return;
   customMapPoolInited = true;
 
-  const listBox = document.getElementById("customMapList");
-  if (!listBox) return;
+  const select = document.getElementById("customMapSelect");
+  if (!select) return;
 
   const maps = await loadMapsCached();
 
-  listBox.innerHTML = maps.map(m => `
-    <label class="custom-map-item">
-      <input type="checkbox" class="custom-map-check" value="${m.name}">
+  select.innerHTML = maps.map(m => `
+    <option value="${m.name}">
       ${m.difficulty}⭐ ${m.name}
-    </label>
+    </option>
   `).join("");
 }
 async function loadMapsCached() {
@@ -4355,16 +4364,16 @@ document.getElementById("selectAllMapsBtn")
   await initCustomMapPoolOnce();
 
   document
-    .querySelectorAll(".custom-map-check")
-    .forEach(x => x.checked = true);
+  .querySelectorAll("#customMapSelect option")
+  .forEach(x => x.selected = true);
 });
 
 document.getElementById("clearAllMapsBtn")
 ?.addEventListener("click", () => {
 
   document
-    .querySelectorAll(".custom-map-check")
-    .forEach(x => x.checked = false);
+  .querySelectorAll("#customMapSelect option")
+  .forEach(x => x.selected = false);
 });
       // 成績排行榜（預設開啟）
       const rankingBtn = document.getElementById("toggleRanking");
@@ -4425,8 +4434,10 @@ const mapPanel = document.getElementById("mapPanel");
 
     // ✅ 高難度模式：每張都要 >= 3★（關鍵在這裡）
     let pool = maps;
-    const checkedMaps = Array.from(document.querySelectorAll(".custom-map-check:checked"))
-  .map(x => normalizeSearchKey(x.value));
+const checkedMaps = Array.from(
+  document.getElementById("customMapSelect")?.selectedOptions || []
+)
+.map(x => normalizeSearchKey(x.value));
 
 if (checkedMaps.length > 0) {
   pool = maps.filter(m => checkedMaps.includes(normalizeSearchKey(m.name)));

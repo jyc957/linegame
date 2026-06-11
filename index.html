@@ -4321,6 +4321,41 @@ scoreTimeInput?.addEventListener("blur", () => {
   initTrainingVideosOnce();
 }
       });
+  // ===== 自訂圖池 =====
+
+const toggleCustomMapPool =
+  document.getElementById("toggleCustomMapPool");
+
+const customMapPoolPanel =
+  document.getElementById("customMapPoolPanel");
+
+toggleCustomMapPool?.addEventListener("click", async () => {
+
+  await initCustomMapPoolOnce();
+
+  toggleCollapse(
+    customMapPoolPanel,
+    toggleCustomMapPool
+  );
+});
+
+document.getElementById("selectAllMapsBtn")
+?.addEventListener("click", async () => {
+
+  await initCustomMapPoolOnce();
+
+  document
+    .querySelectorAll(".custom-map-check")
+    .forEach(x => x.checked = true);
+});
+
+document.getElementById("clearAllMapsBtn")
+?.addEventListener("click", () => {
+
+  document
+    .querySelectorAll(".custom-map-check")
+    .forEach(x => x.checked = false);
+});
       // 成績排行榜（預設開啟）
       const rankingBtn = document.getElementById("toggleRanking");
 const rankingPanel = document.getElementById("rankingPanel");
@@ -4380,6 +4415,17 @@ const mapPanel = document.getElementById("mapPanel");
 
     // ✅ 高難度模式：每張都要 >= 3★（關鍵在這裡）
     let pool = maps;
+    const checkedMaps = Array.from(document.querySelectorAll(".custom-map-check:checked"))
+  .map(x => normalizeSearchKey(x.value));
+
+if (checkedMaps.length > 0) {
+  pool = maps.filter(m => checkedMaps.includes(normalizeSearchKey(m.name)));
+
+  if (pool.length < count) {
+    showModal(`你只勾選了 ${pool.length} 張地圖，無法抽 ${count} 張`, { type: "error" });
+    return;
+  }
+}
     if (hell) {
       pool = maps.filter(m => {
         const d = parseInt(m.difficulty, 10);

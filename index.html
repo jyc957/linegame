@@ -1494,6 +1494,29 @@ body.admin-mode {
 .custom-map-item input{
   width:auto;
 }
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.5);
+    z-index:9999;
+}
+
+.modal.show{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.modal-content{
+    background:#fff;
+    width:90%;
+    max-width:500px;
+    max-height:80vh;
+    overflow-y:auto;
+    padding:16px;
+    border-radius:12px;
+}
  </style>
 </head>
 
@@ -1787,25 +1810,6 @@ body.admin-mode {
   </label>
   <button type="button" id="toggleCustomMapPool" class="btn">▼ 自訂圖池</button>
 
-<div id="customMapPoolPanel" class="collapse-content">
-  <div class="smword">勾選後，抽籤只會從勾選的地圖中抽取</div>
-
-  <div class="map-btn-row">
-    <button type="button" id="selectAllMapsBtn" class="btn">全選</button>
-    <button type="button" id="clearAllMapsBtn" class="btn">清空</button>
-  </div>
-
-  <select
-  id="customMapSelect"
-  multiple
-  size="10"
-  style="
-    width:100%;
-    min-height:250px;
-    margin-top:10px;
-    font-size:16px;
-  ">
-</select>
 </div>
 </div>
 </div>
@@ -2986,15 +2990,19 @@ async function initCustomMapPoolOnce() {
   if (customMapPoolInited) return;
   customMapPoolInited = true;
 
-  const select = document.getElementById("customMapSelect");
-  if (!select) return;
+  const list = document.getElementById("customMapList");
+  if (!list) return;
 
   const maps = await loadMapsCached();
 
-  select.innerHTML = maps.map(m => `
-    <option value="${m.name}">
+  list.innerHTML = maps.map(m => `
+    <label class="custom-map-item">
+      <input
+        type="checkbox"
+        class="custom-map-check"
+        value="${m.name}">
       ${m.difficulty}⭐ ${m.name}
-    </option>
+    </label>
   `).join("");
 }
 async function loadMapsCached() {
@@ -4332,30 +4340,16 @@ scoreTimeInput?.addEventListener("blur", () => {
       });
   // ===== 自訂圖池 =====
 
-const toggleCustomMapPool =
-  document.getElementById("toggleCustomMapPool");
-
-const customMapPoolPanel =
-  document.getElementById("customMapPoolPanel");
+const customMapModal = document.getElementById("customMapModal");
 
 toggleCustomMapPool?.addEventListener("click", async () => {
-
   await initCustomMapPoolOnce();
+  customMapModal?.classList.add("show");
+});
 
-  toggleCollapse(
-    customMapPoolPanel,
-    toggleCustomMapPool
-  );
-
-  const mapPanel = document.getElementById("mapPanel");
-
-  setTimeout(() => {
-    if (mapPanel?.classList.contains("open")) {
-      mapPanel.style.maxHeight =
-        mapPanel.scrollHeight + "px";
-    }
-  }, 300);
-
+document.getElementById("closeCustomMapModal")
+?.addEventListener("click", () => {
+  customMapModal?.classList.remove("show");
 });
 
 document.getElementById("selectAllMapsBtn")
@@ -4435,7 +4429,7 @@ const mapPanel = document.getElementById("mapPanel");
     // ✅ 高難度模式：每張都要 >= 3★（關鍵在這裡）
     let pool = maps;
 const checkedMaps = Array.from(
-  document.getElementById("customMapSelect")?.selectedOptions || []
+  document.querySelectorAll(".custom-map-check:checked")
 )
 .map(x => normalizeSearchKey(x.value));
 
@@ -4718,6 +4712,23 @@ function startAnnouncementRealtime() {
     Made by ᴷᴾღ小野梅
   </div>
 </footer>
+<div id="customMapModal" class="modal">
+    <div class="modal-content">
 
+        <h3>選擇地圖</h3>
+
+        <div class="map-btn-row">
+            <button id="selectAllMapsBtn" class="btn">全選</button>
+            <button id="clearAllMapsBtn" class="btn">清空</button>
+        </div>
+
+        <div id="customMapList"></div>
+
+        <button id="closeCustomMapModal" class="btn">
+            確定
+        </button>
+
+    </div>
+</div>
 </body>
 </html>

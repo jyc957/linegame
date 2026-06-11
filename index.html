@@ -4337,7 +4337,7 @@ scoreTimeInput?.addEventListener("blur", () => {
 }
       });
   // ===== 自訂圖池 =====
-
+const toggleCustomMapPool = document.getElementById("toggleCustomMapPool");
 const customMapModal = document.getElementById("customMapModal");
 
 toggleCustomMapPool?.addEventListener("click", async () => {
@@ -4353,22 +4353,12 @@ document.getElementById("confirmCustomMapsBtn")
 ?.addEventListener("click", () => {
     customMapModal?.classList.remove("show");
 });
-document.getElementById("selectAllMapsBtn")
-?.addEventListener("click", async () => {
-
-  await initCustomMapPoolOnce();
-
-  document
-  .querySelectorAll("#customMapSelect option")
-  .forEach(x => x.selected = true);
-});
-
 document.getElementById("clearAllMapsBtn")
 ?.addEventListener("click", () => {
 
   document
-  .querySelectorAll("#customMapSelect option")
-  .forEach(x => x.selected = false);
+  .querySelectorAll(".custom-map-check")
+  .forEach(x => x.checked = false);
 });
       // 成績排行榜（預設開啟）
       const rankingBtn = document.getElementById("toggleRanking");

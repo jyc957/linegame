@@ -1601,37 +1601,6 @@ input:checked + .slider:before{
   letter-spacing: 2px;
   text-align: center;
 }
-
-.dot {
-  opacity: 0;
-  animation: dotBlink 1.5s infinite;
-}
-
-.dot1 {
-  animation-delay: 0s;
-}
-
-.dot2 {
-  animation-delay: .5s;
-}
-
-.dot3 {
-  animation-delay: 1s;
-}
-
-@keyframes dotBlink {
-  0%, 30% {
-    opacity: 0;
-  }
-
-  45%, 75% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
  </style>
 </head>
 
@@ -2763,23 +2732,30 @@ async function checkMaintenanceMode() {
       new URLSearchParams(location.search).get("admin") === "1";
 
     if (data.maintenance === true && !isAdminAccess) {
-      document.body.innerHTML = `
-  <div class="maintenance-screen">
-    <img src="team.png" class="maintenance-logo">
 
-    <div class="maintenance-text">
-      網頁維修中 請稍後重試
-      <span class="dot dot1">.</span>
-      <span class="dot dot2">.</span>
-      <span class="dot dot3">.</span>
-    </div>
-  </div>
-`;
-      return true;
-    }
+    document.body.innerHTML = `
+        <div class="maintenance-screen">
+            <img src="team.png" class="maintenance-logo">
 
+            <div class="maintenance-text">
+                維修中 請稍後重試<span id="loadingDots"></span>
+            </div>
+        </div>
+    `;
+
+    let dotCount = 0;
+    setInterval(() => {
+        dotCount = (dotCount + 1) % 4;
+
+        const dots = document.getElementById("loadingDots");
+
+        if (dots) {
+            dots.textContent = ".".repeat(dotCount);
+        }
+    }, 400);
+    return true;
+}
     return false;
-
   } catch (e) {
     console.error("維修模式讀取失敗：", e);
     return false;

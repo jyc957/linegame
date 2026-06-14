@@ -1519,11 +1519,17 @@ body.admin-mode {
 }
 .maintenance-row{
     display:flex;
-    align-items:center;
     justify-content:space-between;
-    margin-top:12px;
-    padding:10px 0;
+    align-items:center;
+    margin-top:15px;
+    padding-top:15px;
+    border-top:1px solid #ddd;
+    font-size:18px;
     font-weight:bold;
+}
+
+#maintenanceStatus{
+    margin-left:8px;
 }
 
 .switch{
@@ -1542,11 +1548,8 @@ body.admin-mode {
 .slider{
     position:absolute;
     cursor:pointer;
-    top:0;
-    left:0;
-    right:0;
-    bottom:0;
-    background:#ccc;
+    inset:0;
+    background:#bbb;
     transition:.3s;
     border-radius:34px;
 }
@@ -1610,17 +1613,6 @@ input:checked + .slider:before{
     <span id="announcementText"></span>
   </div>
 </div>
-  <div class="maintenance-row">
-  <span>維修模式</span>
-  <label class="switch">
-    <input
-      type="checkbox"
-      id="maintenanceSwitch"
-      onchange="toggleMaintenance()"
-    >
-    <span class="slider"></span>
-  </label>
-</div>
   <div id="adminBanner" class="admin-only admin-banner">
   ★管理模式★<br>再次點擊黨徽可退出管理模式</div>
   <div class="section admin-only" id="adminAnnouncementPanel">
@@ -1651,6 +1643,21 @@ input:checked + .slider:before{
 
   <button onclick="saveAnnouncement()">發布公告</button>
   <button onclick="clearAnnouncement()">清除公告</button>
+  <div class="maintenance-row">
+  <span>
+    維修模式
+    <b id="maintenanceStatus">OFF</b>
+  </span>
+  <label class="switch">
+    <input
+      type="checkbox"
+      id="maintenanceSwitch"
+      onchange="toggleMaintenance()"
+    >
+    <span class="slider"></span>
+  </label>
+
+</div>
 </div>
   <div class="section admin-only" id="adminScorePanel">
   <div class="top-bar">
@@ -2721,6 +2728,18 @@ async function checkMaintenanceMode() {
     return false;
   }
 }
+  let maintenanceMode = false;
+
+function updateMaintenanceUI() {
+  const sw = document.getElementById("maintenanceSwitch");
+  const status = document.getElementById("maintenanceStatus");
+
+  if (!sw || !status) return;
+
+  sw.checked = maintenanceMode;
+  status.textContent = maintenanceMode ? "ON" : "OFF";
+  status.style.color = maintenanceMode ? "#4CAF50" : "#666";
+}
     async function toggleMaintenance() {
   const ref = doc(db, "settings", "system");
   const snap = await getDoc(ref);
@@ -2729,12 +2748,16 @@ async function checkMaintenanceMode() {
     ? !!snap.data().maintenance
     : false;
 
+  maintenanceMode = !current;
+
   await setDoc(ref, {
-    maintenance: !current
+    maintenance: maintenanceMode
   }, { merge: true });
 
+  updateMaintenanceUI();
+
   showModal(
-    !current
+    maintenanceMode
       ? "已開啟維修模式"
       : "已關閉維修模式",
     { type: "success" }
@@ -4702,11 +4725,28 @@ adminPwdInput?.addEventListener("keydown", (e) => {
 }
 async function startAllSystems() {
   try {
+
     const blocked = await checkMaintenanceMode();
 
     if (blocked) {
       finishLoaderProgress();
       return;
+    }
+
+    // ===== 維修模式開關同步 =====
+    try {
+      const snap = await getDoc(
+        doc(db, "settings", "system")
+      );
+
+      maintenanceMode =
+        snap.exists()
+          ? !!snap.data().maintenance
+          : false;
+
+      updateMaintenanceUI();
+    } catch (e) {
+      console.error("讀取維修模式失敗:", e);
     }
 
     initPageData();

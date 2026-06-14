@@ -1588,6 +1588,9 @@ body.admin-mode {
   <button onclick="saveAnnouncement()">發布公告</button>
   <button onclick="clearAnnouncement()">清除公告</button>
 </div>
+  <button type="button" onclick="toggleMaintenance()">
+  維修模式開關
+</button>
   <div class="section admin-only" id="adminScorePanel">
   <div class="top-bar">
     <h2>黨員計時成績輸入</h2>
@@ -2620,7 +2623,59 @@ if (panel?.classList.contains("open")) {
  let latestLeaderboardSnap = null;
 
 const announcementRef = doc(db, "site_settings", "announcement");
+async function checkMaintenanceMode() {
+  const ref = doc(db, "settings", "system");
+  const snap = await getDoc(ref);
 
+  if (!snap.exists()) return false;
+
+  const data = snap.data();
+
+  const isAdminAccess =
+    new URLSearchParams(location.search).get("admin") === "1";
+
+  if (data.maintenance === true && !isAdminAccess) {
+    document.body.innerHTML = `
+      <div style="
+        min-height:100vh;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        text-align:center;
+        padding:20px;
+        background:#70cce1;
+        color:#074783;
+        font-weight:bold;
+      ">
+        <h1>🔧 網頁維修中</h1>
+        <p style="font-size:20px;">請稍後重試</p>
+      </div>
+    `;
+    return true;
+  }
+
+  return false;
+}
+    async function toggleMaintenance() {
+  const ref = doc(db, "settings", "system");
+  const snap = await getDoc(ref);
+
+  const current = snap.exists()
+    ? !!snap.data().maintenance
+    : false;
+
+  await setDoc(ref, {
+    maintenance: !current
+  }, { merge: true });
+
+  showModal(
+    !current
+      ? "已開啟維修模式"
+      : "已關閉維修模式",
+    { type: "success" }
+  );
+}
  async function loadRanking() {
   startRankingRealtime();
 }
@@ -4545,6 +4600,7 @@ adminPwdInput?.addEventListener("keydown", (e) => {
     window.updatePickScoreTargetUI = updatePickScoreTargetUI;
     window.comparePlayerAndRanking = comparePlayerAndRanking;
     window.clearSkillQuery = clearSkillQuery;
+    window.toggleMaintenance = toggleMaintenance;
 
     function initPageData() {
   console.log("initPageData 開始執行");
@@ -4576,7 +4632,9 @@ adminPwdInput?.addEventListener("keydown", (e) => {
   });
 }
 
-function startAllSystems() {
+async function startAllSystems() {
+  const blocked = await checkMaintenanceMode();
+  if (blocked) return;
   initPageData();
   startAnnouncementRealtime();
   initSkillMapSuggest();

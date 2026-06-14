@@ -2624,38 +2624,41 @@ if (panel?.classList.contains("open")) {
 
 const announcementRef = doc(db, "site_settings", "announcement");
 async function checkMaintenanceMode() {
-  const ref = doc(db, "settings", "system");
-  const snap = await getDoc(ref);
+  try {
+    const ref = doc(db, "settings", "system");
+    const snap = await getDoc(ref);
 
-  if (!snap.exists()) return false;
+    if (!snap.exists()) return false;
 
-  const data = snap.data();
+    const data = snap.data();
 
-  const isAdminAccess =
-    new URLSearchParams(location.search).get("admin") === "1";
+    const isAdminAccess =
+      new URLSearchParams(location.search).get("admin") === "1";
 
-  if (data.maintenance === true && !isAdminAccess) {
-    document.body.innerHTML = `
-      <div style="
-        min-height:100vh;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-        align-items:center;
-        text-align:center;
-        padding:20px;
-        background:#70cce1;
-        color:#074783;
-        font-weight:bold;
-      ">
-        <h1>🔧 網頁維修中</h1>
-        <p style="font-size:20px;">請稍後重試</p>
-      </div>
-    `;
-    return true;
+    if (data.maintenance === true && !isAdminAccess) {
+      document.body.innerHTML = `
+        <div class="maintenance-screen">
+          <img src="team.png" class="maintenance-logo">
+
+          <div class="maintenance-title">網頁維修中</div>
+
+          <div class="maintenance-subtitle">
+            請稍後重試
+            <span class="dot dot1">.</span>
+            <span class="dot dot2">.</span>
+            <span class="dot dot3">.</span>
+          </div>
+        </div>
+      `;
+      return true;
+    }
+
+    return false;
+
+  } catch (e) {
+    console.error("維修模式讀取失敗：", e);
+    return false;
   }
-
-  return false;
 }
     async function toggleMaintenance() {
   const ref = doc(db, "settings", "system");
@@ -4636,10 +4639,10 @@ adminPwdInput?.addEventListener("keydown", (e) => {
     console.error("loadMaps 失敗：", e);
   });
 }
-
 async function startAllSystems() {
   try {
     const blocked = await checkMaintenanceMode();
+
     if (blocked) {
       finishLoaderProgress();
       return;
@@ -4653,11 +4656,16 @@ async function startAllSystems() {
     initSkillQueryCollapse();
 
   } catch (e) {
-    console.error("啟動失敗：", e);
-    finishLoaderProgress();
+    console.error("startAllSystems 啟動失敗：", e);
+
+    initPageData();
+    startAnnouncementRealtime();
+    initSkillMapSuggest();
+    initOldDataSuggestions();
+    initSkillTimeAutoJump();
+    initSkillQueryCollapse();
   }
 }
-
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", startAllSystems);
 } else {

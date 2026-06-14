@@ -1572,6 +1572,66 @@ input:checked + .slider{
 input:checked + .slider:before{
     transform:translateX(26px);
 }
+/* ===== 維修頁面 ===== */
+.maintenance-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+}
+
+.maintenance-logo {
+  width: 180px;
+  max-width: 65vw;
+  height: auto;
+  animation:
+    floatLogo 2.5s ease-in-out infinite,
+    glow 2s infinite alternate;
+}
+
+.maintenance-text {
+  color: #fff;
+  font-size: clamp(20px, 5vw, 30px);
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+.dot {
+  opacity: 0;
+  animation: dotBlink 1.5s infinite;
+}
+
+.dot1 {
+  animation-delay: 0s;
+}
+
+.dot2 {
+  animation-delay: .5s;
+}
+
+.dot3 {
+  animation-delay: 1s;
+}
+
+@keyframes dotBlink {
+  0%, 30% {
+    opacity: 0;
+  }
+
+  45%, 75% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
  </style>
 </head>
 
@@ -2704,19 +2764,17 @@ async function checkMaintenanceMode() {
 
     if (data.maintenance === true && !isAdminAccess) {
       document.body.innerHTML = `
-        <div class="maintenance-screen">
-          <img src="team.png" class="maintenance-logo">
+  <div class="maintenance-screen">
+    <img src="team.png" class="maintenance-logo">
 
-          <div class="maintenance-title">網頁維修中</div>
-
-          <div class="maintenance-subtitle">
-            請稍後重試
-            <span class="dot dot1">.</span>
-            <span class="dot dot2">.</span>
-            <span class="dot dot3">.</span>
-          </div>
-        </div>
-      `;
+    <div class="maintenance-text">
+      維修中 請稍後重試
+      <span class="dot dot1">.</span>
+      <span class="dot dot2">.</span>
+      <span class="dot dot3">.</span>
+    </div>
+  </div>
+`;
       return true;
     }
 

@@ -3766,7 +3766,12 @@ bar?.classList.add("done");
 }
 
 startFakeLoaderProgress();
-
+setTimeout(() => {
+  if (loaderProgress < 100) {
+    console.warn("載入逾時，強制關閉載入畫面");
+    finishLoaderProgress();
+  }
+}, 8000);
 window.addEventListener("load", () => {
   pageLoadedOnce = true;
   tryFinishLoader();
@@ -4633,14 +4638,24 @@ adminPwdInput?.addEventListener("keydown", (e) => {
 }
 
 async function startAllSystems() {
-  const blocked = await checkMaintenanceMode();
-  if (blocked) return;
-  initPageData();
-  startAnnouncementRealtime();
-  initSkillMapSuggest();
-  initOldDataSuggestions();
-  initSkillTimeAutoJump();
-  initSkillQueryCollapse();
+  try {
+    const blocked = await checkMaintenanceMode();
+    if (blocked) {
+      finishLoaderProgress();
+      return;
+    }
+
+    initPageData();
+    startAnnouncementRealtime();
+    initSkillMapSuggest();
+    initOldDataSuggestions();
+    initSkillTimeAutoJump();
+    initSkillQueryCollapse();
+
+  } catch (e) {
+    console.error("啟動失敗：", e);
+    finishLoaderProgress();
+  }
 }
 
 if (document.readyState === "loading") {

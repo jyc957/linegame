@@ -597,11 +597,10 @@ content="website">
 }
 
 .admin-only {
-  display: none;
+  display: none !important;
 }
-
 .admin-only.show {
-  display: block;
+  display: block !important;
 }
 .admin-banner {
   text-align: center;
@@ -1643,11 +1642,12 @@ input:checked + .slider:before{
 
   <button onclick="saveAnnouncement()">發布公告</button>
   <button onclick="clearAnnouncement()">清除公告</button>
-  <div class="maintenance-row">
+  <div class="maintenance-row admin-only">
   <span>
     維修模式
     <b id="maintenanceStatus">OFF</b>
   </span>
+
   <label class="switch">
     <input
       type="checkbox"
@@ -1656,7 +1656,6 @@ input:checked + .slider:before{
     >
     <span class="slider"></span>
   </label>
-
 </div>
 </div>
   <div class="section admin-only" id="adminScorePanel">

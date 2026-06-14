@@ -1517,6 +1517,59 @@ body.admin-mode {
     padding:16px;
     border-radius:12px;
 }
+.maintenance-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:12px;
+    padding:10px 0;
+    font-weight:bold;
+}
+
+.switch{
+    position:relative;
+    display:inline-block;
+    width:60px;
+    height:34px;
+}
+
+.switch input{
+    opacity:0;
+    width:0;
+    height:0;
+}
+
+.slider{
+    position:absolute;
+    cursor:pointer;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    background:#ccc;
+    transition:.3s;
+    border-radius:34px;
+}
+
+.slider:before{
+    position:absolute;
+    content:"";
+    height:26px;
+    width:26px;
+    left:4px;
+    bottom:4px;
+    background:white;
+    transition:.3s;
+    border-radius:50%;
+}
+
+input:checked + .slider{
+    background:#4CAF50;
+}
+
+input:checked + .slider:before{
+    transform:translateX(26px);
+}
  </style>
 </head>
 
@@ -1557,6 +1610,17 @@ body.admin-mode {
     <span id="announcementText"></span>
   </div>
 </div>
+  <div class="maintenance-row">
+  <span>維修模式</span>
+  <label class="switch">
+    <input
+      type="checkbox"
+      id="maintenanceSwitch"
+      onchange="toggleMaintenance()"
+    >
+    <span class="slider"></span>
+  </label>
+</div>
   <div id="adminBanner" class="admin-only admin-banner">
   ★管理模式★<br>再次點擊黨徽可退出管理模式</div>
   <div class="section admin-only" id="adminAnnouncementPanel">
@@ -1588,9 +1652,6 @@ body.admin-mode {
   <button onclick="saveAnnouncement()">發布公告</button>
   <button onclick="clearAnnouncement()">清除公告</button>
 </div>
-  <button type="button" onclick="toggleMaintenance()">
-  維修模式開關
-</button>
   <div class="section admin-only" id="adminScorePanel">
   <div class="top-bar">
     <h2>黨員計時成績輸入</h2>

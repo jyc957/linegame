@@ -956,23 +956,24 @@ img, video {
     flex-direction: row !important;
     align-items: center;
   }
-
   .map-option-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    align-items: center;
 }
-
 .map-option-row .skip-anim {
-  flex: 1 1 45%;
-  max-width: none;
+    width: 100%;
+    margin: 0;
 }
-
+.map-option-row label {
+    font-size: 15px;
+    white-space: nowrap;
+}
 #toggleCustomMapPool {
   flex: 1 1 100%;
   width: 100%;
 }
-
   .skip-anim {
     font-size: 13px;
     max-width: 50%;
@@ -3228,13 +3229,16 @@ function dedupeMaps(maps) {
   el.style.display = show ? "block" : "none";
 }
 let lastMapResultText = "";
+  function setLastMapResultText(picked) {
+  lastMapResultText = picked
+    .map((m, idx) => `第 ${idx + 1} 張 ${m.name}`)
+    .join("\n");
+}
     function renderMapResult(picked, meta) {
+    setLastMapResultText(picked);
   const box = document.getElementById("mapResult");
   if (!box) return;
   const { count, total, maxSum } = meta;
-      lastMapResultText = picked
-  .map((m, idx) => `第 ${idx + 1} 張 ${m.name}`)
-  .join("\n");
   // 標題：只顯示抽幾張
   box.innerHTML = `
     <div class="item">
@@ -3323,6 +3327,7 @@ function drawRandomMapsWithLimit(maps, count, maxSum, minSum = 0){
   return best || { picked: [], total: 0 };
 }
     function animateMapDraw(maps, count, ms = 1200, tick = 90){
+    setLastMapResultText(picked);
   const box = document.getElementById("mapResult");
   if (!box) return Promise.resolve();
 
@@ -3365,7 +3370,8 @@ function drawRandomMapsWithLimit(maps, count, maxSum, minSum = 0){
  * picked: 真正抽到的陣列 [{name, difficulty...}, ...]
  */
     async function revealMapsStacked(picked, count, delayMs = 400) {
-  const box = document.getElementById("mapResult");
+  setLastMapResultText(picked);
+      const box = document.getElementById("mapResult");
   if (!box) return;
 
   box.innerHTML = `
@@ -3476,6 +3482,7 @@ let index = 0;
 }
 }
 async function revealMapsOneByOne(picked, count, delayMs = 3400){
+  setLastMapResultText(picked);
   const box = document.getElementById("mapResult");
   if (!box) return;
 

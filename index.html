@@ -1870,11 +1870,17 @@ input:checked + .slider:before{
     <!-- 收合時只顯示這一行 -->
     <div class="panel-head">
     <div class="map-header">
-  <h2>🗺️ 地圖抽籤</h2>
-  <button id="toggleMapPanel" class="btn">▲ 收合</button>
+    <h2>🗺️ 地圖抽籤</h2>
+    <button id="toggleMapPanel" class="btn">
+        ▼ 展開
+    </button>
+    <button id="copyMapResultBtn"
+            class="btn"
+            style="display:none;"
+            onclick="copyMapResult()">
+        📋 複製抽籤結果
+    </button>
 </div>
-    </div>
-
     <!-- 展開後才顯示：抽幾張/按鈕/總數/結果 -->
     <div id="mapPanel" class="map-panel collapse-content">
       <div class="map-actions">
@@ -3209,29 +3215,27 @@ function dedupeMaps(maps) {
   if (!el) return;
   el.style.display = show ? "block" : "none";
 }
-
+let lastMapResultText = "";
     function renderMapResult(picked, meta) {
   const box = document.getElementById("mapResult");
   if (!box) return;
-
   const { count, total, maxSum } = meta;
-
+      lastMapResultText = picked
+  .map((m, idx) => `第 ${idx + 1} 張 ${m.name}`)
+  .join("\n");
   // 標題：只顯示抽幾張
   box.innerHTML = `
     <div class="item">
       <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
     </div>
   `;
-
   // 列表：第 1 張、第 2 張…
   picked.forEach((m, idx) => {
     const div = document.createElement("div");
     div.className = "item";
-
     const main = document.createElement("div");
     main.className = "item-main";
     main.textContent = `第 ${idx + 1} 張 ${m.name}`;
-
     div.appendChild(main);
     box.appendChild(div);
   });
@@ -3262,6 +3266,22 @@ if (mapPanel?.classList.contains("open")) {
   });
 }
 }
+async function copyMapResult() {
+  if (!lastMapResultText) {
+    showInfo("目前沒有可複製的抽籤結果");
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(lastMapResultText);
+    showSuccess("已複製抽籤結果");
+  } catch (e) {
+    console.error("複製失敗：", e);
+    showError("複製失敗，請手動選取結果");
+  }
+}
+
+window.copyMapResult = copyMapResult;
     function shuffleCopy(arr){
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--){
@@ -4567,6 +4587,7 @@ rankingBtn?.addEventListener("click", () => {
 // ===== 地圖抽籤：收合控制（預設收合）=====
 const mapToggleBtn = document.getElementById("toggleMapPanel");
 const mapPanel = document.getElementById("mapPanel");
+      
       drawMapBtn?.addEventListener("click", async () => {
   try {
     // 先清掉上次結果
@@ -4584,7 +4605,7 @@ const mapPanel = document.getElementById("mapPanel");
 
     const count = Number(mapCountSelect.value);
     const hell = document.getElementById("hardMode")?.checked;
-
+    const shuffleOrder = document.getElementById("shuffleOrder")?.checked;
     // 規則預設
     let maxSum = LIMIT_BY_COUNT[count] ?? Infinity;
     let minSum = 0;
@@ -4611,10 +4632,23 @@ const checkedMaps = Array.from(
   document.querySelectorAll(".custom-map-check:checked")
 )
 .map(x => normalizeSearchKey(x.value));
-
+    
+if (shuffleOrder && checkedMaps.length === 0) {
+  showModal("重新排序需要先設定自訂圖池", { type: "error" });
+  return;
+}
 if (checkedMaps.length > 0) {
   pool = maps.filter(m => checkedMaps.includes(normalizeSearchKey(m.name)));
 
+  // ✅ 重新排序模式：只把自訂圖池全部打亂，不看抽幾張
+  if (shuffleOrder) {
+    const picked = shuffleCopy(pool);
+    showMapLoading?.(false);
+    renderMapResult(picked, {
+      count: picked.length
+    });
+    return;
+  }
   if (pool.length < count) {
     showModal(`你只勾選了 ${pool.length} 張地圖，無法抽 ${count} 張`, { type: "error" });
     return;
@@ -4635,7 +4669,6 @@ if (checkedMaps.length > 0) {
         return;
       }
     }
-
     // ✅ 用 pool 來抽（不是 maps）
     const result = drawRandomMapsWithLimit(pool, count, maxSum, minSum);
     const picked = result.picked || [];
@@ -4662,22 +4695,26 @@ if (checkedMaps.length > 0) {
 });
 
 function setMapPanelOpen(open) {
-  if (!mapPanel) return;
-
-  mapPanel.classList.toggle("open", open);
-
-  if (mapToggleBtn) {
-    mapToggleBtn.textContent = open ? "▲ 收合" : "▼ 展開";
-  }
-
-  if (open) {
-  loadMapsCached().catch(console.error);
-}
+    if (!mapPanel) return;
+    mapPanel.classList.toggle("open", open);
+    if (mapToggleBtn) {
+        mapToggleBtn.textContent =
+            open ? "▲ 收合" : "▼ 展開";
+    }
+    // 複製結果按鈕跟著顯示/隱藏
+    const copyMapResultBtn =
+        document.getElementById("copyMapResultBtn");
+    if (copyMapResultBtn) {
+        copyMapResultBtn.style.display =
+            open ? "inline-block" : "none";
+    }
+    if (open) {
+        loadMapsCached().catch(console.error);
+    }
 }
 setMapPanelOpen(false);
-
 mapToggleBtn?.addEventListener("click", () => {
-  toggleCollapse(mapPanel, mapToggleBtn);
+    toggleCollapse(mapPanel, mapToggleBtn);
 });
       // ===== 地圖抽籤：重製結果 =====
 const resetMapBtn = document.getElementById("resetMapBtn");

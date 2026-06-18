@@ -231,31 +231,28 @@ content="website">
   font-weight: bold;
   color: #074783;
 }
-
-    .smword {
-      font-size: 12px;
-      color: #555;
-      margin-top: 4px;
-      text-align: left;
-    }
-
+.smword {
+    font-size: 12px;
+    color: #555;
+    margin-top: 2px;
+    margin-bottom: 0;
+    line-height: 1;
+    text-align: left;
+}
     /* ✅ 底部資訊列：左(瀏覽) 右(最後更新) */
     .footer-bar{
       margin-top: 14px;
       padding: 6px 4px;
       font-size: 12px;
       color: #555;
-
       display: flex;
       justify-content: space-between;
       align-items: center;
-
       max-width: 600px;
       margin-left: auto;
       margin-right: auto;
       gap: 10px;
     }
-
     /* 📱 手機版按鈕縮小 */
     @media (max-width: 480px) {
       button {
@@ -273,14 +270,12 @@ content="website">
       object-fit:cover;
       background:#ddd;
     }
-
     .rank-list{
       margin-top:10px;
       display:flex;
       flex-direction:column;
       gap:8px;
     }
-
     .rank-row{
       display:flex;
       align-items:baseline;
@@ -289,20 +284,17 @@ content="website">
       border-radius:10px;
       background:#f6f7f8;
     }
-
     .rank-left{
       display:flex;
       gap:10px;
       align-items:baseline;
       min-width:0;
     }
-
     .rank-pos{
       font-weight:900;
       width:52px;
       flex:0 0 auto;
     }
-
     .rank-name{
       font-weight:700;
       overflow:hidden;
@@ -310,24 +302,20 @@ content="website">
       white-space:nowrap;
       max-width:55vw;
     }
-
     .rank-time{
       font-variant-numeric: tabular-nums;
       font-weight:900;
     }
-
 /* 前三名放大一點 */
     .rank-row.top3 .rank-pos,
     .rank-row.top3 .rank-name,
     .rank-row.top3 .rank-time{
       font-size:16px;
     }
-
 /* 金銀銅底色（可自行改） */
     .rank-row.top1{ background:#fed22b; }
     .rank-row.top2{ background:#a1bcd1; }
     .rank-row.top3{ background:#fe9554; }
-
     .rank-row:hover{
   filter: brightness(0.98);
 }
@@ -346,13 +334,11 @@ content="website">
   text-align: center;
   opacity: 0.85;
 }
-
 .footer-logo {
   width: 80px;
   max-width: 30vw;
   margin-bottom: 8px;
 }
-
 .footer-text {
   font-size: 12px;
   color: #245c63;
@@ -369,7 +355,6 @@ content="website">
   gap: 10px;
   pointer-events: none; /* 不擋按鈕 */
 }
-
 .toast{
   min-width: 220px;
   max-width: 86vw;
@@ -387,12 +372,10 @@ content="website">
   opacity: 0;
   transition: opacity .18s ease, transform .18s ease;
 }
-
 .toast.open{
   opacity: 1;
   transform: translateY(0);
 }
-
 .toast-icon{
   width: 26px;
   height: 26px;
@@ -403,25 +386,21 @@ content="website">
   font-weight: 900;
   color: #0b2a33;
 }
-
 .toast-body{
   flex: 1 1 auto;
   min-width: 0;
 }
-
 .toast-title{
   font-weight: 900;
   font-size: 13px;
   margin-bottom: 2px;
 }
-
 .toast-msg{
   font-size: 13px;
   line-height: 1.35;
   word-break: break-word;
   opacity: .95;
 }
-
 .toast-close{
   border: 0;
   background: transparent;
@@ -431,7 +410,6 @@ content="website">
   cursor: pointer;
   padding: 0 2px;
 }
-
 /* 類型顏色 */
 .toast.success .toast-icon{ background:#5be37a; }
 .toast.error   .toast-icon{ background:#ffb3b3; }
@@ -468,7 +446,6 @@ content="website">
 .map-panel {
   margin-top: 12px;
 }
-
 /* 下拉與按鈕在手機上看起來舒服一點 */
 .map-actions .select,
 .map-actions .btn {
@@ -481,49 +458,43 @@ content="website">
   flex-direction: column;
   gap: 10px;
 }
-
 /* 第二行：抽地圖 / 重製 左右 */
 .map-btn-row {
   display: flex;
   gap: 10px;
 }
-
 .map-btn-row .btn {
   flex: 1;          /* 左右平均 */
 }
-
 /* “目前共有XX張地圖”那行 */
 .map-info {
-  margin-top: 8px;
+  margin-top: 4px;
   font-size: 14px;
   color: #333;
 }
-    .map-loading{
+.map-loading{
   text-align: center;
   padding: 16px 0;
   font-size: 16px;
   color: #555;
   font-weight: bold;
 }
-    .skip-anim{
+.skip-anim{
   display:flex;
   align-items:center;
   gap:8px;
   font-size:14px;
   color:#333;
-}
-    .map-btn-row{
+ .map-btn-row{
   display:flex;
   align-items:center;
   gap:10px;
   flex-wrap:wrap;       /* 讓它可換行 */
 }
-
 .map-btn-row .btn{
   flex: 1;              /* 按鈕左右平均 */
   min-width: 140px;
 }
-
 .skip-anim{
   display:flex;         /* 讓 checkbox + 文字 正常排 */
   align-items:center;
@@ -708,7 +679,7 @@ content="website">
   color: #8b5e00;
   font-weight: bold;
 }
-    .suggest-box {
+ .suggest-box {
   margin-top: 4px;
   border-radius: 8px;
   background: #e6f4fa;
@@ -1920,7 +1891,6 @@ input:checked + .slider:before{
     <input type="checkbox" id="skipAnimation">
     跳過動畫
   </label>
-
   <label class="skip-anim">
     <input type="checkbox" id="hardMode">
     ⚠高難度模式⚠
@@ -1937,7 +1907,7 @@ input:checked + .slider:before{
 
       <div class="smword">※ 圖池為排位競速圖（不含1⭐地圖）</div>
       <div class="smword">⚠高難度模式⚠：地圖均為3星以上（無法自訂圖池)</div>
-      <div class="smword">🔀隨機排序：需自訂圖池，僅對圖池做亂數排序</div>
+      <div class="smword">🔀隨機排序：需自訂圖池，僅對該圖池做亂數排序</div>
       <div id="mapLoading" class="map-loading" style="display:none;">
   載入中...
 </div>

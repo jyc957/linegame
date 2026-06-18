@@ -202,7 +202,6 @@ content="website">
     align-items: center;
     justify-content: center;
 }
-
 .video-cover-title {
   font-size: 28px;
   font-weight: 900;
@@ -210,7 +209,6 @@ content="website">
   text-align: center;
   text-shadow: none;
 }
-
 .play-overlay {
   position: absolute;
   width: 72px;
@@ -223,7 +221,6 @@ content="website">
   align-items: center;
   justify-content: center;
 }
-
 .video-hint {
   position: absolute;
   bottom: 12px;
@@ -236,7 +233,7 @@ content="website">
     color: #555;
     margin-top: 2px;
     margin-bottom: 0;
-    line-height: 1;
+    line-height: 0.5;
     text-align: left;
 }
     /* ✅ 底部資訊列：左(瀏覽) 右(最後更新) */
@@ -549,12 +546,10 @@ content="website">
 .item{
   transition: transform 400ms ease, opacity 400ms ease;
 }
-
 .item.stack-enter{
   opacity: 0;
   transform: translateY(22px);
 }
-
 .item.stack-in{
   opacity: 1;
   transform: translateY(0);
@@ -567,7 +562,6 @@ content="website">
     .footer-logo {
   cursor: pointer;
 }
-
 .admin-only {
   display: none !important;
 }
@@ -603,11 +597,9 @@ content="website">
   align-items: flex-start;
   gap: 10px;
 }
-
 .item-actions {
   flex: 0 0 auto;
 }
-
 .delete-btn {
   padding: 6px 10px;
   font-size: 12px;
@@ -618,14 +610,12 @@ content="website">
   color: #8b0000;
   cursor: pointer;
 }
-
 .delete-btn:active {
   transform: scale(0.97);
 }
     #adminScorePanel input {
   margin-bottom: 6px;
 }
-
 #adminScorePanel button {
   margin-top: 12px;
 }
@@ -635,17 +625,14 @@ content="website">
   min-height: 18px;
   color: #666;
 }
-
 .time-hint.error {
   color: #c62828;
   font-weight: bold;
 }
-
 .time-hint.ok {
   color: #2e7d32;
   font-weight: bold;
 }
-
 .input-error {
   border: 2px solid #c62828 !important;
   background: #fff5f5;
@@ -654,7 +641,6 @@ content="website">
   flex: 0 0 auto;
   margin-left: 8px;
 }
-
 .rank-delete-btn {
   padding: 5px 9px;
   font-size: 12px;
@@ -665,7 +651,6 @@ content="website">
   color: #8b0000;
   cursor: pointer;
 }
-
 .rank-delete-btn:active {
   transform: scale(0.97);
 }
@@ -673,7 +658,6 @@ content="website">
   background: #ffd54f;
   border-color: #c79a00;
 }
-
 .pick-score-hint {
   margin-top: 6px;
   font-size: 12px;
@@ -686,7 +670,6 @@ content="website">
   background: #e6f4fa;
   border: 1px solid #cfe7ef;
   overflow: hidden;
-
   max-height: 0;
   opacity: 0;
   transform: translateY(-6px);
@@ -694,10 +677,8 @@ content="website">
     max-height 0.25s ease,
     opacity 0.2s ease,
     transform 0.2s ease;
-
   pointer-events: none;
 }
-
 .suggest-box.show {
   max-height: 180px;
   opacity: 1;
@@ -714,7 +695,6 @@ content="website">
   background: #7cc7e8;
   border-radius: 10px;
 }
-
 .suggest-item {
   padding: 8px 10px;
   font-size: 14px;
@@ -726,11 +706,9 @@ content="website">
   display: flex;
   align-items: center;
 }
-
 .suggest-item:last-child {
   border-bottom: none;
 }
-
 .suggest-item:hover,
 .suggest-item.active {
   background: #dff3f8;
@@ -739,25 +717,21 @@ content="website">
 * {
   box-sizing: border-box;
 }
-
 html, body {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
 }
-
 /* ✅ 主內容最大寬度，手機滿版、電腦置中 */
 body {
   max-width: 720px;
   margin: 0 auto;
 }
-
 /* ✅ 圖片影片自動縮放 */
 img, video {
   max-width: 100%;
   height: auto;
 }
-
 /* ✅ 文字太長自動換行 */
 .section,
 .item-main,
@@ -768,7 +742,6 @@ img, video {
   word-break: break-word;
   overflow-wrap: anywhere;
 }
-
 /* ✅ 按鈕區可以自動換行 */
 .top-bar,
 .panel-head,
@@ -776,78 +749,63 @@ img, video {
 .map-btn-row {
   flex-wrap: wrap;
 }
-
 /* ✅ 手機上按鈕不要擠爆 */
 @media (max-width: 480px) {
   body {
     padding: 12px;
   }
-
   h1 {
     font-size: 24px;
   }
-
   .section {
     padding: 12px;
     border-radius: 10px;
   }
-
   .top-bar {
     gap: 6px;
   }
-
   button {
     font-size: 13px;
     padding: 7px 9px;
   }
-
   input,
   select {
     font-size: 16px; /* 手機比較不會自動放大 */
   }
-
   .rank-row {
     gap: 8px;
     align-items: center;
   }
-
   .rank-left {
     min-width: 0;
     flex: 1 1 auto;
   }
-
   .rank-pos {
     width: auto;
     min-width: 45px;
   }
-
   .rank-name {
     max-width: none;
     white-space: normal;
   }
-
   .rank-time {
     flex: 0 0 auto;
   }
-
   .map-btn-row {
     flex-direction: column;
     align-items: stretch;
   }
-
   .map-btn-row .btn,
   .map-actions .select {
     width: 100%;
     max-width: none;
   }
 }
-
 /* ✅ 電腦版看起來不要太寬 */
 @media (min-width: 768px) {
   body {
     max-width: 760px;
   }
-
   .section {
     padding: 18px;
   }
@@ -857,14 +815,12 @@ img, video {
   align-items: center;
   gap: 8px;
 }
-
 .add-actions {
   display: flex;
   gap: 6px;
   flex: 1;
   min-width: 0;
 }
-
 .add-actions button {
   flex: 1 1 0;
   min-width: 0;
@@ -882,7 +838,6 @@ img, video {
   gap: 10px;
   flex-wrap: nowrap;
 }
-
 .map-btn-row .btn,
 .map-btn-row button {
   flex: 1 1 0;
@@ -891,7 +846,6 @@ img, video {
   max-width: none;
   padding: 8px 10px;
 }
-
 /* ✅ 跳過動畫 / 高難模式 左右並排 */
 .map-option-row {
   display: flex;
@@ -902,7 +856,6 @@ img, video {
   flex-wrap: nowrap;
   margin-top: 8px;
 }
-
 .skip-anim {
   display: inline-flex;
   align-items: center;
@@ -914,14 +867,12 @@ img, video {
   font-size: clamp(13px, 3.5vw, 16px);
   white-space: nowrap;
 }
-
 .skip-anim input[type="checkbox"] {
   width: auto !important;
   margin: 0;
   padding: 0;
   flex: 0 0 auto;
 }
-
 /* 小手機：還是保持左右並排，但字縮小 */
 @media (max-width: 480px) {
   .map-btn-row {
@@ -958,22 +909,17 @@ img, video {
   flex-wrap:wrap;
 }
   /* ===== Windows 風格提示框 ===== */
-
 .ui-modal__card{
   position: relative;
   width: min(92vw, 420px);
   margin: 18vh auto 0;
   background: #f3f3f3;
-
   border-radius: 12px;
   overflow: hidden;
-
   box-shadow:
   0 0 0 3px rgba(32,145,198,.25),
   0 25px 60px rgba(0,0,0,.35);
-
   border: 3px solid #46a3ff;
-
   animation: uiPop .18s ease-out;
 }
 
@@ -982,9 +928,7 @@ img, video {
   display:flex;
   align-items:center;
   gap:10px;
-
   padding: 10px 16px;
-
   background:#ffffff;
   border-bottom:1px solid #d8d8d8;
 }

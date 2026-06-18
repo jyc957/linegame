@@ -958,9 +958,20 @@ img, video {
   }
 
   .map-option-row {
-    flex-direction: row;
-    flex-wrap: nowrap;
-  }
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.map-option-row .skip-anim {
+  flex: 1 1 45%;
+  max-width: none;
+}
+
+#toggleCustomMapPool {
+  flex: 1 1 100%;
+  width: 100%;
+}
 
   .skip-anim {
     font-size: 13px;
@@ -1915,7 +1926,7 @@ input:checked + .slider:before{
   </label>
   <label class="skip-anim">
     <input type="checkbox" id="shuffleOrder">
-    🔀重新排序(需自訂圖池）
+    🔀隨機排序
 </label>
   <button type="button" id="toggleCustomMapPool" class="btn">自訂圖池</button>
 </div>
@@ -1925,6 +1936,7 @@ input:checked + .slider:before{
 
       <div class="smword">※ 圖池為排位競速圖（不含1⭐地圖）</div>
       <div class="smword">⚠高難度模式⚠：地圖均為3星以上（無法自訂圖池)</div>
+      <div class="smword">🔀隨機排序：需自訂圖池，僅對圖池做亂數排序</div>
       <div id="mapLoading" class="map-loading" style="display:none;">
   載入中...
 </div>
@@ -4634,7 +4646,7 @@ const checkedMaps = Array.from(
 .map(x => normalizeSearchKey(x.value));
     
 if (shuffleOrder && checkedMaps.length === 0) {
-  showModal("重新排序需要先設定自訂圖池", { type: "error" });
+  showModal("隨機排序需要先設定自訂圖池", { type: "error" });
   return;
 }
 if (checkedMaps.length > 0) {
@@ -4696,12 +4708,16 @@ if (checkedMaps.length > 0) {
 
 function setMapPanelOpen(open) {
     if (!mapPanel) return;
-    mapPanel.classList.toggle("open", open);
+
+    if (open) {
+        openCollapse(mapPanel);
+    } else {
+        closeCollapse(mapPanel);
+    }
     if (mapToggleBtn) {
         mapToggleBtn.textContent =
             open ? "▲ 收合" : "▼ 展開";
     }
-    // 複製結果按鈕跟著顯示/隱藏
     const copyMapResultBtn =
         document.getElementById("copyMapResultBtn");
     if (copyMapResultBtn) {
@@ -4714,7 +4730,8 @@ function setMapPanelOpen(open) {
 }
 setMapPanelOpen(false);
 mapToggleBtn?.addEventListener("click", () => {
-    toggleCollapse(mapPanel, mapToggleBtn);
+    const isOpen = mapPanel?.classList.contains("open");
+    setMapPanelOpen(!isOpen);
 });
       // ===== 地圖抽籤：重製結果 =====
 const resetMapBtn = document.getElementById("resetMapBtn");

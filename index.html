@@ -4655,19 +4655,6 @@ document.getElementById("clearAllMapsBtn")
   .querySelectorAll(".custom-map-check")
   .forEach(x => x.checked = false);
 });
-      
-  <div id="teamMemberModal" class="modal">
-  <div class="modal-content">
-    <h3>選擇分組成員</h3>
-    <div class="map-btn-row">
-      <button type="button" id="confirmTeamMembersBtn" class="btn">確定</button>
-      <button type="button" id="selectAllTeamMembersBtn" class="btn">全選</button>
-      <button type="button" id="clearTeamMembersBtn" class="btn">清空</button>
-    </div>
-
-    <div id="teamMemberList"></div>
-  </div>
-</div>
       // 成績排行榜（預設開啟）
       const rankingBtn = document.getElementById("toggleRanking");
 const rankingPanel = document.getElementById("rankingPanel");
@@ -5097,6 +5084,18 @@ function startAnnouncementRealtime() {
         </div>
         <div id="customMapList"></div>
     </div>
+</div>
+    <div id="teamMemberModal" class="modal">
+  <div class="modal-content">
+    <h3>選擇分組成員</h3>
+    <div class="map-btn-row">
+      <button type="button" id="confirmTeamMembersBtn" class="btn">確定</button>
+      <button type="button" id="selectAllTeamMembersBtn" class="btn">全選</button>
+      <button type="button" id="clearTeamMembersBtn" class="btn">清空</button>
+    </div>
+
+    <div id="teamMemberList"></div>
+  </div>
 </div>
 </body>
 </html>

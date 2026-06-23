@@ -4538,16 +4538,12 @@ if (count > availableCount) {
     }
     const hell = document.getElementById("hardMode")?.checked;
     const shuffleOrder = document.getElementById("shuffleOrder")?.checked;
-    // 規則預設
-    let maxSum = LIMIT_BY_COUNT[count] ?? Infinity;
-    let minSum = 0;
 
     // 🔥 地獄/高難度規則：無上限 + 總和不小於 3X
     if (hell) {
       maxSum = Infinity;
       minSum = 3 * count;
     }
-
     // 這裡你原本就有再顯示一次 loading（我保留）
     showMapLoading?.(true);
     await sleep(50);

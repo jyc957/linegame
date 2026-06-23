@@ -2379,7 +2379,8 @@ function setAdminMode(on) {
   adminBlocks.forEach(el => {
     el.classList.toggle("show", on);
   });
-
+const teamGroupPanel = document.getElementById("teamGroupPanel");
+teamGroupPanel?.classList.toggle("show", on);
   if (!on) {
     isPickScoreTargetMode = false;
   }

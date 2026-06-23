@@ -1575,6 +1575,19 @@ input:checked + .slider:before{
   line-height: 1.6;
   white-space: pre-line;
 }
+.team-count-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+.team-count-row input {
+  width: 80px;
+  text-align: center;
+  margin-top: 0;
+}
  </style>
 </head>
 
@@ -1667,28 +1680,30 @@ input:checked + .slider:before{
     <button id="toggleTeamGroup">▼ 展開</button>
   </div>
   <div id="teamGroupContent" class="collapse-content">
-    <label>
-      共分成：
-      <input
-        id="teamGroupCountInput"
-        type="number"
-        min="2"
-        value="2"
-        inputmode="numeric"
-      >
-      組
-    </label>
-    <div class="map-btn-row">
-      <button type="button" id="selectAllTeamMembersBtn" class="btn">全選</button>
-      <button type="button" id="clearTeamMembersBtn" class="btn">清空</button>
-    </div>
-    <div id="teamMemberList"></div>
-    <div class="map-btn-row">
-      <button type="button" id="randomTeamGroupBtn" class="btn">🎲 隨機分組</button>
-      <button type="button" id="copyTeamGroupBtn" class="btn">📋 複製結果</button>
-    </div>
-    <div id="teamGroupResult"></div>
+  <div class="team-count-row">
+    <span>共分成：</span>
+    <input
+      id="teamGroupCountInput"
+      type="number"
+      min="2"
+      value="2"
+      inputmode="numeric"
+    >
+    <span>組</span>
   </div>
+  <button type="button" id="openTeamMemberModalBtn" class="btn">
+    選擇成員
+  </button>
+  <div class="smword">
+    ※ 每組最多 8 人
+  </div>
+  <div class="map-btn-row">
+    <button type="button" id="randomTeamGroupBtn" class="btn">🎲 隨機分組</button>
+    <button type="button" id="copyTeamGroupBtn" class="btn">📋 複製結果</button>
+  </div>
+  <div id="teamGroupSelectedCount" class="smword">目前選擇 0 人</div>
+  <div id="teamGroupResult"></div>
+</div>
 </div>
   <div class="section admin-only" id="adminScorePanel">
   <div class="top-bar">
@@ -4637,6 +4652,19 @@ document.getElementById("clearAllMapsBtn")
   .querySelectorAll(".custom-map-check")
   .forEach(x => x.checked = false);
 });
+      
+  <div id="teamMemberModal" class="modal">
+  <div class="modal-content">
+    <h3>選擇分組成員</h3>
+    <div class="map-btn-row">
+      <button type="button" id="confirmTeamMembersBtn" class="btn">確定</button>
+      <button type="button" id="selectAllTeamMembersBtn" class="btn">全選</button>
+      <button type="button" id="clearTeamMembersBtn" class="btn">清空</button>
+    </div>
+
+    <div id="teamMemberList"></div>
+  </div>
+</div>
       // 成績排行榜（預設開啟）
       const rankingBtn = document.getElementById("toggleRanking");
 const rankingPanel = document.getElementById("rankingPanel");
@@ -4861,6 +4889,25 @@ document
 
     document.getElementById("teamGroupResult").innerHTML = "";
     lastTeamGroupText = "";
+    updateTeamGroupHeight();
+  });
+  const openTeamMemberModalBtn = document.getElementById("openTeamMemberModalBtn");
+const teamMemberModal = document.getElementById("teamMemberModal");
+
+openTeamMemberModalBtn?.addEventListener("click", async () => {
+  await initTeamGroupMembersOnce();
+  teamMemberModal?.classList.add("show");
+});
+
+document
+  .getElementById("confirmTeamMembersBtn")
+  ?.addEventListener("click", () => {
+    teamMemberModal?.classList.remove("show");
+
+    const selectedCount = document.querySelectorAll(".team-member-check:checked").length;
+    const countText = document.getElementById("teamGroupSelectedCount");
+    if (countText) countText.textContent = `目前選擇 ${selectedCount} 人`;
+
     updateTeamGroupHeight();
   });
 // ✅ 等整個頁面元件都準備好後，再做初始化

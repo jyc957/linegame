@@ -4520,17 +4520,6 @@ if (!Number.isInteger(count) || count <= 0) {
   showModal("請輸入正確的抽圖張數", { type: "error" });
   return;
 }
-    const availableCount =
-  checkedMaps.length > 0
-    ? checkedMaps.length
-    : maps.length;
-if (count > availableCount) {
-  showModal(
-    `目前可用地圖只有 ${availableCount} 張，無法抽 ${count} 張`,
-    { type: "error" }
-  );
-  return;
-}
     let maxSum = Math.ceil(count * 3.2);
     let minSum = 0;
     if (count === 1) {
@@ -4560,7 +4549,17 @@ const checkedMaps = Array.from(
   document.querySelectorAll(".custom-map-check:checked")
 )
 .map(x => normalizeSearchKey(x.value));
-    
+    const availableCount =
+  checkedMaps.length > 0
+    ? checkedMaps.length
+    : maps.length;
+if (count > availableCount) {
+  showModal(
+    `目前可用地圖只有 ${availableCount} 張，無法抽 ${count} 張`,
+    { type: "error" }
+  );
+  return;
+}
 if (shuffleOrder && checkedMaps.length === 0) {
   showModal("隨機排序需要先設定自訂圖池", { type: "error" });
   return;

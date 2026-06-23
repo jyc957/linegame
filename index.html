@@ -3231,7 +3231,10 @@ function randomTeamGroups() {
     showError("請輸入正確的組數，至少 2 組");
     return;
   }
-
+if (selected.length > groupCount * 8) {
+  showError(`每組最多 8 人，${selected.length} 人至少需要分成 ${Math.ceil(selected.length / 8)} 組`);
+  return;
+}
   if (selected.length < groupCount) {
     showError(`目前只選了 ${selected.length} 人，無法分成 ${groupCount} 組`);
     return;

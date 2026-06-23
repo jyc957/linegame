@@ -1548,6 +1548,33 @@ input:checked + .slider:before{
   font-weight: 700;
   height: 42px;
 }
+.team-member-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 15px;
+}
+.team-member-item input {
+  width: auto;
+  margin: 0;
+}
+.team-box {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #f6f7f8;
+}
+.team-title {
+  font-weight: 900;
+  color: #074783;
+  margin-bottom: 6px;
+}
+.team-member-text {
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
  </style>
 </head>
 
@@ -1634,11 +1661,39 @@ input:checked + .slider:before{
   </label>
 </div>
 </div>
+  <div class="section admin-only" id="teamGroupPanel">
+  <div class="top-bar">
+    <h2>隊伍隨機分組</h2>
+    <button id="toggleTeamGroup">▼ 展開</button>
+  </div>
+  <div id="teamGroupContent" class="collapse-content">
+    <label>
+      共分成：
+      <input
+        id="teamGroupCountInput"
+        type="number"
+        min="2"
+        value="2"
+        inputmode="numeric"
+      >
+      組
+    </label>
+    <div class="map-btn-row">
+      <button type="button" id="selectAllTeamMembersBtn" class="btn">全選</button>
+      <button type="button" id="clearTeamMembersBtn" class="btn">清空</button>
+    </div>
+    <div id="teamMemberList"></div>
+    <div class="map-btn-row">
+      <button type="button" id="randomTeamGroupBtn" class="btn">🎲 隨機分組</button>
+      <button type="button" id="copyTeamGroupBtn" class="btn">📋 複製結果</button>
+    </div>
+    <div id="teamGroupResult"></div>
+  </div>
+</div>
   <div class="section admin-only" id="adminScorePanel">
   <div class="top-bar">
     <h2>黨員計時成績輸入</h2>
   </div>
-
   <label>
     輸入名字：
     <input id="scoreNameInput" type="text" placeholder="例：KPღ小野梅" autocomplete="off">
@@ -3103,12 +3158,9 @@ let customMapPoolInited = false;
 async function initCustomMapPoolOnce() {
   if (customMapPoolInited) return;
   customMapPoolInited = true;
-
   const list = document.getElementById("customMapList");
   if (!list) return;
-
   const maps = await loadMapsCached();
-
   list.innerHTML = maps.map(m => `
     <label class="custom-map-item">
       <input
@@ -3118,6 +3170,105 @@ async function initCustomMapPoolOnce() {
       ${m.name}
     </label>
   `).join("");
+}
+let teamGroupInited = false;
+let lastTeamGroupText = "";
+
+async function initTeamGroupMembersOnce() {
+  if (teamGroupInited) return;
+  teamGroupInited = true;
+
+  const list = document.getElementById("teamMemberList");
+  if (!list) return;
+
+  const snap = await getDocs(colRef);
+  const names = [];
+
+  snap.forEach(docSnap => {
+    const d = docSnap.data();
+    const name = (d.gameName || "").trim();
+    if (name) names.push(name);
+  });
+
+  const uniqueNames = [...new Set(names)]
+    .sort((a, b) => normalizeNameKey(a).localeCompare(normalizeNameKey(b)));
+
+  list.innerHTML = uniqueNames.map(name => `
+    <label class="team-member-item">
+      <input type="checkbox" class="team-member-check" value="${name}">
+      ${name}
+    </label>
+  `).join("");
+
+  updateTeamGroupHeight();
+}
+
+function randomTeamGroups() {
+  const groupCount = Number(document.getElementById("teamGroupCountInput")?.value);
+  const resultBox = document.getElementById("teamGroupResult");
+
+  const selected = Array.from(
+    document.querySelectorAll(".team-member-check:checked")
+  ).map(x => x.value.trim()).filter(Boolean);
+
+  if (!Number.isInteger(groupCount) || groupCount <= 1) {
+    showError("請輸入正確的組數，至少 2 組");
+    return;
+  }
+
+  if (selected.length < groupCount) {
+    showError(`目前只選了 ${selected.length} 人，無法分成 ${groupCount} 組`);
+    return;
+  }
+
+  const shuffled = shuffleCopy(selected);
+  const teams = Array.from({ length: groupCount }, () => []);
+
+  shuffled.forEach((name, idx) => {
+    teams[idx % groupCount].push(name);
+  });
+
+  lastTeamGroupText = teams.map((team, idx) => {
+    const teamName = String.fromCharCode(65 + idx) + "組";
+    return `${teamName}（${team.length}人）\n${team.join("\n")}`;
+  }).join("\n\n");
+
+  resultBox.innerHTML = teams.map((team, idx) => {
+    const teamName = String.fromCharCode(65 + idx) + "組";
+
+    return `
+      <div class="team-box">
+        <div class="team-title">${teamName}（${team.length}人）</div>
+        <div class="team-member-text">${team.join("\n")}</div>
+      </div>
+    `;
+  }).join("");
+
+  updateTeamGroupHeight();
+}
+
+async function copyTeamGroupResult() {
+  if (!lastTeamGroupText) {
+    showInfo("目前沒有可複製的分組結果");
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(lastTeamGroupText);
+    showSuccess("已複製分組結果");
+  } catch (e) {
+    console.error(e);
+    showError("複製失敗，請手動選取結果");
+  }
+}
+
+function updateTeamGroupHeight() {
+  const panel = document.getElementById("teamGroupContent");
+  if (panel?.classList.contains("open")) {
+    requestAnimationFrame(() => {
+      panel.style.maxHeight = panel.scrollHeight + "px";
+    });
+  }
 }
 async function loadMapsCached() {
   if (cachedMaps) return cachedMaps;
@@ -4670,6 +4821,47 @@ adminPwdInput?.addEventListener("keydown", (e) => {
     submitAdminPassword();
   }
 });
+  const teamGroupBtn = document.getElementById("toggleTeamGroup");
+const teamGroupContent = document.getElementById("teamGroupContent");
+
+teamGroupBtn?.addEventListener("click", async () => {
+  toggleCollapse(teamGroupContent, teamGroupBtn);
+
+  if (teamGroupContent?.classList.contains("open")) {
+    await initTeamGroupMembersOnce();
+    updateTeamGroupHeight();
+  }
+});
+
+document
+  .getElementById("randomTeamGroupBtn")
+  ?.addEventListener("click", randomTeamGroups);
+
+document
+  .getElementById("copyTeamGroupBtn")
+  ?.addEventListener("click", copyTeamGroupResult);
+
+document
+  .getElementById("selectAllTeamMembersBtn")
+  ?.addEventListener("click", () => {
+    document
+      .querySelectorAll(".team-member-check")
+      .forEach(x => x.checked = true);
+
+    updateTeamGroupHeight();
+  });
+
+document
+  .getElementById("clearTeamMembersBtn")
+  ?.addEventListener("click", () => {
+    document
+      .querySelectorAll(".team-member-check")
+      .forEach(x => x.checked = false);
+
+    document.getElementById("teamGroupResult").innerHTML = "";
+    lastTeamGroupText = "";
+    updateTeamGroupHeight();
+  });
 // ✅ 等整個頁面元件都準備好後，再做初始化
 });
     window.saveRecord = saveRecord;

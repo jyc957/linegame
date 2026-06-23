@@ -1813,19 +1813,15 @@ input:checked + .slider:before{
     <!-- 展開後才顯示：抽幾張/按鈕/總數/結果 -->
     <div id="mapPanel" class="map-panel collapse-content">
       <div class="map-actions">
-        <select id="mapCountSelect" class="select">
-          <option value="1">抽 1 張</option>
-          <option value="2">抽 2 張</option>
-          <option value="3">抽 3 張</option>
-          <option value="4">抽 4 張</option>
-          <option value="5">抽 5 張</option>
-          <option value="6">抽 6 張</option>
-          <option value="8" selected>抽 8 張</option>
-          <option value="9">抽 9 張</option>
-          <option value="10">抽 10 張</option>
-          <option value="12">抽 12 張</option>
-          <option value="15">抽 15 張</option>
-        </select>
+        <input
+  id="mapCountInput"
+  type="number"
+  min="1"
+  max="104"
+  value="8"
+  inputmode="numeric"
+  placeholder="請輸入預抽地圖張數"
+/>
       <div class="map-btn-row">
   <button id="drawMapBtn" class="btn">🎲 抽地圖</button>
   <button id="resetMapBtn" class="btn">♻️ 重新整理</button>
@@ -3048,21 +3044,6 @@ showModal(msg, {
     showError(e.message || "比對失敗");
   }
 }
-    // 抽幾張&難度總和上限
-const LIMIT_BY_COUNT = {
-  1: 5,
-  2: 6,
-  3: 10,
-  4: 14,
-  5: 16,
-  6: 22,
-  8: 26,
-  9: 28,
-  10: 30,
-  12: 36,
-  15: 45,
-};
-
     async function loadMaps() {
   const res = await fetch(
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzrBZKoOZroOfo6ad-tamTCh0PYtfvEixvubyHvL8uo9qmTQZkzbwSOvIoVIjWHmDfv3JlqRUbAyy_/pub?gid=575254095&single=true&output=csv"
@@ -4514,7 +4495,6 @@ rankingBtn?.addEventListener("click", () => {
   toggleCollapse(rankingPanel, rankingBtn);
 });
       const drawMapBtn = document.getElementById("drawMapBtn");
-      const mapCountSelect = document.getElementById("mapCountSelect");
       // ===== 地圖抽籤：收合控制（預設收合） =====
 // ===== 地圖抽籤：收合控制（預設收合）=====
 const mapToggleBtn = document.getElementById("toggleMapPanel");
@@ -4535,7 +4515,27 @@ const mapPanel = document.getElementById("mapPanel");
       await sleep(50); // 讓「載入中」有時間畫出來
     }
 
-    const count = Number(mapCountSelect.value);
+    const count = Number(document.getElementById("mapCountInput")?.value);
+if (!Number.isInteger(count) || count <= 0) {
+  showModal("請輸入正確的抽圖張數", { type: "error" });
+  return;
+}
+    const availableCount =
+  checkedMaps.length > 0
+    ? checkedMaps.length
+    : maps.length;
+if (count > availableCount) {
+  showModal(
+    `目前可用地圖只有 ${availableCount} 張，無法抽 ${count} 張`,
+    { type: "error" }
+  );
+  return;
+}
+    let maxSum = Math.ceil(count * 3.2);
+    let minSum = 0;
+    if (count === 1) {
+      maxSum = 5;
+    }
     const hell = document.getElementById("hardMode")?.checked;
     const shuffleOrder = document.getElementById("shuffleOrder")?.checked;
     // 規則預設

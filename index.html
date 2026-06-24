@@ -3236,7 +3236,6 @@ function openHistory(type) {
   historyPage = 1;
   document.getElementById("historyTitle").textContent =
     type === "map" ? "地圖抽籤歷史" : "分組抽籤歷史";
-
   renderHistoryPage();
   document.getElementById("historyModal")?.classList.add("show");
 }
@@ -3249,36 +3248,34 @@ function renderHistoryPage() {
   const start = (historyPage - 1) * HISTORY_PAGE_SIZE;
   const pageItems = history.slice(start, start + HISTORY_PAGE_SIZE);
   list.innerHTML = pageItems.length
-    ? pageItems.map(item => `
-        <div class="team-box">
-
-    <div class="history-header">
-      <div class="team-title">
-        ${item.time}
+    ? pageItems.map((item, index) => `
+      <div class="team-box">
+        <div class="history-header">
+          <div class="team-title">${item.time}</div>
+          <span
+            class="history-copy-link"
+            onclick="copyHistoryRecord(${start + index})"
+          >
+            複製此紀錄
+          </span>
+        </div>
+        <div class="team-member-text">
+          ${(item.text || "").replace(/\n/g, "<br>")}
+        </div>
       </div>
-      <span
-        class="history-copy-link"
-        onclick="copyHistoryRecord(${start + index})"
-      >
-        複製此紀錄
-      </span>
-    </div>
-    <div class="team-member-text">
-      ${item.text.replace(/\n/g,"<br>")}
-    </div>
-  </div>
-      `).join("")
+    `).join("")
     : `<div class="empty-text">目前沒有歷史紀錄</div>`;
-
   pageInfo.textContent = `第 ${historyPage} / ${totalPages} 頁`;
 }
-  function copyHistoryRecord(index){
+function copyHistoryRecord(index) {
   const history = getHistory(currentHistoryType);
   const item = history[index];
-  if(!item) return;
-  navigator.clipboard.writeText(item.text);
+  if (!item) return;
+  const text = `時間：${item.time}\n\n${item.text}`;
+  navigator.clipboard.writeText(text);
   showModal?.("已複製此紀錄");
 }
+window.copyHistoryRecord = copyHistoryRecord;
 async function initTeamGroupMembersOnce() {
   if (teamGroupInited) return;
   teamGroupInited = true;

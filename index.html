@@ -3208,7 +3208,45 @@ async function initCustomMapPoolOnce() {
 }
 let teamGroupInited = false;
 let lastTeamGroupText = "";
+let currentHistoryType = "map";
+let historyPage = 1;
+const HISTORY_PAGE_SIZE = 5;
+function getHistory(type) {
+  return JSON.parse(localStorage.getItem(type + "History") || "[]");
+}
+function saveHistory(type, item) {
+  const history = getHistory(type);
+  history.unshift(item);
+  localStorage.setItem(type + "History", JSON.stringify(history.slice(0, 100)));
+}
+function openHistory(type) {
+  currentHistoryType = type;
+  historyPage = 1;
+  document.getElementById("historyTitle").textContent =
+    type === "map" ? "地圖抽籤歷史" : "分組抽籤歷史";
 
+  renderHistoryPage();
+  document.getElementById("historyModal")?.classList.add("show");
+}
+function renderHistoryPage() {
+  const list = document.getElementById("historyList");
+  const pageInfo = document.getElementById("historyPageInfo");
+  const history = getHistory(currentHistoryType);
+  const totalPages = Math.max(1, Math.ceil(history.length / HISTORY_PAGE_SIZE));
+  historyPage = Math.min(Math.max(historyPage, 1), totalPages);
+  const start = (historyPage - 1) * HISTORY_PAGE_SIZE;
+  const pageItems = history.slice(start, start + HISTORY_PAGE_SIZE);
+  list.innerHTML = pageItems.length
+    ? pageItems.map(item => `
+        <div class="team-box">
+          <div class="team-title">${item.time}</div>
+          <div class="team-member-text">${item.text}</div>
+        </div>
+      `).join("")
+    : `<div class="empty-text">目前沒有歷史紀錄</div>`;
+
+  pageInfo.textContent = `第 ${historyPage} / ${totalPages} 頁`;
+}
 async function initTeamGroupMembersOnce() {
   if (teamGroupInited) return;
   teamGroupInited = true;
@@ -3270,7 +3308,10 @@ if (selected.length > groupCount * 8) {
     const teamName = String.fromCharCode(65 + idx) + "組";
     return `${teamName}（${team.length}人）\n${team.join("\n")}`;
   }).join("\n\n");
-
+ saveHistory("team", {
+  time: new Date().toLocaleString(),
+  text: lastTeamGroupText
+});
   resultBox.innerHTML = teams.map((team, idx) => {
     const teamName = String.fromCharCode(65 + idx) + "組";
 
@@ -3299,7 +3340,6 @@ async function copyTeamGroupResult() {
     showError("複製失敗，請手動選取結果");
   }
 }
-
 function updateTeamGroupHeight() {
   const panel = document.getElementById("teamGroupContent");
   if (panel?.classList.contains("open")) {
@@ -3339,6 +3379,10 @@ let lastMapResultText = "";
 }
     function renderMapResult(picked, meta) {
     setLastMapResultText(picked);
+    saveHistory("map", {
+    time: new Date().toLocaleString(),
+    text: lastMapResultText
+  });
   const box = document.getElementById("mapResult");
   if (!box) return;
   const { count, total, maxSum } = meta;
@@ -3399,7 +3443,6 @@ async function copyMapResult() {
     showError("複製失敗，請手動選取結果");
   }
 }
-
 window.copyMapResult = copyMapResult;
     function shuffleCopy(arr){
   const a = arr.slice();
@@ -3474,15 +3517,17 @@ function drawRandomMapsWithLimit(maps, count, maxSum, minSum = 0){
  */
     async function revealMapsStacked(picked, count, delayMs = 400) {
   setLastMapResultText(picked);
+  saveHistory("map", {
+    time: new Date().toLocaleString(),
+    text: lastMapResultText
+  });
       const box = document.getElementById("mapResult");
   if (!box) return;
-
   box.innerHTML = `
     <div class="item">
       <div class="item-main">地圖抽籤結果（抽 ${count} 張）</div>
     </div>
   `;
-
   for (let i = 0; i < picked.length; i++) {
     const m = picked[i];
 
@@ -4885,10 +4930,34 @@ document
     document
       .querySelectorAll(".team-member-check")
       .forEach(x => x.checked = true);
+    updateTeamGroupHeight();});
+document
+  .getElementById("openMapHistory")
+  ?.addEventListener("click", () => openHistory("map"));
 
-    updateTeamGroupHeight();
+document
+  .getElementById("openTeamHistory")
+  ?.addEventListener("click", () => openHistory("team"));
+
+document
+  .getElementById("prevHistoryPage")
+  ?.addEventListener("click", () => {
+    historyPage--;
+    renderHistoryPage();
   });
 
+document
+  .getElementById("nextHistoryPage")
+  ?.addEventListener("click", () => {
+    historyPage++;
+    renderHistoryPage();
+  });
+
+document
+  .getElementById("closeHistoryModal")
+  ?.addEventListener("click", () => {
+    document.getElementById("historyModal")?.classList.remove("show");
+  });
 document
   .getElementById("clearTeamMembersBtn")
   ?.addEventListener("click", () => {

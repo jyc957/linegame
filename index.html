@@ -1588,11 +1588,29 @@ input:checked + .slider:before{
   text-align: center;
   margin-top: 0;
 }
+.history-link {
+  color: #074783;
+  text-decoration: underline;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.history-link:active {
+  color: #c84b0b;
+}
+
+.team-member-action-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
  </style>
 </head>
-
 <body>
-
 <div id="pageLoader" class="page-loader">
   <img src="team.png" class="loader-img" alt="載入中">
   <div class="loader-text fancy-loader-text">
@@ -1691,9 +1709,9 @@ input:checked + .slider:before{
     >
     <span>組</span>
   </div>
-  <button type="button" id="openTeamMemberModalBtn" class="btn">
-    選擇成員
-  </button>
+  <button type="button" id="openTeamMemberModalBtn" class="btn">選擇成員</button>
+  <span id="openTeamHistory" class="history-link">分組抽籤歷史</span>
+  </div>
   <div class="smword">
     ※ 每組最多 8 人
   </div>
@@ -1929,6 +1947,7 @@ input:checked + .slider:before{
     🔀隨機排序
 </label>
   <button type="button" id="toggleCustomMapPool" class="btn">自訂圖池</button>
+  <span id="openMapHistory" class="history-link">地圖抽籤歷史</span>
 </div>
     <div id="mapInfo" class="map-info">
         目前共有 <b id="mapTotalCount">0</b> 張地圖
@@ -5093,8 +5112,19 @@ function startAnnouncementRealtime() {
       <button type="button" id="selectAllTeamMembersBtn" class="btn">全選</button>
       <button type="button" id="clearTeamMembersBtn" class="btn">清空</button>
     </div>
-
     <div id="teamMemberList"></div>
+  </div>
+</div>
+  <div id="historyModal" class="modal">
+  <div class="modal-content">
+    <h3 id="historyTitle">歷史紀錄</h3>
+    <div id="historyList"></div>
+    <div class="map-btn-row">
+      <button type="button" id="prevHistoryPage" class="btn">上一頁</button>
+      <button type="button" id="nextHistoryPage" class="btn">下一頁</button>
+      <button type="button" id="closeHistoryModal" class="btn">關閉</button>
+    </div>
+    <div id="historyPageInfo" class="smword"></div>
   </div>
 </div>
 </body>

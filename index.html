@@ -1620,6 +1620,18 @@ input:checked + .slider:before{
   margin-top: 8px;
   flex-wrap: wrap;
 }
+teamGroupPanel {
+  transition: padding 0.3s ease;
+}
+#teamGroupPanel #teamGroupContent:not(.open) {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+#teamGroupPanel.collapsed {
+  padding-bottom: 12px;
+}
  </style>
 </head>
 <body>
@@ -1740,7 +1752,7 @@ input:checked + .slider:before{
   </div>
   <label>
     輸入名字：
-    <input id="scoreNameInput" type="text" placeholder="例：KPღ小野梅" autocomplete="off">
+    <input id="scoreNameInput" type="text" placeholder="例：ᴷᴾღ帥帥哥" autocomplete="off">
 <div id="scoreNameSuggestions" class="suggest-box"></div>
   </label>
 
@@ -4931,9 +4943,13 @@ adminPwdInput?.addEventListener("keydown", (e) => {
 });
   const teamGroupBtn = document.getElementById("toggleTeamGroup");
 const teamGroupContent = document.getElementById("teamGroupContent");
+const teamGroupPanel = document.getElementById("teamGroupPanel");
+teamGroupPanel?.classList.add("collapsed");
 teamGroupBtn?.addEventListener("click", async () => {
   toggleCollapse(teamGroupContent, teamGroupBtn);
-  if (teamGroupContent?.classList.contains("open")) {
+  const isOpen = teamGroupContent?.classList.contains("open");
+  teamGroupPanel?.classList.toggle("collapsed", !isOpen);
+  if (isOpen) {
     await initTeamGroupMembersOnce();
     updateTeamGroupHeight();
   }

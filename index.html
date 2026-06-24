@@ -3217,7 +3217,7 @@ function getHistory(type) {
 function saveHistory(type, item) {
   const history = getHistory(type);
   history.unshift(item);
-  localStorage.setItem(type + "History", JSON.stringify(history.slice(0, 100)));
+  localStorage.setItem(type + "History", JSON.stringify(history.slice(0, 10)));
 }
 function openHistory(type) {
   currentHistoryType = type;
@@ -5187,6 +5187,7 @@ function startAnnouncementRealtime() {
   <div id="historyModal" class="modal">
   <div class="modal-content">
     <h3 id="historyTitle">歷史紀錄</h3>
+    <div class="smword">※ 歷史紀錄只顯示最近 10 筆</div>
     <div id="historyList"></div>
     <div class="map-btn-row">
       <button type="button" id="prevHistoryPage" class="btn">上一頁</button>

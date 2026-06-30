@@ -3446,10 +3446,16 @@ function dedupeMaps(maps) {
   el.style.display = show ? "block" : "none";
 }
 let lastMapResultText = "";
-  function setLastMapResultText(picked) {
-  lastMapResultText = picked
-    .map((m, idx) => `${idx + 1} ${m.name}`)
-    .join("\n");
+function setLastMapResultText(picked) {
+    lastMapResultText = picked
+        .map((m, idx) => {
+            const name = String(m.name || "")
+                .replace(/^\s*\d+\s*⭐\s*/, "")
+                .trim();
+
+            return `${idx + 1} ${name}`;
+        })
+        .join("\n");
 }
     function renderMapResult(picked, meta) {
     setLastMapResultText(picked);

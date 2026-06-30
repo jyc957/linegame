@@ -1632,6 +1632,21 @@ teamGroupPanel {
 #teamGroupPanel.collapsed {
   padding-bottom: 12px;
 }
+.history-modal-content{
+  position: relative;
+}
+.history-close-x{
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 34px;
+  line-height: 1;
+  cursor: pointer;
+}
  </style>
 </head>
 <body>
@@ -4975,6 +4990,8 @@ document.querySelectorAll(".team-member-check").forEach(x => x.checked = true);
   updateTeamGroupHeight();});
 document.getElementById("openMapHistory")?.addEventListener("click", () => openHistory("map"));
 document.getElementById("openTeamHistory")?.addEventListener("click", () => openHistory("team"));
+document.getElementById("historyCloseX")?.addEventListener("click", () => {
+document.getElementById("historyModal")?.classList.remove("show");});
 document.getElementById("prevHistoryPage")?.addEventListener("click", () => {
     if (historyPage <= 1) {
       showToast("已經是第一頁啦~", { type: "info" });
@@ -5218,10 +5235,10 @@ function startAnnouncementRealtime() {
   </div>
 </div>
   <div id="historyModal" class="modal">
-  <div class="modal-content">
+  <div class="modal-content history-modal-content">
+    <button type="button" id="historyCloseX" class="history-close-x">×</button>
     <h3 id="historyTitle">歷史紀錄</h3>
-    <button class="ui-modal__x" onclick="closeHistoryModal()">✕</button>
-    <div class="smword">‼️提醒‼️若刪除程式快取，則所有歷史紀錄都會刪除</div>
+    <div class="smword">‼️提醒‼️ 若刪除程式快取，則所有歷史紀錄都會刪除</div>
     <div id="historyList"></div>
     <div class="map-btn-row">
       <button type="button" id="prevHistoryPage" class="btn">上一頁</button>

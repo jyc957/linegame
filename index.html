@@ -3228,6 +3228,19 @@ async function initCustomMapPoolOnce() {
       ${m.name}
     </label>
   `).join("");
+  document.querySelectorAll(".custom-map-check").forEach(check => {
+  check.addEventListener("change", updateCustomMapSelectedCount);
+});
+
+updateCustomMapSelectedCount();
+}
+function updateCustomMapSelectedCount() {
+  const count = document.querySelectorAll(".custom-map-check:checked").length;
+  const el = document.getElementById("customMapSelectedCount");
+
+  if (el) {
+    el.textContent = `目前已選 ${count} 張`;
+  }
 }
 let teamGroupInited = false;
 let lastTeamGroupText = "";
@@ -4755,6 +4768,7 @@ document.getElementById("clearAllMapsBtn")
   document
   .querySelectorAll(".custom-map-check")
   .forEach(x => x.checked = false);
+  updateCustomMapSelectedCount();
 });
       // 成績排行榜（預設開啟）
       const rankingBtn = document.getElementById("toggleRanking");
@@ -5187,8 +5201,8 @@ function startAnnouncementRealtime() {
         <h3>選擇地圖</h3>
         <div class="map-btn-row">
             <button type="button" id="confirmCustomMapsBtn" class="btn">確定</button>
-            <button id="clearAllMapsBtn" class="btn">清空</button>
-        </div>
+            <button id="clearAllMapsBtn" class="btn">清空</button></div>
+      <div id="customMapSelectedCount" class="smword">目前已選 0 張</div>
         <div id="customMapList"></div>
     </div>
 </div>

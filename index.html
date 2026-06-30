@@ -3426,7 +3426,7 @@ function dedupeMaps(maps) {
 let lastMapResultText = "";
   function setLastMapResultText(picked) {
   lastMapResultText = picked
-    .map((m, idx) => `第 ${idx + 1} 張 ${m.name}`)
+    .map((m, idx) => `${idx + 1} ${m.name}`)
     .join("\n");
 }
     function renderMapResult(picked, meta) {
@@ -5220,12 +5220,12 @@ function startAnnouncementRealtime() {
   <div id="historyModal" class="modal">
   <div class="modal-content">
     <h3 id="historyTitle">歷史紀錄</h3>
+    <button class="ui-modal__x" onclick="closeHistoryModal()">✕</button>
     <div class="smword">‼️提醒‼️若刪除程式快取，則所有歷史紀錄都會刪除</div>
     <div id="historyList"></div>
     <div class="map-btn-row">
       <button type="button" id="prevHistoryPage" class="btn">上一頁</button>
       <button type="button" id="nextHistoryPage" class="btn">下一頁</button>
-      <button type="button" id="closeHistoryModal" class="btn">關閉</button>
     </div>
     <div id="historyPageInfo" class="smword"></div>
   </div>

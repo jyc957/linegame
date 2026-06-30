@@ -3306,11 +3306,18 @@ function renderHistoryPage() {
     : `<div class="empty-text">目前沒有歷史紀錄</div>`;
   pageInfo.textContent = `第 ${historyPage} / ${totalPages} 頁`;
 }
-function copyHistoryRecord(index) {
+ function copyHistoryRecord(index) {
   const history = getHistory(currentHistoryType);
   const item = history[index];
   if (!item) return;
-  const text = `時間：${item.time}\n\n${item.text}`;
+  let cleanText = item.text;
+  if (currentHistoryType === "map") {
+    cleanText = cleanText
+      .split("\n")
+      .map(line => line.replace(/^(\d+)\s+\d+⭐\s+/, "$1 "))
+      .join("\n");
+  }
+  const text = `時間：${item.time}\n\n${cleanText}`;
   navigator.clipboard.writeText(text);
   showModal?.("已複製此紀錄");
 }

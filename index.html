@@ -1680,9 +1680,21 @@ tab-dropdown{
 .page {
   display: none;
 }
+
 .page.active {
   display: block;
   margin-top: 10px;
+  animation: pageFadeIn 0.20s ease;
+}
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
  </style>
 </head>

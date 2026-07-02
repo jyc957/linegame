@@ -1650,7 +1650,7 @@ teamGroupPanel {
 .tab-bar {
   position: sticky;
   top: 0;
-  z-index: 99999;
+  z-index: 5000;
   display: flex;
   gap: 8px;
   overflow-x: auto;
@@ -2381,7 +2381,10 @@ document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
   });
 });
 window.showPage = showPage;
-    
+window.addEventListener("scroll", () => {document.querySelectorAll(".tab-dropdown").forEach(d => {
+    d.classList.remove("open");
+  });
+}, { passive: true });
 function showModal(msg, { title = "提示", type = "info", html = false } = {}) {
   uiModalTitle.textContent = title;
 

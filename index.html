@@ -1647,41 +1647,52 @@ teamGroupPanel {
   line-height: 1;
   cursor: pointer;
 }
-.tab-bar {
-  position: sticky;
-  top: 0;
-  z-index: 5000;
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  overflow-y: hidden;
+.tab-bar{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   width: 100%;
-  max-width: 100%;
-  margin: 0 auto 8px;
-  padding: 8px 0;
-  padding-left: 0;
-  padding-right: 0;
+  gap: 0;
+  overflow: visible;
   background: transparent;
   border-bottom: 2px solid #2091c6;
 }
 .tab-btn{
-    background:transparent;
-    border:none;
-    box-shadow:none;
-    border-radius:0;
-    padding:14px 24px;
-    font-size:24px;      /* 字變大 */
-    font-weight:700;
-    color:#222;
-    cursor:pointer;
-    transition:.2s;
+  position: relative;
+  width: 100%;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  padding: 16px 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  color: #222;
+  transition: color .25s ease, transform .18s ease;
+}
+.tab-btn:active{
+  transform: scale(.94);
+}
+.tab-btn::after{
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  width: 0;
+  height: 4px;
+  background: #2091c6;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  transition: width .25s ease;
 }
 .tab-btn.active{
-    color:#2091c6;
-    border-bottom:4px solid #2091c6;
+  color: #2091c6;
 }
-.tab-btn:hover{
-    color:#2091c6;
+.tab-btn.active::after{
+  width: 70%;
+}
+tab-dropdown{
+  position: relative;
 }
 .tab-menu {
   display: none;
@@ -1697,17 +1708,16 @@ teamGroupPanel {
 .tab-dropdown.open .tab-menu {
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 .tab-menu button{
-    background:none;
-    border:none;
-    box-shadow:none;
-    width:100%;
-    text-align:left;
-    font-size:20px;
-    font-weight:600;
-    padding:14px 20px;
+  width: 100%;
+  flex: none !important;
+  padding: 14px 16px;
+  border: none;
+  background: white;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: left;
 }
 .tab-menu button:hover{
     background:#eef8ff;

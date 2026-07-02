@@ -560,9 +560,9 @@ content="website">
   font-size: 20px;
   font-weight: bold;
   color: #ffd700;
-  margin-top: 8px;
+  margin-top: 10px;
   margin-bottom: 10px;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
     .admin-mode-hint {
   text-align: center;
@@ -4293,39 +4293,37 @@ async function addLeaderboardRecord() {
 function togglePickScoreTargetMode() {
   isPickScoreTargetMode = !isPickScoreTargetMode;
   updatePickScoreTargetUI();
+  if (isPickScoreTargetMode) {
+    showPage("pageRanking", document.querySelector('[onclick*="pageRanking"]'));
+    showToast("請在排行榜點選要帶入的資料", { type: "info" });
+  }
 }
-
 function fillScoreNameFromRanking(gameName) {
   const input = document.getElementById("scoreNameInput");
   if (!input) return;
-
   input.value = gameName;
-  input.focus();
-
   isPickScoreTargetMode = false;
   updatePickScoreTargetUI();
-
-  const panel = document.getElementById("adminScorePanel");
-  panel?.scrollIntoView({ behavior: "smooth", block: "start" });
-
-  showSuccess(`已帶入名字：${gameName}`);
+  showPage("pageScoreInput", document.querySelector('[onclick*="pageScoreInput"]'));
+  setTimeout(() => {
+    input.focus();
+    document.getElementById("scoreTimeInput")?.focus();
+  }, 200);
+  showToast(`已帶入名字：${gameName}`, { type: "success" });
 }
     async function saveRecord() {
       try {
         const line = cleanInput(document.getElementById("lineInput").value, "LINE ID");
         const game = cleanInput(document.getElementById("gameInput").value, "遊戲名字");
         const now = Date.now();
-
         await addDoc(colRef, {
           lineId: line,
           gameName: game,
           createdAt: now,
           updatedAt: now
         });
-
         document.getElementById("lineInput").value = "";
         document.getElementById("gameInput").value = "";
-
         await loadAll();
       } catch (e) {
         showError(e.message || "儲存失敗");
@@ -4335,15 +4333,12 @@ function fillScoreNameFromRanking(gameName) {
     async function searchRecords() {
   const line = normalizeSearchKey(document.getElementById("lineInput").value);
   const game = normalizeSearchKey(document.getElementById("gameInput").value);
-
   if (!line && !game) {
     return showInfo("請至少輸入一項查詢");
   }
-
   try {
     const snap = await getDocs(colRef);
     const list = [];
-
     snap.forEach(docSnap => {
       const d = docSnap.data();
 

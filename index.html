@@ -1677,7 +1677,7 @@ tab-dropdown{
     grid-template-columns: repeat(4, 1fr);
   }
 }
-./* ===== Page 動畫 ===== */
+/* ===== Page 動畫 ===== */
 .page{
     display:none;
     opacity:0;
@@ -2464,45 +2464,77 @@ function showPage(pageId, btn) {
   }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-  let touchStartX = 0;
-let touchStartY = 0;
-
+let swipeStartX = 0;
+let swipeStartY = 0;
+let swipeCurrentX = 0;
+let isDraggingPage = false;
 document.addEventListener("touchstart", (e) => {
   if (e.touches.length !== 1) return;
-
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
+  if (e.target.closest("input, textarea, select, button, .modal, .tab-menu")) return;
+  swipeStartX = e.touches[0].clientX;
+  swipeStartY = e.touches[0].clientY;
+  swipeCurrentX = swipeStartX;
+  isDraggingPage = false;
 }, { passive: true });
-
-document.addEventListener("touchend", (e) => {
-  if (!touchStartX || !touchStartY) return;
-
-  const endX = e.changedTouches[0].clientX;
-  const endY = e.changedTouches[0].clientY;
-
-  const diffX = endX - touchStartX;
-  const diffY = endY - touchStartY;
-
-  if (Math.abs(diffX) < 70) return;
-  if (Math.abs(diffY) > 60) return;
-
-  const pages = getSwipePages();
+document.addEventListener("touchmove", (e) => {
+  if (!swipeStartX) return;
+  const x = e.touches[0].clientX;
+  const y = e.touches[0].clientY;
+  const diffX = x - swipeStartX;
+  const diffY = y - swipeStartY;
+  if (!isDraggingPage) {
+    if (Math.abs(diffY) > Math.abs(diffX)) return;
+    if (Math.abs(diffX) < 12) return;
+    isDraggingPage = true;
+  }
+  swipeCurrentX = x;
   const current = document.querySelector(".page.active");
-  const currentId = current?.id;
-  const index = pages.indexOf(currentId);
-
-  if (index === -1) return;
-
-  if (diffX < 0 && index < pages.length - 1) {
-    showPage(pages[index + 1], document.querySelector(`[onclick*="${pages[index + 1]}"]`));
+  if (!current) return;
+  const move = Math.max(-130, Math.min(130, diffX));
+  current.style.transition = "none";
+  current.style.transform = `translateX(${move}px)`;
+  current.style.opacity = `${1 - Math.min(Math.abs(move) / 260, 0.45)}`;
+}, { passive: true });
+document.addEventListener("touchend", () => {
+  if (!swipeStartX) return;
+  const diffX = swipeCurrentX - swipeStartX;
+  const current = document.querySelector(".page.active");
+  if (!current) return;
+  const pages = getSwipePages();
+  const index = pages.indexOf(current.id);
+  let nextPageId = null;
+  if (diffX < -80 && index < pages.length - 1) {
+    nextPageId = pages[index + 1];
   }
-
-  if (diffX > 0 && index > 0) {
-    showPage(pages[index - 1], document.querySelector(`[onclick*="${pages[index - 1]}"]`));
+  if (diffX > 80 && index > 0) {
+    nextPageId = pages[index - 1];
   }
-
-  touchStartX = 0;
-  touchStartY = 0;
+  current.style.transition = "transform .22s ease, opacity .22s ease";
+  if (nextPageId) {
+    current.style.transform = diffX < 0 ? "translateX(-130px)" : "translateX(130px)";
+    current.style.opacity = "0";
+    setTimeout(() => {
+      current.style.transition = "";
+      current.style.transform = "";
+      current.style.opacity = "";
+      showPage(
+        nextPageId,
+        document.querySelector(`[onclick*="${nextPageId}"]`)
+      );
+    }, 160);
+  } else {
+    current.style.transform = "translateX(0)";
+    current.style.opacity = "1";
+    setTimeout(() => {
+      current.style.transition = "";
+      current.style.transform = "";
+      current.style.opacity = "";
+    }, 220);
+  }
+  swipeStartX = 0;
+  swipeStartY = 0;
+  swipeCurrentX = 0;
+  isDraggingPage = false;
 }, { passive: true });
   document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
   btn.addEventListener("click", e => {
@@ -2532,7 +2564,6 @@ function showModal(msg, { title = "提示", type = "info", html = false } = {}) 
   } else {
     uiModalMsg.textContent = String(msg ?? "");
   }
-
   // 顏色/圖示
   if (type === "error") {
     uiModalIcon.textContent = "!";

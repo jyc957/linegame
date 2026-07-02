@@ -2814,13 +2814,6 @@ async function showFromRankingByGameName(gameName){
 
     // 用你原本的 renderList 顯示
     renderList(list, `排行榜點選：${gameName}`);
-    const panel = document.getElementById("addPanel");
-
-if (panel?.classList.contains("open")) {
-  requestAnimationFrame(() => {
-    panel.style.maxHeight = panel.scrollHeight + "px";
-  });
-}
 
     // ✅ 自動捲到下方顯示區（手機更好用）
     document.getElementById("listTitle")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -3086,18 +3079,23 @@ if (typeof isAdminMode !== "undefined" && isAdminMode && item.hasScore && item.r
 
     row.style.cursor = "pointer";
     row.title = "點一下顯示此人的 LINE ID";
-    row.addEventListener("click", () => {
+    row.addEventListener("click", async () => {
   if (isAdminMode && isPickScoreTargetMode) {
     fillScoreNameFromRanking(item.name);
     return;
   }
 
-  openCurrentDataAndScroll();
-  setTimeout(() => {
-    showFromRankingByGameName(item.name);
-  }, 450);
-});
+  showPage("pageAdd", document.querySelector('[onclick*="pageAdd"]'));
 
+  await showFromRankingByGameName(item.name);
+
+  setTimeout(() => {
+    document.getElementById("listTitle")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }, 200);
+});
     listEl.appendChild(row);
   });
     const rankingPanel = document.getElementById("rankingPanel");

@@ -4056,7 +4056,6 @@ async function initSkillMapSuggest() {
 
   const panel = document.getElementById("rankingPanel");
   const btn = document.getElementById("toggleRanking");
-
   // 1. 如果目前是收合，先展開
   let justOpened = false;
   if (panel && !panel.classList.contains("open")) {
@@ -4064,45 +4063,30 @@ async function initSkillMapSuggest() {
     if (btn) btn.textContent = "▲ 收合";
     justOpened = true;
   }
-
   // 2. 如果剛展開，等動畫和版面撐開
   if (justOpened) {
     await new Promise(r => setTimeout(r, 450));
   }
-
   // 3. 再找目標列
   const rows = Array.from(document.querySelectorAll("#rankingList .rank-row"));
   const target = rows.find(r => (r.dataset.nameKey || "") === key);
-
   if (!target) {
     showError("排行榜找不到這個名字（可能排行榜的名字和目前資料不一）");
     return;
   }
-
   // 4. 先讓瀏覽器完成一次 reflow，再捲動
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-
   target.scrollIntoView({
     behavior: "smooth",
     block: "center"
   });
-
   target.classList.add("flash");
   setTimeout(() => target.classList.remove("flash"), 900);
 }
     async function loadAll() {
   try {
-    // ✅ 先自動展開「新增 / 查詢」
-    const panel = document.getElementById("addPanel");
-    const btn = document.getElementById("toggleAdd");
-    if (panel && !panel.classList.contains("open")) {
-      openCollapse(panel);
-if (btn) btn.textContent = "▲ 收合";
-    }
-
     const snap = await getDocs(colRef);
     const list = [];
-
     snap.forEach(docSnap => {
       const d = docSnap.data();
       list.push({
@@ -4112,24 +4096,14 @@ if (btn) btn.textContent = "▲ 收合";
         updatedAt: d.updatedAt || d.createdAt || 0
       });
     });
-
     list.sort((a, b) => b.updatedAt - a.updatedAt);
     renderList(list, "全部資料（依修改時間）");
-
-if (panel?.classList.contains("open")) {
-  requestAnimationFrame(() => {
-    panel.style.maxHeight = panel.scrollHeight + "px";
-  });
-}
-
-    // ✅ 自動捲到名單區
     setTimeout(() => {
       document.getElementById("listTitle")?.scrollIntoView({
         behavior: "smooth",
         block: "start"
       });
     }, 120);
-
   } catch (e) {
     console.error(e);
     document.getElementById("listTitle").textContent = "讀取失敗";

@@ -4917,12 +4917,6 @@ if (checkedMaps.length > 0) {
     showMapLoading?.(false);
   }
 });
-function setMapPanelOpen(open) {
-    if (!mapPanel) return;
-    if (open) {
-        openCollapse(mapPanel);
-    } else {
-        closeCollapse(mapPanel);
       // ===== 地圖抽籤：重製結果 =====
 const resetMapBtn = document.getElementById("resetMapBtn");
 function resetMapResultUI(){
@@ -5010,7 +5004,6 @@ document
     if (countText) countText.textContent = `目前選擇 ${selectedCount} 人`;
 
     updateTeamGroupHeight();
-  });
 // ✅ 等整個頁面元件都準備好後，再做初始化
 });
     window.saveRecord = saveRecord;

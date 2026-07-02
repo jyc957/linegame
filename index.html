@@ -1811,6 +1811,7 @@ teamGroupPanel {
   </label>
 </div>
 </div>
+  <div id="pageTeam" class="page">
   <div class="section admin-only" id="teamGroupPanel">
   <div class="top-bar">
     <h2>隊伍隨機分組</h2>
@@ -1841,6 +1842,9 @@ teamGroupPanel {
   <div id="teamGroupResult"></div>
   </div>
 </div>
+  </div>
+  
+  <div id="pageScoreInput" class="page">
   <div class="section admin-only" id="adminScorePanel">
   <div class="top-bar">
     <h2>黨員計時成績輸入</h2>
@@ -1869,7 +1873,9 @@ teamGroupPanel {
     ● 成績格式：MM:SS.xx 或 MM.SS.xx 都可以
   </small>
 </div>
+</div>
   <!-- 🏁 成績排行榜-->
+<div id="pageRanking" class="page active">
 <div class="section" id="rankingSection">
   <div class="top-bar">
     <h2>成績排行榜</h2>
@@ -1890,8 +1896,9 @@ teamGroupPanel {
     <div id="rankStatus" class="smword">載入中...</div>
   </div>
   </div>
-
+</div>
 <!-- 新增 / 查詢（可折疊） -->
+<div id="pageAdd" class="page">
 <div class="section admin-only" id="addPanelSection">
   <div class="card">
    <div class="top-bar add-top-bar">
@@ -1934,11 +1941,12 @@ teamGroupPanel {
         <div id="resultCount" class="smword"></div>
         <div id="listContainer"></div>
       </div>
-
-    </div> <!-- ✅ 一定要有：關 addPanel -->
-  </div>   <!-- ✅ 關 card -->
-</div>     <!-- ✅ 關 section -->
+    </div>
+  </div>
+</div>
+</div>
   <!-- 更改資料（可折疊） -->
+  <div id="pageEdit" class="page">
   <div class="section admin-only" id="editPanelSection">
     <h2 style="display:flex; align-items:center; gap:10px;">
       <span style="margin-top:7px;">更改資料</span>
@@ -1975,21 +1983,20 @@ teamGroupPanel {
       </small>
     </div>
   </div>
-  
-  <div class="section" id="lineQuerySection">
-  <div class="top-bar">
-    <h2>賽道成績分線查詢</h2>
-    <button id="toggleSkillQuery">▼ 展開</button>
   </div>
 
+  <div id="pageLineQuery" class="page">
+  <div class="section" id="lineQuerySection">
+  <div class="top-bar">
+    <h2>成績分線查詢</h2>
+    <button id="toggleSkillQuery">▼ 展開</button>
+  </div>
   <div id="skillQueryPanel" class="collapse-content">
-
     <label>
       請輸入賽道名稱：
       <input id="skillMapInput" type="text" placeholder="例：城鎮高速公路" autocomplete="off">
     </label>
     <div id="skillMapSuggest" class="suggest-box"></div>
-
     <label>
       請輸入成績：
       <div class="skill-time-row">
@@ -2000,16 +2007,15 @@ teamGroupPanel {
         <input id="skillMsInput" type="number" min="0" max="99" inputmode="numeric" placeholder="xx">
       </div>
     </label>
-
     <div class="skill-btn-row">
   <button type="button" onclick="judgeSkillLine()">查詢分線</button>
   <button type="button" onclick="clearSkillQuery()">清除</button>
 </div>
 </div>
-
   </div>
 </div>
 <!-- 地圖抽籤 -->
+  <div id="pageMapDraw" class="page">
 <div class="section" id="mapDrawSection">
   <div class="card">
     <!-- 收合時只顯示這一行 -->
@@ -2075,6 +2081,7 @@ teamGroupPanel {
   </div>
 </div>
   <!-- 技巧教學（白底 + 可收折 + 滑到自動播放） -->
+  <div id="pageTraining" class="page">
   <div class="section" id="trainingSection">
     <div class="top-bar">
       <h2 style="margin-right:10px;">技巧訓練</h2>
@@ -2269,11 +2276,10 @@ teamGroupPanel {
             <div class="smword">載入時間可能會比較久 想學就要付出點代價</div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
-
+  </div>
   <!-- ✅ 底部資訊列（左：瀏覽人次｜右：最後更新） -->
   <div class="footer-bar">
     <div>今日瀏覽人次：<span id="todayCount">載入中...</span></div>

@@ -1592,6 +1592,9 @@ input:checked + .slider:before{
   line-height: 1;
   cursor: pointer;
 }
+.tab-bar.admin-tabs{
+  grid-template-columns: repeat(5, 1fr);
+}
 .tab-bar{
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -2689,7 +2692,7 @@ let isPickScoreTargetMode = false;
 function setAdminMode(on) {
   isAdminMode = on;
   document.body.classList.toggle("admin-mode", on);
-
+  document.querySelector(".tab-bar")?.classList.toggle("admin-tabs", on);
   const adminBlocks = document.querySelectorAll(".admin-only");
   adminBlocks.forEach(el => {
     el.classList.toggle("show", on);

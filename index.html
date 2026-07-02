@@ -2370,7 +2370,6 @@ function showPage(pageId, btn) {
   });
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
   document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
   btn.addEventListener("click", e => {
     const menu = btn.nextElementSibling;
@@ -2383,7 +2382,6 @@ document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
       menu.style.top = rect.bottom + "px";
       menu.style.left = rect.left + "px";
     }
-  });
 });
 });
 window.showPage = showPage;

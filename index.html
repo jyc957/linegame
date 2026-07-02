@@ -1783,8 +1783,14 @@ tab-dropdown{
   <div class="tab-menu">
     <button onclick="showPage('pageAdd', this)">新增 / 查詢資料</button>
     <button onclick="showPage('pageEdit', this)">更改資料</button>
-    <button class="admin-only" onclick="showPage('pageTeam', this)">隊伍隨機分組</button>
-    <button class="admin-only" onclick="showPage('pageScoreInput', this)">黨員成績輸入</button>
+  </div>
+</div>
+  <div class="tab-dropdown admin-only">
+  <button class="tab-btn" type="button">⚙️ 管理</button>
+  <div class="tab-menu">
+    <button onclick="showPage('pageAdminAnnouncement', this)">公告設定 / 維修模式</button>
+    <button onclick="showPage('pageTeam', this)">隊伍隨機分組</button>
+    <button onclick="showPage('pageScoreInput', this)">黨員成績輸入</button>
   </div>
 </div>
   <div class="tab-dropdown">
@@ -1804,6 +1810,7 @@ tab-dropdown{
 </div>
   <div id="adminBanner" class="admin-only admin-banner">
   ★管理模式★<br>再次點擊黨徽可退出管理模式</div>
+  <div id="pageAdminAnnouncement" class="page">
   <div class="section admin-only" id="adminAnnouncementPanel">
   <h2>公告設定</h2>
   <label>
@@ -1846,6 +1853,7 @@ tab-dropdown{
     >
     <span class="slider"></span>
   </label>
+  </div>
 </div>
 </div>
   <div id="pageTeam" class="page">
@@ -2380,24 +2388,26 @@ const pageGroup = {
   pageRanking: 0,
   pageAdd: 1,
   pageEdit: 2,
-  pageTeam: 3,
-  pageScoreInput: 4,
-  pageLineQuery: 5,
-  pageMapDraw: 6,
-  pageTraining: 7
+  pageAdminAnnouncement: 3,
+  pageTeam: 4,
+  pageScoreInput: 5,
+  pageLineQuery: 6,
+  pageMapDraw: 7,
+  pageTraining: 8
 };
 function getSwipePages() {
   if (isAdminMode) {
     return [
-      "pageRanking",
-      "pageAdd",
-      "pageEdit",
-      "pageTeam",
-      "pageScoreInput",
-      "pageLineQuery",
-      "pageMapDraw",
-      "pageTraining"
-    ];
+  "pageRanking",
+  "pageAdd",
+  "pageEdit",
+  "pageAdminAnnouncement",
+  "pageTeam",
+  "pageScoreInput",
+  "pageLineQuery",
+  "pageMapDraw",
+  "pageTraining"
+];
   }
   return [
     "pageRanking",

@@ -1676,7 +1676,9 @@ teamGroupPanel {
 }
 .tab-menu {
   display: none;
-  position: fixed;
+  position: absolute;
+  top: 100%;
+  left: 0;
   background: #fff;
   border: 2px solid #2091c6;
   border-radius: 12px;
@@ -2370,17 +2372,11 @@ function showPage(pageId, btn) {
 }
 document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
   btn.addEventListener("click", e => {
-    const menu = btn.nextElementSibling;
-    const rect = btn.getBoundingClientRect();
 
     document.querySelectorAll(".tab-dropdown").forEach(d => {
       if (d !== btn.parentElement) d.classList.remove("open");
     });
     btn.parentElement.classList.toggle("open");
-    if (menu) {
-      menu.style.top = rect.bottom + "px";
-      menu.style.left = rect.left + "px";
-    }
   });
 });
 window.showPage = showPage;

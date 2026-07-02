@@ -1650,7 +1650,7 @@ teamGroupPanel {
 .tab-bar {
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 5000;
   display: flex;
   gap: 8px;
   overflow-x: auto;
@@ -1658,7 +1658,6 @@ teamGroupPanel {
   background: #70cce1;
   border-bottom: 2px solid #2091c6;
 }
-
 .tab-btn {
   flex: 0 0 auto;
   padding: 10px 14px;
@@ -1670,13 +1669,6 @@ teamGroupPanel {
 }
 .tab-btn.active {
   background: #6ccbe0;
-  color: #000;
-}
-.tab-page {
-  display: none;
-}
-.tab-page.active {
-  display: block;
 }
 .tab-dropdown {
   position: relative;
@@ -1684,17 +1676,14 @@ teamGroupPanel {
 }
 .tab-menu {
   display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background: white;
-  min-width: 190px;
+  position: fixed;
+  background: #fff;
   border: 2px solid #2091c6;
-  border-radius: 10px;
+  border-radius: 12px;
   z-index: 99999;
-  box-shadow: 0 6px 16px rgba(0,0,0,.18);
+  min-width: 190px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.2);
 }
-.tab-dropdown:hover .tab-menu,
 .tab-dropdown.open .tab-menu {
   display: block;
 }
@@ -1707,6 +1696,12 @@ teamGroupPanel {
   font-size: 16px;
   font-weight: bold;
   text-align: left;
+}
+.page {
+  display: none;
+}
+.page.active {
+  display: block;
 }
  </style>
 </head>
@@ -1740,24 +1735,25 @@ teamGroupPanel {
 </div>
 
 <h1>🍀KP台灣民眾黨 黨部系統🍀</h1>
-  <div class="tab-bar">
-  <button class="tab-btn" onclick="scrollToSection('rankingSection')">🏆 排行榜</button>
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showPage('pageRanking', this)">🏆 排行榜</button>
   <div class="tab-dropdown">
-    <button class="tab-btn">👥 名單</button>
+    <button class="tab-btn" type="button">👥 名單</button>
     <div class="tab-menu">
-      <button onclick="scrollToSection('addPanelSection')">新增/查詢資料</button>
-      <button onclick="scrollToSection('editPanelSection')">更改資料</button>
+      <button onclick="showPage('pageAdd', this)">新增 / 查詢資料</button>
+      <button onclick="showPage('pageEdit', this)">更改資料</button>
+      <button onclick="showPage('pageTeam', this)">隊伍隨機分組</button>
+      <button onclick="showPage('pageScoreInput', this)">黨員成績輸入</button>
     </div>
   </div>
   <div class="tab-dropdown">
-    <button class="tab-btn">🗺 地圖</button>
+    <button class="tab-btn" type="button">🗺 地圖</button>
     <div class="tab-menu">
-      <button onclick="scrollToSection('lineQuerySection')">分線查詢</button>
-      <button onclick="scrollToSection('mapDrawSection')">地圖抽籤</button>
+      <button onclick="showPage('pageLineQuery', this)">分線查詢</button>
+      <button onclick="showPage('pageMapDraw', this)">地圖抽籤</button>
     </div>
   </div>
-
-  <button class="tab-btn" onclick="scrollToSection('trainingSection')">📖 技巧教學</button>
+  <button class="tab-btn" onclick="showPage('pageTraining', this)">📖 技巧教學</button>
 </div>
   <div id="announcementBox" class="announcement-box" style="display:none;">
   <div class="announcement-label">📢</div>
@@ -2357,37 +2353,38 @@ const uiModalIcon = document.getElementById("uiModalIcon");
 const uiModalOk = document.getElementById("uiModalOk");
 const uiModalX = document.getElementById("uiModalX");
 
-function switchTab(tabId, btn) {
-  document.querySelectorAll(".tab-page").forEach(page => {
+function showPage(pageId, btn) {
+  document.querySelectorAll(".page").forEach(page => {
     page.classList.remove("active");
   });
+  document.getElementById(pageId)?.classList.add("active");
   document.querySelectorAll(".tab-btn").forEach(b => {
     b.classList.remove("active");
   });
-  document.getElementById(tabId)?.classList.add("active");
-  btn?.classList.add("active");
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
+  const topBtn = btn?.closest(".tab-dropdown")?.querySelector(".tab-btn") || btn;
+  topBtn?.classList.add("active");
+  document.querySelectorAll(".tab-dropdown").forEach(d => {
+    d.classList.remove("open");
   });
-}
-function scrollToSection(id) {
-  document.getElementById(id)?.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
-  document.querySelectorAll(".tab-dropdown").forEach(x => {
-    x.classList.remove("open");
-  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", e => {
+    const menu = btn.nextElementSibling;
+    const rect = btn.getBoundingClientRect();
+
+    document.querySelectorAll(".tab-dropdown").forEach(d => {
+      if (d !== btn.parentElement) d.classList.remove("open");
+    });
     btn.parentElement.classList.toggle("open");
+    if (menu) {
+      menu.style.top = rect.bottom + "px";
+      menu.style.left = rect.left + "px";
+    }
   });
 });
-window.scrollToSection = scrollToSection;
-window.switchTab = switchTab;
-// type: "error" | "success" | "info"
+window.showPage = showPage;
+    
 function showModal(msg, { title = "提示", type = "info", html = false } = {}) {
   uiModalTitle.textContent = title;
 

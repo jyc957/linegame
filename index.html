@@ -1747,6 +1747,117 @@ tab-dropdown{
         transform:translateX(0);
     }
 }
+/* ===== RWD 自適應整理 ===== */
+
+/* 全站尺寸保護 */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* 主內容：手機滿版、平板/電腦置中 */
+body {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(10px, 3vw, 20px);
+}
+
+/* 標題自適應 */
+h1 {
+  font-size: clamp(22px, 5vw, 32px);
+}
+
+h2 {
+  font-size: clamp(17px, 3.5vw, 22px);
+}
+
+/* 功能白色區塊 */
+.section {
+  width: 100%;
+  padding: clamp(12px, 3vw, 20px);
+  border-radius: clamp(10px, 2vw, 16px);
+}
+
+/* 圖片、影片不超出 */
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 輸入框與選單 */
+input,
+select,
+textarea {
+  max-width: 100%;
+  font-size: clamp(15px, 3.5vw, 18px);
+}
+
+/* 按鈕自適應 */
+button,
+.btn {
+  font-size: clamp(13px, 3.2vw, 16px);
+  padding: clamp(7px, 2vw, 10px) clamp(9px, 3vw, 14px);
+}
+
+/* 頁籤自適應 */
+.tab-btn {
+  font-size: clamp(14px, 3.5vw, 22px);
+  padding: clamp(10px, 2.8vw, 14px) 0;
+}
+
+/* 一般模式：4格 */
+.tab-bar {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* 管理模式：5格 */
+.tab-bar.admin-tabs {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+/* 小手機 */
+@media (max-width: 420px) {
+  .tab-btn {
+    font-size: 14px;
+  }
+
+  .tab-btn::after {
+    height: 3px;
+  }
+
+  .rank-row {
+    gap: 6px;
+  }
+
+  .rank-pos {
+    min-width: 42px;
+    font-size: 13px;
+  }
+
+  .rank-name,
+  .rank-time {
+    font-size: 14px;
+  }
+}
+/* 平板 */
+@media (min-width: 768px) {
+  body {
+    max-width: 820px;
+  }
+}
+/* 電腦 */
+@media (min-width: 1024px) {
+  body {
+    max-width: 900px;
+  }
+}
  </style>
 </head>
 <body>

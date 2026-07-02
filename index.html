@@ -6,7 +6,7 @@
 <title>🍀KP台灣民眾黨 黨部系統🍀</title>
 
 <meta name="description"
-content="跑跑卡丁車黨部排行榜、地圖抽籤、技巧訓練與成績查詢系統">
+content="跑跑卡丁車黨部排行榜、地圖、名單、技巧教學">
 
 <meta property="og:title"
 content="🍀KP台灣民眾黨 黨部系統🍀">
@@ -1647,6 +1647,38 @@ teamGroupPanel {
   line-height: 1;
   cursor: pointer;
 }
+.tab-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px;
+  background: #70cce1;
+  border-bottom: 2px solid #2091c6;
+}
+
+.tab-btn {
+  flex: 0 0 auto;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 2px solid #2091c6;
+  background: #fff;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.tab-btn.active {
+  background: #6ccbe0;
+  color: #000;
+}
+.tab-page {
+  display: none;
+}
+.tab-page.active {
+  display: block;
+}
  </style>
 </head>
 <body>
@@ -1679,6 +1711,12 @@ teamGroupPanel {
 </div>
 
 <h1>🍀KP台灣民眾黨 黨部系統🍀</h1>
+  <div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('rankTab', this)">🏆 排行榜</button>
+  <button class="tab-btn" onclick="switchTab('memberTab', this)">👥 名單</button>
+  <button class="tab-btn" onclick="switchTab('mapTab', this)">🗺 地圖</button>
+  <button class="tab-btn" onclick="switchTab('trainingTab', this)">📖 技巧教學</button>
+</div>
   <div id="announcementBox" class="announcement-box" style="display:none;">
   <div class="announcement-label">📢</div>
   <div class="announcement-marquee">
@@ -2288,6 +2326,22 @@ const uiModalIcon = document.getElementById("uiModalIcon");
 const uiModalOk = document.getElementById("uiModalOk");
 const uiModalX = document.getElementById("uiModalX");
 
+function switchTab(tabId, btn) {
+  document.querySelectorAll(".tab-page").forEach(page => {
+    page.classList.remove("active");
+  });
+  document.querySelectorAll(".tab-btn").forEach(b => {
+    b.classList.remove("active");
+  });
+  document.getElementById(tabId)?.classList.add("active");
+  btn?.classList.add("active");
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+window.switchTab = switchTab;
 // type: "error" | "success" | "info"
 function showModal(msg, { title = "提示", type = "info", html = false } = {}) {
   uiModalTitle.textContent = title;

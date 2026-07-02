@@ -1668,7 +1668,6 @@ teamGroupPanel {
   font-weight: bold;
   white-space: nowrap;
 }
-
 .tab-btn.active {
   background: #6ccbe0;
   color: #000;
@@ -1678,6 +1677,36 @@ teamGroupPanel {
 }
 .tab-page.active {
   display: block;
+}
+.tab-dropdown {
+  position: relative;
+  flex: 0 0 auto;
+}
+.tab-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  min-width: 190px;
+  border: 2px solid #2091c6;
+  border-radius: 10px;
+  z-index: 99999;
+  box-shadow: 0 6px 16px rgba(0,0,0,.18);
+}
+.tab-dropdown:hover .tab-menu,
+.tab-dropdown.open .tab-menu {
+  display: block;
+}
+.tab-menu button {
+  display: block;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  background: white;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: left;
 }
  </style>
 </head>
@@ -1712,10 +1741,23 @@ teamGroupPanel {
 
 <h1>🍀KP台灣民眾黨 黨部系統🍀</h1>
   <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('rankTab', this)">🏆 排行榜</button>
-  <button class="tab-btn" onclick="switchTab('memberTab', this)">👥 名單</button>
-  <button class="tab-btn" onclick="switchTab('mapTab', this)">🗺 地圖</button>
-  <button class="tab-btn" onclick="switchTab('trainingTab', this)">📖 技巧教學</button>
+  <button class="tab-btn" onclick="scrollToSection('rankingSection')">🏆 排行榜</button>
+  <div class="tab-dropdown">
+    <button class="tab-btn">👥 名單</button>
+    <div class="tab-menu">
+      <button onclick="scrollToSection('addPanelSection')">新增/查詢資料</button>
+      <button onclick="scrollToSection('editPanelSection')">更改資料</button>
+    </div>
+  </div>
+  <div class="tab-dropdown">
+    <button class="tab-btn">🗺 地圖</button>
+    <div class="tab-menu">
+      <button onclick="scrollToSection('lineQuerySection')">分線查詢</button>
+      <button onclick="scrollToSection('mapDrawSection')">地圖抽籤</button>
+    </div>
+  </div>
+
+  <button class="tab-btn" onclick="scrollToSection('trainingSection')">📖 技巧教學</button>
 </div>
   <div id="announcementBox" class="announcement-box" style="display:none;">
   <div class="announcement-label">📢</div>
@@ -1827,38 +1869,30 @@ teamGroupPanel {
     ● 成績格式：MM:SS.xx 或 MM.SS.xx 都可以
   </small>
 </div>
-  <!-- 🏁 成績排行榜（預設展開，可收合） -->
-<!-- 🏁 成績排行榜（最上方） -->
-<div class="section">
+  <!-- 🏁 成績排行榜-->
+<div class="section" id="rankingSection">
   <div class="top-bar">
     <h2>成績排行榜</h2>
     <button id="toggleRanking">▲ 收合</button>
   </div>
-
   <!-- 可收合內容 -->
   <div id="rankingPanel" class="collapse-content open">
     <div class="smword">(如果沒有成績那就是副主席還沒空打上去）</div>
-    <!-- 賽道圖片 -->
     <img
       src="highway.jpg"
       alt="賽道圖片"
       style="width:100%; border-radius:8px; margin-bottom:8px;"
     >
-
-    <!-- 說明文字 -->
     <div style="font-size:17px; color:#222; margin-bottom:10px;text-align:center;color:#074783;">
       黨內計時成績排行（城鎮高速公路）
     </div>
-    <!-- ✅【排行榜實際列表】 -->
     <div id="rankingList"></div>
-    <!-- ✅【一定要有】狀態文字 -->
     <div id="rankStatus" class="smword">載入中...</div>
-
   </div>
-</div>
+  </div>
 
 <!-- 新增 / 查詢（可折疊） -->
-<div class="section">
+<div class="section admin-only" id="addPanelSection">
   <div class="card">
    <div class="top-bar add-top-bar">
   <h2 style="margin-right:10px;">新增 / 查詢</h2>
@@ -1905,7 +1939,7 @@ teamGroupPanel {
   </div>   <!-- ✅ 關 card -->
 </div>     <!-- ✅ 關 section -->
   <!-- 更改資料（可折疊） -->
-  <div class="section">
+  <div class="section admin-only" id="editPanelSection">
     <h2 style="display:flex; align-items:center; gap:10px;">
       <span style="margin-top:7px;">更改資料</span>
       <button id="toggleEdit">▼ 展開</button>
@@ -1942,7 +1976,7 @@ teamGroupPanel {
     </div>
   </div>
   
-  <div class="section">
+  <div class="section" id="lineQuerySection">
   <div class="top-bar">
     <h2>賽道成績分線查詢</h2>
     <button id="toggleSkillQuery">▼ 展開</button>
@@ -1976,7 +2010,7 @@ teamGroupPanel {
   </div>
 </div>
 <!-- 地圖抽籤 -->
-<div class="section">
+<div class="section" id="mapDrawSection">
   <div class="card">
     <!-- 收合時只顯示這一行 -->
     <div class="panel-head">
@@ -2041,7 +2075,7 @@ teamGroupPanel {
   </div>
 </div>
   <!-- 技巧教學（白底 + 可收折 + 滑到自動播放） -->
-  <div class="section">
+  <div class="section" id="trainingSection">
     <div class="top-bar">
       <h2 style="margin-right:10px;">技巧訓練</h2>
       <button id="toggleTraining">▼ 展開</button>
@@ -2311,13 +2345,10 @@ teamGroupPanel {
       messagingSenderId: "403725086740",
       appId: "1:403725086740:web:6b8b09e8b2e64008fab701"
     };
-
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
     const colRef = collection(db, "line_game_records");
     const leaderboardRef = collection(db, "leaderboard_records");
-
     // ✅ 自訂 Modal（取代 alert）
 const uiModal = document.getElementById("uiModal");
 const uiModalMsg = document.getElementById("uiModalMsg");
@@ -2340,7 +2371,21 @@ function switchTab(tabId, btn) {
     behavior: "smooth"
   });
 }
-
+function scrollToSection(id) {
+  document.getElementById(id)?.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+  document.querySelectorAll(".tab-dropdown").forEach(x => {
+    x.classList.remove("open");
+  });
+}
+document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    btn.parentElement.classList.toggle("open");
+  });
+});
+window.scrollToSection = scrollToSection;
 window.switchTab = switchTab;
 // type: "error" | "success" | "info"
 function showModal(msg, { title = "提示", type = "info", html = false } = {}) {

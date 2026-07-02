@@ -2377,16 +2377,37 @@ const uiModalOk = document.getElementById("uiModalOk");
 const uiModalX = document.getElementById("uiModalX");
 let currentPageGroup = 0;
 const pageGroup = {
-    pageRanking: 0,
-    pageAdd: 1,
-    pageEdit: 1,
-    pageTeam: 1,
-    pageScoreInput: 1,
-    pageLineQuery: 2,
-    pageMapDraw: 2,
-    pageTraining: 3
+  pageRanking: 0,
+  pageAdd: 1,
+  pageEdit: 2,
+  pageTeam: 3,
+  pageScoreInput: 4,
+  pageLineQuery: 5,
+  pageMapDraw: 6,
+  pageTraining: 7
 };
-    
+function getSwipePages() {
+  if (isAdminMode) {
+    return [
+      "pageRanking",
+      "pageAdd",
+      "pageEdit",
+      "pageTeam",
+      "pageScoreInput",
+      "pageLineQuery",
+      "pageMapDraw",
+      "pageTraining"
+    ];
+  }
+  return [
+    "pageRanking",
+    "pageAdd",
+    "pageEdit",
+    "pageLineQuery",
+    "pageMapDraw",
+    "pageTraining"
+  ];
+}
 function showPage(pageId, btn) {
   const current = document.querySelector(".page.active");
   const next = document.getElementById(pageId);
@@ -2397,6 +2418,19 @@ function showPage(pageId, btn) {
     current.classList.remove("active");
     current.classList.add(goRight ? "slide-out-left" : "slide-out-right");
     setTimeout(() => {
+      current.classList.remove("slide-out-left", "slide-out-right");
+      current.style.display = "none";
+    }, 280);
+  }
+  next.style.display = "block";
+  next.classList.remove(
+    "slide-out-left",
+    "slide-out-right",
+    "slide-in-left",
+    "slide-in-right"
+  );
+  next.classList.add(goRight ? "slide-in-right" : "slide-in-left");
+  setTimeout(() => {
   document.querySelectorAll(".page").forEach(p => {
     p.classList.remove(
       "active",
@@ -2410,14 +2444,6 @@ function showPage(pageId, btn) {
   next.classList.add("active");
   next.style.display = "";
 }, 200);
-  next.style.display = "block";
-  next.classList.remove(
-    "slide-out-left",
-    "slide-out-right",
-    "slide-in-left",
-    "slide-in-right"
-  );
-  next.classList.add(goRight ? "slide-in-right" : "slide-in-left");
   currentPageGroup = newGroup;
   document.querySelectorAll(".tab-btn").forEach(b => {
     b.classList.remove("active");
@@ -2438,6 +2464,46 @@ function showPage(pageId, btn) {
   }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+  let touchStartX = 0;
+let touchStartY = 0;
+
+document.addEventListener("touchstart", (e) => {
+  if (e.touches.length !== 1) return;
+
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener("touchend", (e) => {
+  if (!touchStartX || !touchStartY) return;
+
+  const endX = e.changedTouches[0].clientX;
+  const endY = e.changedTouches[0].clientY;
+
+  const diffX = endX - touchStartX;
+  const diffY = endY - touchStartY;
+
+  if (Math.abs(diffX) < 70) return;
+  if (Math.abs(diffY) > 60) return;
+
+  const pages = getSwipePages();
+  const current = document.querySelector(".page.active");
+  const currentId = current?.id;
+  const index = pages.indexOf(currentId);
+
+  if (index === -1) return;
+
+  if (diffX < 0 && index < pages.length - 1) {
+    showPage(pages[index + 1], document.querySelector(`[onclick*="${pages[index + 1]}"]`));
+  }
+
+  if (diffX > 0 && index > 0) {
+    showPage(pages[index - 1], document.querySelector(`[onclick*="${pages[index - 1]}"]`));
+  }
+
+  touchStartX = 0;
+  touchStartY = 0;
+}, { passive: true });
   document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
   btn.addEventListener("click", e => {
     const menu = btn.nextElementSibling;

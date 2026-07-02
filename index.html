@@ -1741,15 +1741,15 @@ teamGroupPanel {
 <h1>🍀KP台灣民眾黨 黨部系統🍀</h1>
 <div class="tab-bar">
   <button class="tab-btn active" onclick="showPage('pageRanking', this)">🏆 排行榜</button>
-  <div class="tab-dropdown">
-    <button class="tab-btn" type="button">👥 名單</button>
-    <div class="tab-menu">
-      <button onclick="showPage('pageAdd', this)">新增 / 查詢資料</button>
-      <button onclick="showPage('pageEdit', this)">更改資料</button>
-      <button onclick="showPage('pageTeam', this)">隊伍隨機分組</button>
-      <button onclick="showPage('pageScoreInput', this)">黨員成績輸入</button>
-    </div>
+  <<div class="tab-dropdown">
+  <button class="tab-btn" type="button">👥 名單</button>
+  <div class="tab-menu">
+    <button onclick="showPage('pageAdd', this)">新增 / 查詢資料</button>
+    <button class="admin-only" onclick="showPage('pageEdit', this)">更改資料</button>
+    <button class="admin-only" onclick="showPage('pageTeam', this)">隊伍隨機分組</button>
+    <button class="admin-only" onclick="showPage('pageScoreInput', this)">黨員成績輸入</button>
   </div>
+</div>
   <div class="tab-dropdown">
     <button class="tab-btn" type="button">🗺 地圖</button>
     <div class="tab-menu">
@@ -1899,7 +1899,7 @@ teamGroupPanel {
 </div>
 <!-- 新增 / 查詢（可折疊） -->
 <div id="pageAdd" class="page">
-<div class="section admin-only" id="addPanelSection">
+<div class="section" id="addPanelSection">
   <div class="card">
    <div class="top-bar add-top-bar">
   <h2 style="margin-right:10px;">新增 / 查詢</h2>
@@ -1947,7 +1947,7 @@ teamGroupPanel {
 </div>
   <!-- 更改資料（可折疊） -->
   <div id="pageEdit" class="page">
-  <div class="section admin-only" id="editPanelSection">
+  <div class="section" id="editPanelSection">
     <h2 style="display:flex; align-items:center; gap:10px;">
       <span style="margin-top:7px;">更改資料</span>
       <button id="toggleEdit">▼ 展開</button>

@@ -2418,11 +2418,6 @@ function showPage(pageId, btn) {
     "slide-in-right"
   );
   next.classList.add(goRight ? "slide-in-right" : "slide-in-left");
-  setTimeout(() => {
-    next.classList.remove("slide-in-left", "slide-in-right");
-    next.classList.add("active");
-    next.style.display = "";
-  }, 280);
   currentPageGroup = newGroup;
   document.querySelectorAll(".tab-btn").forEach(b => {
     b.classList.remove("active");

@@ -3355,7 +3355,9 @@ function renderHistoryPage() {
   }
   const text = `時間：${item.time}\n\n${cleanText}`;
   navigator.clipboard.writeText(text);
-  showModal?.("已複製此紀錄");
+  showToast("已複製此紀錄", {
+  type: "success"
+});
 }
 window.copyHistoryRecord = copyHistoryRecord;
 async function initTeamGroupMembersOnce() {

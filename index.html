@@ -1654,7 +1654,7 @@ teamGroupPanel {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: hidden;
   padding: 8px;
   background: #70cce1;
   border-bottom: 2px solid #2091c6;
@@ -1677,7 +1677,7 @@ teamGroupPanel {
 }
 .tab-menu {
   display: none;
-  position: absolute;
+  position: position;
   top: 100%;
   left: 0;
   background: #fff;
@@ -2378,6 +2378,10 @@ document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
       if (d !== btn.parentElement) d.classList.remove("open");
     });
     btn.parentElement.classList.toggle("open");
+    if (menu) {
+  menu.style.top = rect.bottom + "px";
+  menu.style.left = rect.left + "px";
+}
   });
 });
 window.showPage = showPage;

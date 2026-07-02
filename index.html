@@ -330,14 +330,14 @@ content="website">
 }
     /* ✅ Toast（右下角彈出） */
 .toast-wrap{
-  position: fixed;
+  position: fixed !important;
   right: 14px;
   bottom: 14px;
-  z-index: 9999999;
+  z-index: 2147483647 !important;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  pointer-events: none; /* 不擋按鈕 */
+  pointer-events: none;
 }
 .toast{
   min-width: 220px;
@@ -2522,7 +2522,7 @@ let toastSeq = 0;
 
 function showToast(msg, { title = "提示", type = "info", duration = 2200 } = {}) {
   if (!toastWrap) return;
-
+  document.body.appendChild(toastWrap);
   const id = `t${++toastSeq}`;
   const t = document.createElement("div");
   t.className = `toast ${type}`;

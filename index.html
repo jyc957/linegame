@@ -1650,7 +1650,7 @@ teamGroupPanel {
 .tab-bar {
   position: sticky;
   top: 0;
-  z-index: 999999;
+  z-index: 99999;
   display: flex;
   gap: 8px;
   overflow-x: auto;
@@ -1673,7 +1673,7 @@ teamGroupPanel {
 }
 .tab-dropdown {
   position: relative;
-  flex: 0 0 auto;
+  z-index: 100000;
 }
 .tab-menu {
   display: none;
@@ -1683,7 +1683,7 @@ teamGroupPanel {
   background: #fff;
   border: 2px solid #2091c6;
   border-radius: 12px;
-  z-index: 99999;
+  z-index: 100001;
   min-width: 190px;
   box-shadow: 0 6px 16px rgba(0,0,0,.2);
 }

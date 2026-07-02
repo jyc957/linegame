@@ -1687,22 +1687,22 @@ tab-dropdown{
     display:block;
     opacity:1;
     transform:translateX(0);
-    animation:pageSlideIn .28s ease;
+    animation:pageSlideIn .20s ease;
     margin-top:10px;
 }
 .page.slide-out-left{
-    animation:pageSlideOutLeft .28s ease forwards;
+    animation:pageSlideOutLeft .20s ease forwards;
 }
 .page.slide-out-right{
-    animation:pageSlideOutRight .28s ease forwards;
+    animation:pageSlideOutRight .20s ease forwards;
 }
 .page.slide-in-left{
     display:block;
-    animation:pageSlideInLeft .28s ease forwards;
+    animation:pageSlideInLeft .20s ease forwards;
 }
 .page.slide-in-right{
     display:block;
-    animation:pageSlideInRight .28s ease forwards;
+    animation:pageSlideInRight .20s ease forwards;
 }
 @keyframes pageSlideOutLeft{
     from{
@@ -2375,54 +2375,64 @@ const uiModalTitle = document.getElementById("uiModalTitle");
 const uiModalIcon = document.getElementById("uiModalIcon");
 const uiModalOk = document.getElementById("uiModalOk");
 const uiModalX = document.getElementById("uiModalX");
-let currentPageIndex = 0;
-const pageOrder = [
-    "pageRanking",
-    "pageAdd",
-    "pageMapDraw",
-    "pageTraining"
-];
+let currentPageGroup = 0;
+const pageGroup = {
+    pageRanking: 0,
+    pageAdd: 1,
+    pageEdit: 1,
+    pageTeam: 1,
+    pageScoreInput: 1,
+    pageLineQuery: 2,
+    pageMapDraw: 2,
+    pageTraining: 3
+};
     
-function showPage(pageId, btn){
-    const newIndex=pageOrder.indexOf(pageId);
-    const current=document.querySelector(".page.active");
-    const next=document.getElementById(pageId);
-    if(current===next) return;
-    const goRight=newIndex>currentPageIndex;
-    if(current){
-        current.classList.remove("active");
-        current.classList.add(
-            goRight
-            ?"slide-out-left"
-            :"slide-out-right"
-        );
-        setTimeout(()=>{
-            current.classList.remove(
-                "slide-out-left",
-                "slide-out-right"
-            );
-            current.style.display="none";
-        },280);
-
-    }
-    next.style.display="block";
-    next.classList.add(
-        goRight
-        ?"slide-in-right"
-        :"slide-in-left"
-    );
-    setTimeout(()=>{
-        next.classList.remove(
-            "slide-in-left",
-            "slide-in-right"
-        );
-        next.classList.add("active");
-    },20);
-    currentPageIndex=newIndex;
-    document
-        .querySelectorAll(".tab-btn")
-        .forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
+function showPage(pageId, btn) {
+  const current = document.querySelector(".page.active");
+  const next = document.getElementById(pageId);
+  if (!next || current === next) return;
+  const newGroup = pageGroup[pageId] ?? currentPageGroup;
+  const goRight = newGroup > currentPageGroup;
+  if (current) {
+    current.classList.remove("active");
+    current.classList.add(goRight ? "slide-out-left" : "slide-out-right");
+    setTimeout(() => {
+      current.classList.remove("slide-out-left", "slide-out-right");
+      current.style.display = "none";
+    }, 280);
+  }
+  next.style.display = "block";
+  next.classList.remove(
+    "slide-out-left",
+    "slide-out-right",
+    "slide-in-left",
+    "slide-in-right"
+  );
+  next.classList.add(goRight ? "slide-in-right" : "slide-in-left");
+  setTimeout(() => {
+    next.classList.remove("slide-in-left", "slide-in-right");
+    next.classList.add("active");
+    next.style.display = "";
+  }, 280);
+  currentPageGroup = newGroup;
+  document.querySelectorAll(".tab-btn").forEach(b => {
+    b.classList.remove("active");
+  });
+  const topBtn = btn?.closest(".tab-dropdown")?.querySelector(".tab-btn") || btn;
+  topBtn?.classList.add("active");
+  document.querySelectorAll(".tab-dropdown").forEach(d => {
+    d.classList.remove("open");
+  });
+  if (pageId === "pageTraining") {
+    initTrainingVideosOnce();
+  }
+  if (pageId === "pageTeam") {
+    initTeamGroupMembersOnce().catch(console.error);
+  }
+  if (pageId === "pageMapDraw") {
+    loadMapsCached().catch(console.error);
+  }
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
   document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
   btn.addEventListener("click", e => {

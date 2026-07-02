@@ -2397,10 +2397,19 @@ function showPage(pageId, btn) {
     current.classList.remove("active");
     current.classList.add(goRight ? "slide-out-left" : "slide-out-right");
     setTimeout(() => {
-      current.classList.remove("slide-out-left", "slide-out-right");
-      current.style.display = "none";
-    }, 280);
-  }
+  document.querySelectorAll(".page").forEach(p => {
+    p.classList.remove(
+      "active",
+      "slide-out-left",
+      "slide-out-right",
+      "slide-in-left",
+      "slide-in-right"
+    );
+    p.style.display = "none";
+  });
+  next.classList.add("active");
+  next.style.display = "";
+}, 200);
   next.style.display = "block";
   next.classList.remove(
     "slide-out-left",

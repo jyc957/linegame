@@ -2638,14 +2638,14 @@ document.addEventListener("touchmove", (e) => {
   const isAtLastPage = index === pages.length - 1;
   if (diffX > 80 && isAtFirstPage) {
     edgeSwipeLocked = true;
-    showToast("已經是第一頁啦", { type: "info" });
+    showToast("已經是第一頁啦~", { type: "info" });
     resetCurrentSwipeStyle(current);
     clearSwipePreview();
     return;
   }
   if (diffX < -80 && isAtLastPage) {
     edgeSwipeLocked = true;
-    showToast("已經到底啦 別頂了♥人家受不了♥", { type: "info" });
+    showToast("已經到底啦~", { type: "info" });
     resetCurrentSwipeStyle(current);
     clearSwipePreview();
     return;

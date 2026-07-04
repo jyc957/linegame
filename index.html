@@ -1901,7 +1901,6 @@ button,
     維修模式
     <b id="maintenanceStatus">OFF</b>
   </span>
-
   <label class="switch">
     <input
       type="checkbox"
@@ -1944,7 +1943,6 @@ button,
   </div>
 </div>
   </div>
-  
   <div id="pageScoreInput" class="page">
   <div class="section admin-only" id="adminScorePanel">
   <div class="top-bar">
@@ -2536,6 +2534,7 @@ let swipeStartY = 0;
 let swipeCurrentX = 0;
 let isDraggingPage = false;
 let previewPage = null;
+let edgeToastShown = false;
 document.addEventListener("touchstart", (e) => {
   if (e.touches.length !== 1) return;
   if (e.target.closest("input, textarea, select, button, .modal, .tab-menu")) return;
@@ -2596,21 +2595,49 @@ document.addEventListener("touchend", () => {
   const current = document.querySelector(".page.active");
   if (!current) return;
   const pages = getSwipePages();
-  const index = pages.indexOf(current.id);
-  let nextPageId = null;
-if (diffX < -80) {
-  if (index < pages.length - 1) {
-    nextPageId = pages[index + 1];
-  } else {
-    showToast("已經到底啦 別頂了♥", { type: "info" });
+const index = pages.indexOf(current.id);
+const isAtFirstPage = index === 0;
+const isAtLastPage = index === pages.length - 1;
+/* 已經在第一頁，還繼續往右滑 */
+if (!edgeToastShown && diffX > 80 && isAtFirstPage) {
+  edgeToastShown = true;
+  showToast("已經是第一頁啦", { type: "info" });
+  current.style.transition = "transform .18s ease, opacity .18s ease";
+  current.style.transform = "translateX(0)";
+  current.style.opacity = "1";
+  if (previewPage) {
+    previewPage.classList.remove("swipe-preview");
+    previewPage.style.transition = "";
+    previewPage.style.transform = "";
+    previewPage.style.opacity = "";
+    previewPage.style.top = "";
+    previewPage = null;
   }
+  return;
 }
-if (diffX > 80) {
-  if (index > 0) {
-    nextPageId = pages[index - 1];
-  } else {
-    showToast("已經到頭啦 別滑了", { type: "info" });
+/* 已經在最後一頁，還繼續往左滑 */
+if (!edgeToastShown && diffX < -80 && isAtLastPage) {
+  edgeToastShown = true;
+  showToast("已經到底啦 別頂了♥", { type: "info" });
+  current.style.transition = "transform .18s ease, opacity .18s ease";
+  current.style.transform = "translateX(0)";
+  current.style.opacity = "1";
+  if (previewPage) {
+    previewPage.classList.remove("swipe-preview");
+    previewPage.style.transition = "";
+    previewPage.style.transform = "";
+    previewPage.style.opacity = "";
+    previewPage.style.top = "";
+    previewPage = null;
   }
+  return;
+}
+let previewId = null;
+if (diffX < -80 && index < pages.length - 1) {
+  nextPageId = pages[index + 1];
+}
+if (diffX > 80 && index > 0) {
+  nextPageId = pages[index - 1];
 }
   current.style.transition = "transform .22s ease, opacity .22s ease";
   if (nextPageId) {
@@ -2646,6 +2673,7 @@ if (diffX > 80) {
   swipeStartY = 0;
   swipeCurrentX = 0;
   isDraggingPage = false;
+  edgeToastShown = false;
 }, { passive: true });
   document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
   btn.addEventListener("click", e => {

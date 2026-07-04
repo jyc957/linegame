@@ -2598,12 +2598,20 @@ document.addEventListener("touchend", () => {
   const pages = getSwipePages();
   const index = pages.indexOf(current.id);
   let nextPageId = null;
-  if (diffX < -80 && index < pages.length - 1) {
+if (diffX < -80) {
+  if (index < pages.length - 1) {
     nextPageId = pages[index + 1];
+  } else {
+    showToast("已經到底啦 別頂了♥", { type: "info" });
   }
-  if (diffX > 80 && index > 0) {
+}
+if (diffX > 80) {
+  if (index > 0) {
     nextPageId = pages[index - 1];
+  } else {
+    showToast("已經到頭啦 別滑了", { type: "info" });
   }
+}
   current.style.transition = "transform .22s ease, opacity .22s ease";
   if (nextPageId) {
     current.style.transform = diffX < 0 ? "translateX(-130px)" : "translateX(130px)";

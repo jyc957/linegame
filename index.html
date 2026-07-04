@@ -2803,11 +2803,9 @@ window.addEventListener("keydown", (e) => {
 function showError(msg, title="發生錯誤") { showModal(msg, { title, type:"error" }); }
 function showSuccess(msg, title="成功") { showModal(msg, { title, type:"success" }); }
 function showInfo(msg, title="提示") { showModal(msg, { title, type:"info" }); }
-
-    const ADMIN_PASSWORD = "********";
+/*----------------------------------------*/const ADMIN_PASSWORD = "********";/*--------------------------------------*/
 let isAdminMode = false;
 let isPickScoreTargetMode = false;
-    
 function setAdminMode(on) {
   isAdminMode = on;
   document.body.classList.toggle("admin-mode", on);
@@ -2819,20 +2817,27 @@ function setAdminMode(on) {
 const teamGroupPanel = document.getElementById("teamGroupPanel");
 teamGroupPanel?.classList.toggle("show", on);
   if (!on) {
-    isPickScoreTargetMode = false;
-  }
-  updatePickScoreTargetUI();
+  isPickScoreTargetMode = false;
+  const adminOnlyPages = [
+    "pageAdminAnnouncement",
+    "pageTeam",
+    "pageScoreInput"
+  ];
+  const currentPage = document.querySelector(".page.active");
 
+  if (currentPage && adminOnlyPages.includes(currentPage.id)) {
+    showPage("pageRanking", document.querySelector('[onclick*="pageRanking"]'));
+  }
+}
+  updatePickScoreTargetUI();
   loadAll().catch(console.error);
   loadRanking().catch(console.error);
-
   if (on) {
     showSuccess("已進入管理員模式");
   } else {
     showInfo("已退出管理員模式");
   }
 }
-
 function askAdminPassword() {
   openAdminPasswordModal();
 }

@@ -1747,19 +1747,33 @@ tab-dropdown{
         transform:translateX(0);
     }
 }
-/* ===== RWD 自適應整理 ===== */
+.page.swipe-preview{
+  display: block !important;
+  position: fixed;
+  left: 50%;
+  top: 0;
+  width: min(100%, 900px);
+  max-width: 100%;
+  transform: translateX(100%);
+  opacity: 0.85;
+  z-index: 10;
+  pointer-events: none;
+}
 
+.page.active{
+  position: relative;
+  z-index: 20;
+}
+/* ===== RWD 自適應整理 ===== */
 /* 全站尺寸保護 */
 * {
   box-sizing: border-box;
 }
-
 html, body {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
 }
-
 /* 主內容：手機滿版、平板/電腦置中 */
 body {
   width: 100%;
@@ -1767,30 +1781,25 @@ body {
   margin: 0 auto;
   padding: clamp(10px, 3vw, 20px);
 }
-
 /* 標題自適應 */
 h1 {
   font-size: clamp(22px, 5vw, 32px);
 }
-
 h2 {
   font-size: clamp(17px, 3.5vw, 22px);
 }
-
 /* 功能白色區塊 */
 .section {
   width: 100%;
   padding: clamp(12px, 3vw, 20px);
   border-radius: clamp(10px, 2vw, 16px);
 }
-
 /* 圖片、影片不超出 */
 img,
 video {
   max-width: 100%;
   height: auto;
 }
-
 /* 輸入框與選單 */
 input,
 select,
@@ -1798,49 +1807,40 @@ textarea {
   max-width: 100%;
   font-size: clamp(15px, 3.5vw, 18px);
 }
-
 /* 按鈕自適應 */
 button,
 .btn {
   font-size: clamp(13px, 3.2vw, 16px);
   padding: clamp(7px, 2vw, 10px) clamp(9px, 3vw, 14px);
 }
-
 /* 頁籤自適應 */
 .tab-btn {
   font-size: clamp(14px, 3.5vw, 22px);
   padding: clamp(10px, 2.8vw, 14px) 0;
 }
-
 /* 一般模式：4格 */
 .tab-bar {
   grid-template-columns: repeat(4, 1fr);
 }
-
 /* 管理模式：5格 */
 .tab-bar.admin-tabs {
   grid-template-columns: repeat(5, 1fr);
 }
-
 /* 小手機 */
 @media (max-width: 420px) {
   .tab-btn {
     font-size: 16px;
   }
-
   .tab-btn::after {
     height: 3px;
   }
-
   .rank-row {
     gap: 6px;
   }
-
   .rank-pos {
     min-width: 42px;
     font-size: 13px;
   }
-
   .rank-name,
   .rank-time {
     font-size: 14px;
@@ -2592,6 +2592,7 @@ let swipeStartX = 0;
 let swipeStartY = 0;
 let swipeCurrentX = 0;
 let isDraggingPage = false;
+let previewPage = null;
 document.addEventListener("touchstart", (e) => {
   if (e.touches.length !== 1) return;
   if (e.target.closest("input, textarea, select, button, .modal, .tab-menu")) return;
@@ -2613,11 +2614,37 @@ document.addEventListener("touchmove", (e) => {
   }
   swipeCurrentX = x;
   const current = document.querySelector(".page.active");
-  if (!current) return;
-  const move = Math.max(-130, Math.min(130, diffX));
-  current.style.transition = "none";
-  current.style.transform = `translateX(${move}px)`;
-  current.style.opacity = `${1 - Math.min(Math.abs(move) / 260, 0.45)}`;
+if (!current) return;
+
+const pages = getSwipePages();
+const index = pages.indexOf(current.id);
+let previewId = null;
+if (diffX < 0 && index < pages.length - 1) {
+  previewId = pages[index + 1];
+}
+if (diffX > 0 && index > 0) {
+  previewId = pages[index - 1];
+}
+if (previewId) {
+  previewPage = document.getElementById(previewId);
+
+  if (previewPage && !previewPage.classList.contains("swipe-preview")) {
+    previewPage.classList.add("swipe-preview");
+  }
+}
+const move = Math.max(-160, Math.min(160, diffX));
+current.style.transition = "none";
+current.style.transform = `translateX(${move}px)`;
+current.style.opacity = `${1 - Math.min(Math.abs(move) / 260, 0.35)}`;
+if (previewPage) {
+  previewPage.style.transition = "none";
+  if (diffX < 0) {
+    previewPage.style.transform = `translateX(calc(-50% + ${window.innerWidth + move}px))`;
+  } else {
+    previewPage.style.transform = `translateX(calc(-50% + ${-window.innerWidth + move}px))`;
+  }
+  previewPage.style.opacity = `${0.4 + Math.min(Math.abs(move) / 160, 0.6)}`;
+}
 }, { passive: true });
 document.addEventListener("touchend", () => {
   if (!swipeStartX) return;
@@ -2655,6 +2682,13 @@ document.addEventListener("touchend", () => {
       current.style.opacity = "";
     }, 220);
   }
+  if (previewPage) {
+  previewPage.classList.remove("swipe-preview");
+  previewPage.style.transition = "";
+  previewPage.style.transform = "";
+  previewPage.style.opacity = "";
+  previewPage = null;
+}
   swipeStartX = 0;
   swipeStartY = 0;
   swipeCurrentX = 0;

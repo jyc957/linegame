@@ -2588,7 +2588,7 @@ document.addEventListener("touchmove", (e) => {
   }
   if (diffX < -80 && isAtLastPage) {
     edgeSwipeLocked = true;
-    showToast("已經到底啦", { type: "info" });
+    showToast("已經到底啦 別頂了♥人家受不了♥", { type: "info" });
     resetCurrentSwipeStyle(current);
     clearSwipePreview();
     return;
@@ -2667,92 +2667,6 @@ document.addEventListener("touchend", () => {
   swipeCurrentX = 0;
   isDraggingPage = false;
   edgeSwipeLocked = false;
-}, { passive: true });
-document.addEventListener("touchend", () => {
-  if (!swipeStartX) return;
-  const diffX = swipeCurrentX - swipeStartX;
-  const current = document.querySelector(".page.active");
-  if (!current) return;
-  const pages = getSwipePages();
-const index = pages.indexOf(current.id);
-const isAtFirstPage = index === 0;
-const isAtLastPage = index === pages.length - 1;
-/* 已經在第一頁，還繼續往右滑 */
-if (!edgeToastShown && diffX > 80 && isAtFirstPage) {
-  edgeToastShown = true;
-  showToast("已經是第一頁啦", { type: "info" });
-  current.style.transition = "transform .18s ease, opacity .18s ease";
-  current.style.transform = "translateX(0)";
-  current.style.opacity = "1";
-  if (previewPage) {
-    previewPage.classList.remove("swipe-preview");
-    previewPage.style.transition = "";
-    previewPage.style.transform = "";
-    previewPage.style.opacity = "";
-    previewPage.style.top = "";
-    previewPage = null;
-  }
-  return;
-}
-/* 已經在最後一頁，還繼續往左滑 */
-if (!edgeToastShown && diffX < -80 && isAtLastPage) {
-  edgeToastShown = true;
-  showToast("已經到底啦 別頂了♥", { type: "info" });
-  current.style.transition = "transform .18s ease, opacity .18s ease";
-  current.style.transform = "translateX(0)";
-  current.style.opacity = "1";
-  if (previewPage) {
-    previewPage.classList.remove("swipe-preview");
-    previewPage.style.transition = "";
-    previewPage.style.transform = "";
-    previewPage.style.opacity = "";
-    previewPage.style.top = "";
-    previewPage = null;
-  }
-  return;
-}
-let previewId = null;
-if (diffX < -80 && index < pages.length - 1) {
-  nextPageId = pages[index + 1];
-}
-if (diffX > 80 && index > 0) {
-  nextPageId = pages[index - 1];
-}
-  current.style.transition = "transform .22s ease, opacity .22s ease";
-  if (nextPageId) {
-    current.style.transform = diffX < 0 ? "translateX(-130px)" : "translateX(130px)";
-    current.style.opacity = "0";
-    setTimeout(() => {
-      current.style.transition = "";
-      current.style.transform = "";
-      current.style.opacity = "";
-      showPage(
-        nextPageId,
-        document.querySelector(`[onclick*="${nextPageId}"]`)
-      );
-    }, 160);
-  } else {
-    current.style.transform = "translateX(0)";
-    current.style.opacity = "1";
-    setTimeout(() => {
-      current.style.transition = "";
-      current.style.transform = "";
-      current.style.opacity = "";
-    }, 220);
-  }
-  if (previewPage) {
-  previewPage.classList.remove("swipe-preview");
-  previewPage.style.transition = "";
-  previewPage.style.transform = "";
-  previewPage.style.opacity = "";
-  previewPage.style.top = "";
-  previewPage = null;
-}
-  swipeStartX = 0;
-  swipeStartY = 0;
-  swipeCurrentX = 0;
-  isDraggingPage = false;
-  edgeToastShown = false;
 }, { passive: true });
   document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
   btn.addEventListener("click", e => {

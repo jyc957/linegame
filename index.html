@@ -1801,6 +1801,63 @@ button,
     max-width: 900px;
   }
 }
+/* ===== 地圖抽籤新版排版 ===== */
+.map-header {
+  margin-bottom: 12px;
+}
+.map-main-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+.map-main-row input,
+.map-main-row button {
+  width: 100%;
+  margin-top: 0;
+}
+.map-main-row input {
+  height: 48px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 900;
+}
+.map-sub-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.map-sub-row button {
+  width: 100%;
+}
+.map-link-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.map-link-row button {
+  margin-top: 0;
+}
+.map-option-row {
+  margin-top: 10px;
+}
+/* 小手機 */
+@media (max-width: 420px) {
+  .map-main-row {
+    grid-template-columns: 72px 1fr;
+  }
+  .map-main-row input {
+    font-size: 20px;
+  }
+  .map-sub-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .map-link-row {
+    justify-content: flex-start;
+  }
+}
  </style>
 </head>
 <body>
@@ -2103,47 +2160,47 @@ button,
   <div class="card">
     <!-- 收合時只顯示這一行 -->
     <div class="panel-head">
-    <div class="map-header">
-    <h2>🗺️ 地圖抽籤</h2>
-    <button id="copyMapResultBtn"
-            class="btn"
-            onclick="copyMapResult()">
-        📋 複製抽籤結果
-    </button>
+    <<div class="map-header">
+  <h2>🗺️ 地圖抽籤</h2>
 </div>
+<div id="mapPanel">
+  <div class="map-actions">
+
+    <div class="map-main-row">
+      <input
+        id="mapCountInput"
+        type="number"
+        min="1"
+        max="104"
+        value="8"
+        inputmode="numeric"
+        placeholder="張數"
+      >
+      <button id="drawMapBtn" class="btn">🎲 開始抽</button>
     </div>
-    <!-- 展開後才顯示：抽幾張/按鈕/總數/結果 -->
-    <div id="mapPanel">
-      <div class="map-actions">
-        <div class="map-draw-row">
-  <input
-    id="mapCountInput"
-    type="number"
-    min="1"
-    max="104"
-    value="8"
-    inputmode="numeric"
-    placeholder="張數"
-  >
-  <button id="drawMapBtn" class="btn">🎲開始抽</button>
-  <button id="resetMapBtn" class="btn">♻️重新整理</button>
-</div>
-<div class="map-option-row">
-  <label class="skip-anim">
-    <input type="checkbox" id="skipAnimation">
-    跳過動畫
-  </label>
-  <label class="skip-anim">
-    <input type="checkbox" id="hardMode">
-    ⚠高難度模式⚠
-  </label>
-  <label class="skip-anim">
-    <input type="checkbox" id="shuffleOrder">
-    🔀隨機排序
-</label>
-  <button type="button" id="toggleCustomMapPool" class="btn">自訂圖池</button>
-  <span id="openMapHistory" class="history-link">地圖抽籤歷史</span>
-</div>
+    <div class="map-sub-row">
+      <button id="copyMapResultBtn" class="btn" onclick="copyMapResult()">📋 複製結果</button>
+      <button id="resetMapBtn" class="btn">♻️ 重新整理</button>
+    </div>
+
+    <div class="map-option-row">
+      <label class="skip-anim">
+        <input type="checkbox" id="skipAnimation">
+        跳過動畫
+      </label>
+      <label class="skip-anim">
+        <input type="checkbox" id="hardMode">
+        ⚠高難度模式⚠
+      </label>
+      <label class="skip-anim">
+        <input type="checkbox" id="shuffleOrder">
+        🔀隨機排序
+      </label>
+    </div>
+    <div class="map-link-row">
+      <button type="button" id="toggleCustomMapPool" class="btn">自訂圖池</button>
+      <span id="openMapHistory" class="history-link">地圖抽籤歷史</span>
+    </div>
     <div id="mapInfo" class="map-info">
         目前共有 <b id="mapTotalCount">0</b> 張地圖
       </div>

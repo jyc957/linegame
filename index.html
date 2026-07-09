@@ -1699,7 +1699,7 @@ tab-dropdown{
   max-width:100%;
   top:0;
   margin-top:0;
-  opacity:.9;
+  opacity:.1;
   z-index:15;
   pointer-events:none;
 }
@@ -2530,10 +2530,38 @@ function getSwipePages() {
     "pageTraining"
   ];
 }
-function showPage(pageId, btn) {
+function showPage(pageId, btn, options = {}) {
+  const instant = options.instant === true;
   const current = document.querySelector(".page.active");
   const next = document.getElementById(pageId);
   if (!next || current === next) return;
+    if (instant) {
+    document.querySelectorAll(".page").forEach(p => {
+      p.classList.remove(
+        "active",
+        "slide-out-left",
+        "slide-out-right",
+        "slide-in-left",
+        "slide-in-right"
+      );
+      p.style.display = "none";
+      p.style.transition = "";
+      p.style.transform = "";
+      p.style.opacity = "";
+    });
+    next.classList.add("active");
+    next.style.display = "";
+    currentPageGroup = pageGroup[pageId] ?? currentPageGroup;
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    const topBtn = btn?.closest(".tab-dropdown")?.querySelector(".tab-btn") || btn;
+    topBtn?.classList.add("active");
+    document.querySelectorAll(".tab-dropdown").forEach(d => d.classList.remove("open"));
+    if (pageId === "pageTraining") initTrainingVideosOnce();
+    if (pageId === "pageTeam") initTeamGroupMembersOnce().catch(console.error);
+    if (pageId === "pageMapDraw") loadMapsCached().catch(console.error);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
   const newGroup = pageGroup[pageId] ?? currentPageGroup;
   const goRight = newGroup > currentPageGroup;
   if (current) {
@@ -2668,7 +2696,6 @@ document.addEventListener("touchmove", (e) => {
   const move = Math.max(-160, Math.min(160, diffX));
   current.style.transition = "none";
   current.style.transform = `translateX(${move}px)`;
-  current.style.opacity = `${1 - Math.min(Math.abs(move) / 260, 0.35)}`;
   if (previewPage) {
     previewPage.style.transition = "none";
     if (diffX < 0) {
@@ -2676,7 +2703,7 @@ document.addEventListener("touchmove", (e) => {
     } else {
       previewPage.style.transform = `translateX(calc(-50% + ${-window.innerWidth + move}px))`;
     }
-    previewPage.style.opacity = `${0.4 + Math.min(Math.abs(move) / 160, 0.6)}`;
+    previewPage.style.opacity = "1";
   }
 }, { passive: true });
 document.addEventListener("touchend", () => {
@@ -2695,30 +2722,46 @@ document.addEventListener("touchend", () => {
       nextPageId = pages[index - 1];
     }
   }
-  current.style.transition = "transform .22s ease, opacity .22s ease";
+  current.style.transition = "transform .22s ease";
+  if (previewPage) {
+    previewPage.style.transition = "transform .22s ease";
+    previewPage.style.opacity = "1";
+  }
   if (nextPageId) {
-    current.style.transform = diffX < 0 ? "translateX(-130px)" : "translateX(130px)";
-    current.style.opacity = "0";
+    const goNext = diffX < 0;
+    current.style.transform = goNext
+      ? "translateX(-100%)"
+      : "translateX(100%)";
+    if (previewPage) {
+      previewPage.style.transform = "translateX(-50%)";
+    }
     setTimeout(() => {
       current.style.transition = "";
       current.style.transform = "";
-      current.style.opacity = "";
+
       showPage(
         nextPageId,
-        document.querySelector(`[onclick*="${nextPageId}"]`)
+        document.querySelector(`[onclick*="${nextPageId}"]`),
+        { instant: true }
       );
-    }, 160);
+
+      clearSwipePreview();
+    }, 220);
+
   } else {
     current.style.transform = "translateX(0)";
-    current.style.opacity = "1";
-
+    if (previewPage) {
+      const goNext = diffX < 0;
+      previewPage.style.transform = goNext
+        ? `translateX(calc(-50% + ${window.innerWidth}px))`
+        : `translateX(calc(-50% - ${window.innerWidth}px))`;
+    }
     setTimeout(() => {
       current.style.transition = "";
       current.style.transform = "";
-      current.style.opacity = "";
+      clearSwipePreview();
     }, 220);
   }
-  clearSwipePreview();
   swipeStartX = 0;
   swipeStartY = 0;
   swipeCurrentX = 0;
@@ -2764,12 +2807,9 @@ function showModal(msg, { title = "提示", type = "info", html = false } = {}) 
     uiModalIcon.textContent = "i";
     uiModalIcon.style.background = "#007aff";
   }
-
   uiModal.classList.add("open");
   uiModal.setAttribute("aria-hidden", "false");
-
   document.body.style.overflow = "hidden";
-
   setTimeout(() => uiModalOk.focus(), 0);
 }
 const adminPwdModal = document.getElementById("adminPwdModal");

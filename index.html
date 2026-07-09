@@ -4586,7 +4586,17 @@ bar?.classList.add("done");
   loader.classList.add("hide");
   setTimeout(() => loader.remove(), 600);
 }
+window.addEventListener("error", () => {
+  setTimeout(() => {
+    hidePageLoader();
+  }, 500);
+});
 
+window.addEventListener("unhandledrejection", () => {
+  setTimeout(() => {
+    hidePageLoader();
+  }, 500);
+});
 startFakeLoaderProgress();
 setTimeout(() => {
   if (loaderProgress < 100) {

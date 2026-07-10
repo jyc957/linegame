@@ -1895,6 +1895,9 @@ body.is-page-swiping {
   user-select: none;
   -webkit-user-select: none;
 }
+body {
+  position: relative;
+}
  </style>
 </head>
 <body>
@@ -5515,13 +5518,6 @@ function prepareAllPageLayouts() {
   });
 }
 async function startAllSystems() {
-  try {
-    prepareAllPageLayouts();
-    const blocked = await checkMaintenanceMode();
-    if (blocked) {
-      finishLoaderProgress();
-      return;
-    }
   try {
     const blocked = await checkMaintenanceMode();
     if (blocked) {

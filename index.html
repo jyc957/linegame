@@ -1858,6 +1858,23 @@ button,
     justify-content: flex-start;
   }
 }
+  /* ===== 手機左右滑動效能優化 ===== */
+.page {
+  width: 100%;
+  max-width: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.page.active,
+.page.swipe-preview {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+body.is-page-swiping {
+  user-select: none;
+  -webkit-user-select: none;
+}
  </style>
 </head>
 <body>
@@ -2583,13 +2600,15 @@ function showPage(pageId, btn, options = {}) {
   setTimeout(() => {
   document.querySelectorAll(".page").forEach(p => {
     p.classList.remove(
-      "active",
-      "slide-out-left",
-      "slide-out-right",
-      "slide-in-left",
-      "slide-in-right"
-    );
-    p.style.display = "none";
+  "active",
+  "slide-out-left",
+  "slide-out-right",
+  "slide-in-left",
+  "slide-in-right",
+  "swipe-preview"
+);
+p.style.top = "";
+p.style.display = "none";
   });
   next.classList.add("active");
   next.style.display = "";
@@ -2620,6 +2639,25 @@ let swipeCurrentX = 0;
 let isDraggingPage = false;
 let previewPage = null;
 let edgeSwipeLocked = false;
+/* 預先保存目前畫面寬度，滑動途中不再重複讀取 */
+let swipeViewportWidth =
+  window.visualViewport?.width || document.documentElement.clientWidth;
+
+function updateSwipeViewportWidth() {
+  swipeViewportWidth =
+    window.visualViewport?.width || document.documentElement.clientWidth;
+}
+window.addEventListener("resize", updateSwipeViewportWidth, {
+  passive: true
+});
+window.addEventListener("orientationchange", () => {
+  setTimeout(updateSwipeViewportWidth, 150);
+});
+window.visualViewport?.addEventListener(
+  "resize",
+  updateSwipeViewportWidth,
+  { passive: true }
+);
 function clearSwipePreview() {
   if (previewPage) {
     previewPage.classList.remove("swipe-preview");
@@ -2656,6 +2694,7 @@ document.addEventListener("touchmove", (e) => {
     if (Math.abs(diffY) > Math.abs(diffX)) return;
     if (Math.abs(diffX) < 12) return;
     isDraggingPage = true;
+    document.body.classList.add("is-page-swiping");
   }
   swipeCurrentX = x;
   const current = document.querySelector(".page.active");
@@ -2693,16 +2732,18 @@ document.addEventListener("touchmove", (e) => {
       previewPage.style.top = `${currentRect.top}px`;
     }
   }
-  const move = Math.max(-160, Math.min(160, diffX));
+  const move = diffX;
   current.style.transition = "none";
-  current.style.transform = `translateX(${move}px)`;
+  current.style.transform = `translate3d(${move}px, 0, 0)`;
   if (previewPage) {
     previewPage.style.transition = "none";
     if (diffX < 0) {
-      previewPage.style.transform = `translateX(calc(-50% + ${window.innerWidth + move}px))`;
-    } else {
-      previewPage.style.transform = `translateX(calc(-50% + ${-window.innerWidth + move}px))`;
-    }
+  previewPage.style.transform =
+    `translate3d(calc(-50% + ${swipeViewportWidth + move}px), 0, 0)`;
+} else {
+  previewPage.style.transform =
+    `translate3d(calc(-50% + ${-swipeViewportWidth + move}px), 0, 0)`;
+}
     previewPage.style.opacity = "1";
   }
 }, { passive: true });
@@ -2730,31 +2771,28 @@ document.addEventListener("touchend", () => {
   if (nextPageId) {
     const goNext = diffX < 0;
     current.style.transform = goNext
-      ? "translateX(-100%)"
-      : "translateX(100%)";
-    if (previewPage) {
-      previewPage.style.transform = "translateX(-50%)";
-    }
+  ? "translate3d(-100%, 0, 0)"
+  : "translate3d(100%, 0, 0)";
+if (previewPage) {
+  previewPage.style.transform = "translate3d(-50%, 0, 0)";
+}
     setTimeout(() => {
       current.style.transition = "";
       current.style.transform = "";
-
       showPage(
         nextPageId,
         document.querySelector(`[onclick*="${nextPageId}"]`),
         { instant: true }
       );
-
       clearSwipePreview();
     }, 220);
-
   } else {
-    current.style.transform = "translateX(0)";
+    current.style.transform = "translate3d(0, 0, 0)";
     if (previewPage) {
       const goNext = diffX < 0;
       previewPage.style.transform = goNext
-        ? `translateX(calc(-50% + ${window.innerWidth}px))`
-        : `translateX(calc(-50% - ${window.innerWidth}px))`;
+  ? `translate3d(calc(-50% + ${swipeViewportWidth}px), 0, 0)`
+  : `translate3d(calc(-50% - ${swipeViewportWidth}px), 0, 0)`;
     }
     setTimeout(() => {
       current.style.transition = "";
@@ -2767,6 +2805,7 @@ document.addEventListener("touchend", () => {
   swipeCurrentX = 0;
   isDraggingPage = false;
   edgeSwipeLocked = false;
+  document.body.classList.remove("is-page-swiping");
 }, { passive: true });
   document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
   btn.addEventListener("click", e => {

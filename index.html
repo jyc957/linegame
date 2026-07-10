@@ -1625,17 +1625,32 @@ tab-dropdown{
   }
 }
 /* ===== Page 動畫 ===== */
-.page{
-    display:none;
-    opacity:0;
-    transform:translateX(40px);
+.page {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  max-width: 100%;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(40px, 0, 0);
+  /* 先讓瀏覽器計算好各頁排版 */
+  contain: layout paint;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
-.page.active{
-    display:block;
-    opacity:1;
-    transform:translateX(0);
-    animation:pageSlideIn .20s ease;
-    margin-top:10px;
+.page.active {
+  position: relative;
+  left: auto;
+  top: auto;
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate3d(0, 0, 0);
+  margin-top: 10px;
+  animation: pageSlideIn .20s ease;
 }
 .page.slide-out-left{
     animation:pageSlideOutLeft .20s ease forwards;
@@ -1691,17 +1706,21 @@ tab-dropdown{
         transform:translateX(0);
     }
 }
-.page.swipe-preview{
-  display:block !important;
-  position:fixed !important;
-  left:50%;
-  width:min(100vw, 900px);
-  max-width:100%;
-  top:0;
-  margin-top:0;
-  opacity:.1;
-  z-index:15;
-  pointer-events:none;
+.page.swipe-preview {
+  display: block !important;
+  position: fixed !important;
+  left: 50%;
+  width: min(100vw, 900px);
+  max-width: 100%;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: none;
+  margin-top: 0;
+  z-index: 15;
+  contain: layout paint;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .page.active{
   position:relative;
@@ -1723,6 +1742,7 @@ body {
   max-width: 760px;
   margin: 0 auto;
   padding: clamp(10px, 3vw, 20px);
+  position: relative;
 }
 /* 標題自適應 */
 h1 {
@@ -2554,20 +2574,22 @@ function showPage(pageId, btn, options = {}) {
   if (!next || current === next) return;
     if (instant) {
     document.querySelectorAll(".page").forEach(p => {
-      p.classList.remove(
-        "active",
-        "slide-out-left",
-        "slide-out-right",
-        "slide-in-left",
-        "slide-in-right"
-      );
-      p.style.display = "none";
-      p.style.transition = "";
-      p.style.transform = "";
-      p.style.opacity = "";
-    });
+  p.classList.remove(
+    "active",
+    "slide-out-left",
+    "slide-out-right",
+    "slide-in-left",
+    "slide-in-right",
+    "swipe-preview"
+  );
+  p.style.top = "";
+  p.style.left = "";
+  p.style.transition = "";
+  p.style.transform = "";
+  p.style.opacity = "";
+  p.style.visibility = "";
+});
     next.classList.add("active");
-    next.style.display = "";
     currentPageGroup = pageGroup[pageId] ?? currentPageGroup;
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
     const topBtn = btn?.closest(".tab-dropdown")?.querySelector(".tab-btn") || btn;
@@ -2586,10 +2608,8 @@ function showPage(pageId, btn, options = {}) {
     current.classList.add(goRight ? "slide-out-left" : "slide-out-right");
     setTimeout(() => {
       current.classList.remove("slide-out-left", "slide-out-right");
-      current.style.display = "none";
     }, 280);
   }
-  next.style.display = "block";
   next.classList.remove(
     "slide-out-left",
     "slide-out-right",
@@ -2599,19 +2619,22 @@ function showPage(pageId, btn, options = {}) {
   next.classList.add(goRight ? "slide-in-right" : "slide-in-left");
   setTimeout(() => {
   document.querySelectorAll(".page").forEach(p => {
-    p.classList.remove(
-  "active",
-  "slide-out-left",
-  "slide-out-right",
-  "slide-in-left",
-  "slide-in-right",
-  "swipe-preview"
-);
-p.style.top = "";
-p.style.display = "none";
-  });
+  p.classList.remove(
+    "active",
+    "slide-out-left",
+    "slide-out-right",
+    "slide-in-left",
+    "slide-in-right",
+    "swipe-preview"
+  );
+  p.style.transition = "";
+  p.style.transform = "";
+  p.style.opacity = "";
+  p.style.visibility = "";
+  p.style.top = "";
+  p.style.left = "";
+});
   next.classList.add("active");
-  next.style.display = "";
 }, 200);
   currentPageGroup = newGroup;
   document.querySelectorAll(".tab-btn").forEach(b => {
@@ -5483,7 +5506,22 @@ document
     console.error("loadMaps 失敗：", e);
   });
 }
+function prepareAllPageLayouts() {
+  const pages = document.querySelectorAll(".page");
+  pages.forEach(page => {
+    /* 強制瀏覽器先完成寬度、文字換行與卡片排版 */
+    void page.offsetWidth;
+    void page.offsetHeight;
+  });
+}
 async function startAllSystems() {
+  try {
+    prepareAllPageLayouts();
+    const blocked = await checkMaintenanceMode();
+    if (blocked) {
+      finishLoaderProgress();
+      return;
+    }
   try {
     const blocked = await checkMaintenanceMode();
     if (blocked) {

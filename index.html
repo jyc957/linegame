@@ -2694,6 +2694,69 @@ function clearSwipePreview() {
     previewPage = null;
   }
 }
+function finishSwipePageChange(current, next, nextPageId) {
+  if (!current || !next || !nextPageId) return;
+  // 1. 目前頁直接取消 active
+  current.classList.remove(
+    "active",
+    "slide-out-left",
+    "slide-out-right",
+    "slide-in-left",
+    "slide-in-right",
+    "swipe-preview"
+  );
+  current.style.transition = "";
+  current.style.transform = "";
+  current.style.opacity = "";
+  current.style.visibility = "";
+  current.style.top = "";
+  current.style.left = "";
+  // 2. 下一頁直接從 preview 升格成 active
+  next.classList.remove(
+    "swipe-preview",
+    "slide-out-left",
+    "slide-out-right",
+    "slide-in-left",
+    "slide-in-right"
+  );
+  next.classList.add("active");
+  next.style.transition = "";
+  next.style.transform = "";
+  next.style.opacity = "";
+  next.style.visibility = "";
+  next.style.top = "";
+  next.style.left = "";
+  // 3. 更新目前頁面群組
+  currentPageGroup = pageGroup[nextPageId] ?? currentPageGroup;
+  // 4. 更新上方按鈕 active 狀態
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+  const targetBtn =
+    document.querySelector(`[onclick*="${nextPageId}"]`);
+  const topBtn =
+    targetBtn?.closest(".tab-dropdown")?.querySelector(".tab-btn")
+    || targetBtn;
+  topBtn?.classList.add("active");
+  // 5. 關閉下拉選單
+  document.querySelectorAll(".tab-dropdown").forEach(d => {
+    d.classList.remove("open");
+  });
+  // 6. 保留原本各頁初始化功能
+  if (nextPageId === "pageTraining") {
+    initTrainingVideosOnce();
+  }
+  if (nextPageId === "pageTeam") {
+    initTeamGroupMembersOnce().catch(console.error);
+  }
+  if (nextPageId === "pageMapDraw") {
+    loadMapsCached().catch(console.error);
+  }
+  // 7. 清除 preview 參考
+  previewPage = null;
+  // 8. 滑動換頁直接回頂端，不做 smooth
+  window.scrollTo(0, 0);
+}
 function resetCurrentSwipeStyle(current) {
   if (!current) return;
   current.style.transition = "transform .18s ease, opacity .18s ease";
@@ -2774,10 +2837,19 @@ document.addEventListener("touchmove", (e) => {
   }
 }, { passive: true });
 document.addEventListener("touchend", () => {
+document.addEventListener("touchend", () => {
   if (!swipeStartX) return;
   const diffX = swipeCurrentX - swipeStartX;
   const current = document.querySelector(".page.active");
-  if (!current) return;
+  if (!current) {
+    swipeStartX = 0;
+    swipeStartY = 0;
+    swipeCurrentX = 0;
+    isDraggingPage = false;
+    edgeSwipeLocked = false;
+    document.body.classList.remove("is-page-swiping");
+    return;
+  }
   const pages = getSwipePages();
   const index = pages.indexOf(current.id);
   let nextPageId = null;
@@ -2789,68 +2861,92 @@ document.addEventListener("touchend", () => {
       nextPageId = pages[index - 1];
     }
   }
-  current.style.transition = "transform .22s ease";
-  if (previewPage) {
-    previewPage.style.transition = "transform .22s ease";
-    previewPage.style.opacity = "1";
-  }
-  if (nextPageId) {
+  // =========================
+  // 確定換頁
+  // =========================
+  if (nextPageId && previewPage) {
+    const next = previewPage;
     const goNext = diffX < 0;
+    // 固定下一頁參考，避免動畫途中 previewPage 被改掉
+    const finishingPage = next;
+    current.style.transition =
+      "transform .22s cubic-bezier(.22,.61,.36,1)";
+    finishingPage.style.transition =
+      "transform .22s cubic-bezier(.22,.61,.36,1)";
     current.style.transform = goNext
-  ? "translate3d(-100%, 0, 0)"
-  : "translate3d(100%, 0, 0)";
-if (previewPage) {
-  previewPage.style.transform = "translate3d(-50%, 0, 0)";
-}
-    setTimeout(() => {
-      current.style.transition = "";
-      current.style.transform = "";
-      showPage(
-        nextPageId,
-        document.querySelector(`[onclick*="${nextPageId}"]`),
-        { instant: true }
+      ? `translate3d(-${swipeViewportWidth}px, 0, 0)`
+      : `translate3d(${swipeViewportWidth}px, 0, 0)`;
+    finishingPage.style.transform =
+      "translate3d(-50%, 0, 0)";
+    finishingPage.style.opacity = "1";
+    // 動畫完成後，直接把 preview 升格成 active
+    const onSwipeFinish = () => {
+      finishingPage.removeEventListener(
+        "transitionend",
+        onSwipeFinish
       );
-      clearSwipePreview();
-    }, 220);
-  } else {
-    current.style.transform = "translate3d(0, 0, 0)";
-    if (previewPage) {
-      const goNext = diffX < 0;
-      previewPage.style.transform = goNext
-  ? `translate3d(calc(-50% + ${swipeViewportWidth}px), 0, 0)`
-  : `translate3d(calc(-50% - ${swipeViewportWidth}px), 0, 0)`;
-    }
+      finishSwipePageChange(
+        current,
+        finishingPage,
+        nextPageId
+      );
+      swipeStartX = 0;
+      swipeStartY = 0;
+      swipeCurrentX = 0;
+      isDraggingPage = false;
+      edgeSwipeLocked = false;
+      document.body.classList.remove("is-page-swiping");
+    };
+    finishingPage.addEventListener(
+      "transitionend",
+      onSwipeFinish,
+      { once: true }
+    );
+    // 保險：某些手機 transitionend 偶爾不觸發
     setTimeout(() => {
-      current.style.transition = "";
-      current.style.transform = "";
-      clearSwipePreview();
-    }, 220);
+      if (document.body.classList.contains("is-page-swiping")) {
+        finishSwipePageChange(
+          current,
+          finishingPage,
+          nextPageId
+        );
+        swipeStartX = 0;
+        swipeStartY = 0;
+        swipeCurrentX = 0;
+        isDraggingPage = false;
+        edgeSwipeLocked = false;
+        document.body.classList.remove("is-page-swiping");
+      }
+    }, 280);
+    return;
   }
-  swipeStartX = 0;
-  swipeStartY = 0;
-  swipeCurrentX = 0;
-  isDraggingPage = false;
-  edgeSwipeLocked = false;
-  document.body.classList.remove("is-page-swiping");
-}, { passive: true });
-  document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
-  btn.addEventListener("click", e => {
-    const menu = btn.nextElementSibling;
-    const rect = btn.getBoundingClientRect();
-    document.querySelectorAll(".tab-dropdown").forEach(d => {
-      if (d !== btn.parentElement) d.classList.remove("open");
-    });
-    btn.parentElement.classList.toggle("open");
-    if (menu) {
-      menu.style.top = rect.bottom + "px";
-      menu.style.left = rect.left + "px";
-    }
-});
-});
-window.showPage = showPage;
-window.addEventListener("scroll", () => {document.querySelectorAll(".tab-dropdown").forEach(d => {
-    d.classList.remove("open");
-  });
+  // =========================
+  // 沒達到換頁門檻 → 彈回原位
+  // =========================
+  current.style.transition =
+    "transform .18s cubic-bezier(.22,.61,.36,1)";
+  current.style.transform =
+    "translate3d(0, 0, 0)";
+  if (previewPage) {
+    const returningPage = previewPage;
+    const goNext = diffX < 0;
+    returningPage.style.transition =
+      "transform .18s cubic-bezier(.22,.61,.36,1)";
+    returningPage.style.transform = goNext
+      ? `translate3d(calc(-50% + ${swipeViewportWidth}px), 0, 0)`
+      : `translate3d(calc(-50% - ${swipeViewportWidth}px), 0, 0)`;
+  }
+  setTimeout(() => {
+    current.style.transition = "";
+    current.style.transform = "";
+    clearSwipePreview();
+    swipeStartX = 0;
+    swipeStartY = 0;
+    swipeCurrentX = 0;
+    isDraggingPage = false;
+    edgeSwipeLocked = false;
+    document.body.classList.remove("is-page-swiping");
+  }, 190);
 }, { passive: true });
 function showModal(msg, { title = "提示", type = "info", html = false } = {}) {
   uiModalTitle.textContent = title;

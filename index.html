@@ -2837,7 +2837,6 @@ document.addEventListener("touchmove", (e) => {
   }
 }, { passive: true });
 document.addEventListener("touchend", () => {
-document.addEventListener("touchend", () => {
   if (!swipeStartX) return;
   const diffX = swipeCurrentX - swipeStartX;
   const current = document.querySelector(".page.active");

@@ -1625,32 +1625,17 @@ tab-dropdown{
   }
 }
 /* ===== Page 動畫 ===== */
-.page {
-  display: block;
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  max-width: 100%;
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate3d(40px, 0, 0);
-  /* 先讓瀏覽器計算好各頁排版 */
-  contain: layout paint;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+.page{
+    display:none;
+    opacity:0;
+    transform:translateX(40px);
 }
-.page.active {
-  position: relative;
-  left: auto;
-  top: auto;
-  visibility: visible;
-  opacity: 1;
-  pointer-events: auto;
-  transform: translate3d(0, 0, 0);
-  margin-top: 10px;
-  animation: pageSlideIn .20s ease;
+.page.active{
+    display:block;
+    opacity:1;
+    transform:translateX(0);
+    animation:pageSlideIn .20s ease;
+    margin-top:10px;
 }
 .page.slide-out-left{
     animation:pageSlideOutLeft .20s ease forwards;
@@ -1706,21 +1691,17 @@ tab-dropdown{
         transform:translateX(0);
     }
 }
-.page.swipe-preview {
-  display: block !important;
-  position: fixed !important;
-  left: 50%;
-  width: min(100vw, 900px);
-  max-width: 100%;
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: none;
-  margin-top: 0;
-  z-index: 15;
-  contain: layout paint;
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+.page.swipe-preview{
+  display:block !important;
+  position:fixed !important;
+  left:50%;
+  width:min(100vw, 900px);
+  max-width:100%;
+  top:0;
+  margin-top:0;
+  opacity:.1;
+  z-index:15;
+  pointer-events:none;
 }
 .page.active{
   position:relative;
@@ -1742,7 +1723,6 @@ body {
   max-width: 760px;
   margin: 0 auto;
   padding: clamp(10px, 3vw, 20px);
-  position: relative;
 }
 /* 標題自適應 */
 h1 {
@@ -1894,9 +1874,6 @@ button,
 body.is-page-swiping {
   user-select: none;
   -webkit-user-select: none;
-}
-body {
-  position: relative;
 }
  </style>
 </head>
@@ -2577,22 +2554,20 @@ function showPage(pageId, btn, options = {}) {
   if (!next || current === next) return;
     if (instant) {
     document.querySelectorAll(".page").forEach(p => {
-  p.classList.remove(
-    "active",
-    "slide-out-left",
-    "slide-out-right",
-    "slide-in-left",
-    "slide-in-right",
-    "swipe-preview"
-  );
-  p.style.top = "";
-  p.style.left = "";
-  p.style.transition = "";
-  p.style.transform = "";
-  p.style.opacity = "";
-  p.style.visibility = "";
-});
+      p.classList.remove(
+        "active",
+        "slide-out-left",
+        "slide-out-right",
+        "slide-in-left",
+        "slide-in-right"
+      );
+      p.style.display = "none";
+      p.style.transition = "";
+      p.style.transform = "";
+      p.style.opacity = "";
+    });
     next.classList.add("active");
+    next.style.display = "";
     currentPageGroup = pageGroup[pageId] ?? currentPageGroup;
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
     const topBtn = btn?.closest(".tab-dropdown")?.querySelector(".tab-btn") || btn;
@@ -2611,8 +2586,10 @@ function showPage(pageId, btn, options = {}) {
     current.classList.add(goRight ? "slide-out-left" : "slide-out-right");
     setTimeout(() => {
       current.classList.remove("slide-out-left", "slide-out-right");
+      current.style.display = "none";
     }, 280);
   }
+  next.style.display = "block";
   next.classList.remove(
     "slide-out-left",
     "slide-out-right",
@@ -2622,22 +2599,19 @@ function showPage(pageId, btn, options = {}) {
   next.classList.add(goRight ? "slide-in-right" : "slide-in-left");
   setTimeout(() => {
   document.querySelectorAll(".page").forEach(p => {
-  p.classList.remove(
-    "active",
-    "slide-out-left",
-    "slide-out-right",
-    "slide-in-left",
-    "slide-in-right",
-    "swipe-preview"
-  );
-  p.style.transition = "";
-  p.style.transform = "";
-  p.style.opacity = "";
-  p.style.visibility = "";
-  p.style.top = "";
-  p.style.left = "";
-});
+    p.classList.remove(
+  "active",
+  "slide-out-left",
+  "slide-out-right",
+  "slide-in-left",
+  "slide-in-right",
+  "swipe-preview"
+);
+p.style.top = "";
+p.style.display = "none";
+  });
   next.classList.add("active");
+  next.style.display = "";
 }, 200);
   currentPageGroup = newGroup;
   document.querySelectorAll(".tab-btn").forEach(b => {
@@ -2694,69 +2668,6 @@ function clearSwipePreview() {
     previewPage = null;
   }
 }
-function finishSwipePageChange(current, next, nextPageId) {
-  if (!current || !next || !nextPageId) return;
-  // 1. 目前頁直接取消 active
-  current.classList.remove(
-    "active",
-    "slide-out-left",
-    "slide-out-right",
-    "slide-in-left",
-    "slide-in-right",
-    "swipe-preview"
-  );
-  current.style.transition = "";
-  current.style.transform = "";
-  current.style.opacity = "";
-  current.style.visibility = "";
-  current.style.top = "";
-  current.style.left = "";
-  // 2. 下一頁直接從 preview 升格成 active
-  next.classList.remove(
-    "swipe-preview",
-    "slide-out-left",
-    "slide-out-right",
-    "slide-in-left",
-    "slide-in-right"
-  );
-  next.classList.add("active");
-  next.style.transition = "";
-  next.style.transform = "";
-  next.style.opacity = "";
-  next.style.visibility = "";
-  next.style.top = "";
-  next.style.left = "";
-  // 3. 更新目前頁面群組
-  currentPageGroup = pageGroup[nextPageId] ?? currentPageGroup;
-  // 4. 更新上方按鈕 active 狀態
-  document.querySelectorAll(".tab-btn").forEach(btn => {
-    btn.classList.remove("active");
-  });
-  const targetBtn =
-    document.querySelector(`[onclick*="${nextPageId}"]`);
-  const topBtn =
-    targetBtn?.closest(".tab-dropdown")?.querySelector(".tab-btn")
-    || targetBtn;
-  topBtn?.classList.add("active");
-  // 5. 關閉下拉選單
-  document.querySelectorAll(".tab-dropdown").forEach(d => {
-    d.classList.remove("open");
-  });
-  // 6. 保留原本各頁初始化功能
-  if (nextPageId === "pageTraining") {
-    initTrainingVideosOnce();
-  }
-  if (nextPageId === "pageTeam") {
-    initTeamGroupMembersOnce().catch(console.error);
-  }
-  if (nextPageId === "pageMapDraw") {
-    loadMapsCached().catch(console.error);
-  }
-  // 7. 清除 preview 參考
-  previewPage = null;
-  // 8. 滑動換頁直接回頂端，不做 smooth
-  window.scrollTo(0, 0);
-}
 function resetCurrentSwipeStyle(current) {
   if (!current) return;
   current.style.transition = "transform .18s ease, opacity .18s ease";
@@ -2801,7 +2712,7 @@ document.addEventListener("touchmove", (e) => {
   }
   if (diffX < -80 && isAtLastPage) {
     edgeSwipeLocked = true;
-    showToast("已經到底啦~ ♥別頂了~♥", { type: "info" });
+    showToast("已經到底啦~ ♥別頂了♥", { type: "info" });
     resetCurrentSwipeStyle(current);
     clearSwipePreview();
     return;
@@ -2840,15 +2751,7 @@ document.addEventListener("touchend", () => {
   if (!swipeStartX) return;
   const diffX = swipeCurrentX - swipeStartX;
   const current = document.querySelector(".page.active");
-  if (!current) {
-    swipeStartX = 0;
-    swipeStartY = 0;
-    swipeCurrentX = 0;
-    isDraggingPage = false;
-    edgeSwipeLocked = false;
-    document.body.classList.remove("is-page-swiping");
-    return;
-  }
+  if (!current) return;
   const pages = getSwipePages();
   const index = pages.indexOf(current.id);
   let nextPageId = null;
@@ -2860,92 +2763,68 @@ document.addEventListener("touchend", () => {
       nextPageId = pages[index - 1];
     }
   }
-  // =========================
-  // 確定換頁
-  // =========================
-  if (nextPageId && previewPage) {
-    const next = previewPage;
-    const goNext = diffX < 0;
-    // 固定下一頁參考，避免動畫途中 previewPage 被改掉
-    const finishingPage = next;
-    current.style.transition =
-      "transform .22s cubic-bezier(.22,.61,.36,1)";
-    finishingPage.style.transition =
-      "transform .22s cubic-bezier(.22,.61,.36,1)";
-    current.style.transform = goNext
-      ? `translate3d(-${swipeViewportWidth}px, 0, 0)`
-      : `translate3d(${swipeViewportWidth}px, 0, 0)`;
-    finishingPage.style.transform =
-      "translate3d(-50%, 0, 0)";
-    finishingPage.style.opacity = "1";
-    // 動畫完成後，直接把 preview 升格成 active
-    const onSwipeFinish = () => {
-      finishingPage.removeEventListener(
-        "transitionend",
-        onSwipeFinish
-      );
-      finishSwipePageChange(
-        current,
-        finishingPage,
-        nextPageId
-      );
-      swipeStartX = 0;
-      swipeStartY = 0;
-      swipeCurrentX = 0;
-      isDraggingPage = false;
-      edgeSwipeLocked = false;
-      document.body.classList.remove("is-page-swiping");
-    };
-    finishingPage.addEventListener(
-      "transitionend",
-      onSwipeFinish,
-      { once: true }
-    );
-    // 保險：某些手機 transitionend 偶爾不觸發
-    setTimeout(() => {
-      if (document.body.classList.contains("is-page-swiping")) {
-        finishSwipePageChange(
-          current,
-          finishingPage,
-          nextPageId
-        );
-        swipeStartX = 0;
-        swipeStartY = 0;
-        swipeCurrentX = 0;
-        isDraggingPage = false;
-        edgeSwipeLocked = false;
-        document.body.classList.remove("is-page-swiping");
-      }
-    }, 280);
-    return;
-  }
-  // =========================
-  // 沒達到換頁門檻 → 彈回原位
-  // =========================
-  current.style.transition =
-    "transform .18s cubic-bezier(.22,.61,.36,1)";
-  current.style.transform =
-    "translate3d(0, 0, 0)";
+  current.style.transition = "transform .22s ease";
   if (previewPage) {
-    const returningPage = previewPage;
-    const goNext = diffX < 0;
-    returningPage.style.transition =
-      "transform .18s cubic-bezier(.22,.61,.36,1)";
-    returningPage.style.transform = goNext
-      ? `translate3d(calc(-50% + ${swipeViewportWidth}px), 0, 0)`
-      : `translate3d(calc(-50% - ${swipeViewportWidth}px), 0, 0)`;
+    previewPage.style.transition = "transform .22s ease";
+    previewPage.style.opacity = "1";
   }
-  setTimeout(() => {
-    current.style.transition = "";
-    current.style.transform = "";
-    clearSwipePreview();
-    swipeStartX = 0;
-    swipeStartY = 0;
-    swipeCurrentX = 0;
-    isDraggingPage = false;
-    edgeSwipeLocked = false;
-    document.body.classList.remove("is-page-swiping");
-  }, 190);
+  if (nextPageId) {
+    const goNext = diffX < 0;
+    current.style.transform = goNext
+  ? "translate3d(-100%, 0, 0)"
+  : "translate3d(100%, 0, 0)";
+if (previewPage) {
+  previewPage.style.transform = "translate3d(-50%, 0, 0)";
+}
+    setTimeout(() => {
+      current.style.transition = "";
+      current.style.transform = "";
+      showPage(
+        nextPageId,
+        document.querySelector(`[onclick*="${nextPageId}"]`),
+        { instant: true }
+      );
+      clearSwipePreview();
+    }, 220);
+  } else {
+    current.style.transform = "translate3d(0, 0, 0)";
+    if (previewPage) {
+      const goNext = diffX < 0;
+      previewPage.style.transform = goNext
+  ? `translate3d(calc(-50% + ${swipeViewportWidth}px), 0, 0)`
+  : `translate3d(calc(-50% - ${swipeViewportWidth}px), 0, 0)`;
+    }
+    setTimeout(() => {
+      current.style.transition = "";
+      current.style.transform = "";
+      clearSwipePreview();
+    }, 220);
+  }
+  swipeStartX = 0;
+  swipeStartY = 0;
+  swipeCurrentX = 0;
+  isDraggingPage = false;
+  edgeSwipeLocked = false;
+  document.body.classList.remove("is-page-swiping");
+}, { passive: true });
+  document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
+  btn.addEventListener("click", e => {
+    const menu = btn.nextElementSibling;
+    const rect = btn.getBoundingClientRect();
+    document.querySelectorAll(".tab-dropdown").forEach(d => {
+      if (d !== btn.parentElement) d.classList.remove("open");
+    });
+    btn.parentElement.classList.toggle("open");
+    if (menu) {
+      menu.style.top = rect.bottom + "px";
+      menu.style.left = rect.left + "px";
+    }
+});
+});
+window.showPage = showPage;
+window.addEventListener("scroll", () => {document.querySelectorAll(".tab-dropdown").forEach(d => {
+    d.classList.remove("open");
+  });
 }, { passive: true });
 function showModal(msg, { title = "提示", type = "info", html = false } = {}) {
   uiModalTitle.textContent = title;
@@ -5602,14 +5481,6 @@ document
 }
   loadMaps().catch((e) => {
     console.error("loadMaps 失敗：", e);
-  });
-}
-function prepareAllPageLayouts() {
-  const pages = document.querySelectorAll(".page");
-  pages.forEach(page => {
-    /* 強制瀏覽器先完成寬度、文字換行與卡片排版 */
-    void page.offsetWidth;
-    void page.offsetHeight;
   });
 }
 async function startAllSystems() {

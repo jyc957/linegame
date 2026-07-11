@@ -1583,36 +1583,79 @@ input:checked + .slider:before{
 .tab-btn.active::after{
   width: 70%;
 }
-tab-dropdown{
+.tab-dropdown {
   position: relative;
 }
 .tab-menu {
-  display: none;
   position: fixed;
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  padding: 8px 0;
   background: #fff;
   border: 2px solid #2091c6;
   border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.2);
   z-index: 100001;
-  min-width: 190px;
-  padding: 8px 0;
-  box-shadow: 0 6px 16px rgba(0,0,0,.2);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate3d(0, -12px, 0) scale(.96);
+  transform-origin: top center;
+  transition:
+    transform .22s cubic-bezier(.22,.61,.36,1),
+    opacity .18s ease,
+    visibility 0s linear .22s;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .tab-dropdown.open .tab-menu {
-  display: flex;
-  flex-direction: column;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate3d(0, 0, 0) scale(1);
+  transition:
+    transform .22s cubic-bezier(.22,.61,.36,1),
+    opacity .18s ease,
+    visibility 0s;
 }
-.tab-menu button{
+.tab-menu button {
   width: 100%;
   flex: none !important;
   padding: 14px 16px;
   border: none;
-  background: white;
+  background: #fff;
   font-size: 18px;
   font-weight: 700;
   text-align: left;
+  opacity: 0;
+  transform: translate3d(0, -6px, 0);
+  transition:
+    transform .18s ease,
+    opacity .16s ease;
+  will-change: transform, opacity;
 }
-.tab-menu button:hover{
-    background:#eef8ff;
+.tab-dropdown.open .tab-menu button {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.tab-dropdown.open .tab-menu button:nth-child(1) {
+  transition-delay: .03s;
+}
+
+.tab-dropdown.open .tab-menu button:nth-child(2) {
+  transition-delay: .06s;
+}
+
+.tab-dropdown.open .tab-menu button:nth-child(3) {
+  transition-delay: .09s;
+}
+
+.tab-menu button:hover,
+.tab-menu button:active {
+  background: #eef8ff;
 }
 @media (max-width: 480px){
   .tab-btn{
@@ -2467,7 +2510,6 @@ button,
 </div>
   <!-- ✅ Toast 容器 -->
 <div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
@@ -2475,7 +2517,6 @@ button,
   getDocs, query, where, updateDoc, deleteDoc, onSnapshot,
   doc, getDoc, setDoc, increment
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-
     const firebaseConfig = {
       apiKey: "AIzaSyAtaboHWv60PRfwY5qwhOeECq-U_2mDi5M",
       authDomain: "linename-76527.firebaseapp.com",
@@ -2781,6 +2822,17 @@ document.addEventListener("touchend", () => {
       menu.style.left = rect.left + "px";
     }
 });
+});
+  document.addEventListener("click", e => {
+  if (e.target.closest(".tab-dropdown")) return;
+  document.querySelectorAll(".tab-dropdown").forEach(dropdown => {
+    dropdown.classList.remove("open");
+  });
+});
+  document.querySelectorAll(".tab-menu button").forEach(item => {
+  item.addEventListener("click", () => {
+    item.closest(".tab-dropdown")?.classList.remove("open");
+  });
 });
 window.showPage = showPage;
 window.addEventListener("scroll", () => {document.querySelectorAll(".tab-dropdown").forEach(d => {
@@ -5567,6 +5619,12 @@ function startAnnouncementRealtime() {
 }
   window.saveAnnouncement = saveAnnouncement;
   window.clearAnnouncement = clearAnnouncement;
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".tab-dropdown")) {
+        document.querySelectorAll(".tab-dropdown")
+            .forEach(d => d.classList.remove("open"));
+    }
+});
   </script>
   <footer class="site-footer">
   <img src="team.png" alt="KP台灣民眾黨" class="footer-logo" id="adminEntry">

@@ -4345,15 +4345,15 @@ async function judgeSkillLine() {
       resultLine = levels[0].name;
       message =
         `🏁賽道：${map.name}\n\n` +
-        `⏱️您的成績為:${msToTimeText(playerMs)}\n\n` +
-        `📊分線為 ${resultLine}\n\n` +
+        `⏱️您的成績為:<strong>${msToTimeText(playerMs)}</strong><br><br>` +
+        `📊分線為 <strong>${resultLine}</strong><br><br>` +
         `已經到頂啦~ 你好棒≧ω≦`;
     }
     else if (playerMs > levels[levels.length - 1].ms) {
       message =
         `🏁賽道：${map.name}\n\n` +
-        `⏱️您的成績為:${msToTimeText(playerMs)}\n\n` +
-        `📊分線為 不及格\n\n` +
+        `⏱️您的成績為:<strong>${msToTimeText(playerMs)}</strong><br><br>` +
+        `📊分線為 <strong>不及格</strong><br><br>` +
         `繼續加油吧~ 你可以進步更多ฅ'ω'ฅ`;
     }
     else {
@@ -4364,17 +4364,17 @@ async function judgeSkillLine() {
           const diff = playerMs - nextLevel.ms;
           message =
             `🏁賽道：${map.name}\n\n` +
-            `⏱️您的成績為:${msToTimeText(playerMs)}\n\n` +
-            `📊分線為 ${resultLine}\n\n` +
-            `🚀距離下一階段 ${nextLevel.name}\n\n` +
-            `還有 ${diffMsToSecText(diff)} 秒`;
+            `⏱️您的成績為:<strong>${msToTimeText(playerMs)}</strong><br><br>` +
+            `📊分線為 <strong>${resultLine}</strong><br><br>` +
+            `🚀距離下一階段 <strong>${nextLevel.name}</strong><br><br>` +
+            `還有 <strong>${diffMsToSecText(diff)}</strong> 秒`;
           break;
         }
       }
     }
     showModal(message, {
       title: "分線查詢結果",
-      type: "info"
+      type: "info",
       html: true
     });
   } catch (e) {

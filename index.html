@@ -4307,32 +4307,25 @@ async function loadSkillMapsOnce() {
 async function judgeSkillLine() {
   try {
     const maps = await loadSkillMapsOnce();
-
     const inputName = document.getElementById("skillMapInput").value.trim();
     const playerMs = inputSkillTimeToMs();
-
     if (!inputName) {
       showError("請輸入賽道名稱");
       return;
     }
-
     if (playerMs === null) {
       showError("請輸入正確成績");
       return;
     }
-
     const key = normalizeSearchKey(inputName);
-
     const map = maps.find(m =>
       normalizeSearchKey(m.name).includes(key) ||
       key.includes(normalizeSearchKey(m.name))
     );
-
     if (!map) {
       showError("找不到這張賽道");
       return;
     }
-
     const levels = [
       { name: "職業", time: map.pro },
       { name: "強主", time: map.strongMain },
@@ -4346,52 +4339,44 @@ async function judgeSkillLine() {
       name: x.name,
       ms: timeTextToMs(x.time)
     })).filter(x => x.ms !== null);
-
     let resultLine = "";
     let message = "";
-
     if (playerMs <= levels[0].ms) {
       resultLine = levels[0].name;
       message =
         `🏁賽道：${map.name}\n\n` +
-        `⏱️您的成績為:${msToTimeText(playerMs)}\n\n` +
+        `⏱️您的成績為:<strong>${msToTimeText(playerMs)}\n\n` +
         `📊分線為 ${resultLine}\n\n` +
         `已經到頂啦~ 你好棒≧ω≦`;
     }
-
     else if (playerMs > levels[levels.length - 1].ms) {
       message =
         `🏁賽道：${map.name}\n\n` +
-        `⏱️您的成績為:${msToTimeText(playerMs)}\n\n` +
+        `⏱️您的成績為:<strong>${msToTimeText(playerMs)}\n\n` +
         `📊分線為 不及格\n\n` +
         `繼續加油吧~ 你可以進步更多ฅ'ω'ฅ`;
     }
-
     else {
       for (let i = 1; i < levels.length; i++) {
         if (playerMs <= levels[i].ms) {
           resultLine = levels[i].name;
-
           const nextLevel = levels[i - 1];
           const diff = playerMs - nextLevel.ms;
-
           message =
             `🏁賽道：${map.name}\n\n` +
-            `⏱️您的成績為:${msToTimeText(playerMs)}\n\n` +
+            `⏱️您的成績為:<strong>${msToTimeText(playerMs)}\n\n` +
             `📊分線為 ${resultLine}\n\n` +
             `🚀距離下一階段 ${nextLevel.name}\n\n` +
             `還有 ${diffMsToSecText(diff)} 秒`;
-
           break;
         }
       }
     }
-
     showModal(message, {
       title: "分線查詢結果",
       type: "info"
+      html: true
     });
-
   } catch (e) {
     console.error(e);
     showError("分線查詢失敗");
@@ -4401,43 +4386,32 @@ window.judgeSkillLine = judgeSkillLine;
 async function initSkillMapSuggest() {
   const input = document.getElementById("skillMapInput");
   const box = document.getElementById("skillMapSuggest");
-
   if (!input || !box) return;
-
   const maps = await loadSkillMapsOnce();
-
   input.addEventListener("input", () => {
     const key = normalizeSearchKey(input.value);
-
     box.innerHTML = "";
-
     if (!key) {
       box.classList.remove("show");
       return;
     }
-
     const matched = maps
       .filter(m => normalizeSearchKey(m.name).includes(key))
       .slice(0, 30);
-
     if (!matched.length) {
       box.classList.remove("show");
       return;
     }
-
     matched.forEach(m => {
       const div = document.createElement("div");
       div.className = "suggest-item";
       div.textContent = m.name;
-
       div.addEventListener("click", () => {
         input.value = m.name;
         box.classList.remove("show");
       });
-
       box.appendChild(div);
     });
-
     box.classList.add("show");
   });
 }

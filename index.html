@@ -4473,14 +4473,13 @@ async function initSkillMapSuggest() {
   document.getElementById("skillMinInput").value = "";
   document.getElementById("skillSecInput").value = "";
   document.getElementById("skillMsInput").value = "";
-
   // 清掉建議選單
   const suggest = document.getElementById("skillMapSuggest");
   if (suggest) {
     suggest.innerHTML = "";
-    suggest.style.display = "none";
+    suggest.classList.remove("show");
+suggest.style.display = "";
   }
-
   // 游標回到賽道名稱
   document.getElementById("skillMapInput").focus();
 }
@@ -4505,7 +4504,6 @@ async function initSkillMapSuggest() {
     async function jumpToRankingByName(gameName) {
   const key = normalizeNameKey(gameName);
   if (!key) return;
-
   const panel = document.getElementById("rankingPanel");
   const btn = document.getElementById("toggleRanking");
   // 1. 如果目前是收合，先展開

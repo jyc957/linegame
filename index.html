@@ -4396,8 +4396,28 @@ async function initSkillMapSuggest() {
       return;
     }
     const matched = maps
-      .filter(m => normalizeSearchKey(m.name).includes(key))
-      .slice(0, 30);
+  .filter(m => {
+    const matched = maps
+  .map(m => {
+    const mapName = normalizeSearchKey(m.name);
+    let score = 0;
+    if (mapName === key) {
+      score = 3;
+    } else if (mapName.startsWith(key)) {
+      score = 2;
+    } else if (mapName.includes(key)) {
+      score = 1;
+    } else if (isSubsequence(key, mapName)) {
+      score = 0;
+    } else {
+      return null;
+    }
+    return { map: m, score };
+  })
+  .filter(Boolean)
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 30)
+  .map(x => x.map);
     if (!matched.length) {
       box.classList.remove("show");
       return;
@@ -4419,15 +4439,12 @@ async function initSkillMapSuggest() {
   const minInput = document.getElementById("skillMinInput");
   const secInput = document.getElementById("skillSecInput");
   const msInput = document.getElementById("skillMsInput");
-
   if (!minInput || !secInput || !msInput) return;
-
   minInput.addEventListener("input", () => {
     if (minInput.value.length >= 1) {
       secInput.focus();
     }
   });
-
   secInput.addEventListener("input", () => {
     if (secInput.value.length >= 2) {
       msInput.focus();
@@ -4452,17 +4469,13 @@ async function initSkillMapSuggest() {
     field: "gameName"
   }
 ];
-
   configs.forEach(({ inputId, boxId, field }) => {
     const input = document.getElementById(inputId);
     const box = document.getElementById(boxId);
-
     if (!input || !box) return;
-
     input.addEventListener("input", () => {
       showSuggestions({ inputId, boxId, field });
     });
-
     input.addEventListener("blur", () => {
       hideSuggestions(boxId);
     });
@@ -4482,6 +4495,22 @@ suggest.style.display = "";
   }
   // 游標回到賽道名稱
   document.getElementById("skillMapInput").focus();
+}
+    function isSubsequence(keyword, text) {
+  const key = normalizeSearchKey(keyword);
+  const target = normalizeSearchKey(text);
+  if (!key) return true;
+  let keyIndex = 0;
+  for (const char of target) {
+    if (char === key[keyIndex]) {
+      keyIndex++;
+
+      if (keyIndex === key.length) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
     function normalizeNameKey(name) {
   return String(name || "")

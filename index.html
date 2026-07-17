@@ -1897,6 +1897,25 @@ button,
     justify-content: flex-start;
   }
 }
+.skill-reference-link{
+    margin-top: 12px;
+    text-align: right;
+    padding-right: 6px;
+}
+.skill-reference-link a{
+    color: #0b4ea2;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: opacity .2s;
+}
+.skill-reference-link a:hover{
+    opacity: .75;
+}
+.skill-reference-link a:active{
+    opacity: .55;
+}
  </style>
 </head>
 <body>
@@ -2189,6 +2208,13 @@ button,
     <div class="skill-btn-row">
   <button type="button" onclick="judgeSkillLine()">查詢分線</button>
   <button type="button" onclick="clearSkillQuery()">清除</button>
+</div>
+    <div class="skill-reference-link">
+  <a href="https://docs.google.com/spreadsheets/d/11KJhoggJDZXakVkBn5H-ekkbjTDVLRegaKqhrvlW3Sk/edit?usp=drivesdk"
+     target="_blank"
+     rel="noopener noreferrer">
+    📋 地圖分線一覽表
+  </a>
 </div>
 </div>
   </div>

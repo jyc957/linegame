@@ -2758,6 +2758,7 @@ function prepareSwipePreview(current, nextPageId, direction) {
   next.classList.add("swipe-preview");
   next.style.transition = "none";
   next.style.opacity = "1";
+  const PAGE_GAP = 20;
   const startX =
     direction < 0
       ? rect.width
@@ -2887,14 +2888,12 @@ document.addEventListener("touchmove", (e) => {
   const width = swipePageWidth || current.offsetWidth;
   const moveX = Math.max(-width, Math.min(width, diffX));
   current.style.transition = "none";
-  current.style.transform =
-    `translate3d(${moveX}px, 0, 0)`;
-  const previewX = direction < 0
-    ? width + moveX
-    : -width + moveX;
+  current.style.transform = `translate3d(${moveX}px, 0, 0)`;
+  const PAGE_GAP = 20;
+  const previewX = direction < 0 ? width + moveX : -width + moveX;
   previewPage.style.transition = "none";
-  previewPage.style.transform =
-    `translate3d(${previewX}px, 0, 0)`;
+  const PAGE_GAP = 20;
+  previewPage.style.transform = `translate3d(${previewX}px, 0, 0)`;
 }, {passive: true});
 document.addEventListener("touchend", () => {
   if (!swipeStartX || !swipeCurrentPage) {
@@ -2910,8 +2909,7 @@ document.addEventListener("touchend", () => {
   current.style.transition =
     `transform ${SWIPE_DURATION}ms cubic-bezier(.22,.61,.36,1)`;
   if (previewPage) {
-    previewPage.style.transition =
-      `transform ${SWIPE_DURATION}ms cubic-bezier(.22,.61,.36,1)`;
+    previewPage.style.transition = `transform ${SWIPE_DURATION}ms cubic-bezier(.22,.61,.36,1)`;
   }
   if (shouldChangePage) {
   const direction = diffX < 0 ? -1 : 1;

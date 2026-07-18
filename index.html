@@ -1916,6 +1916,21 @@ button,
 .skill-reference-link a:active{
     opacity: .55;
 }
+:root {
+  --app-viewport-width: 100vw;
+  --app-viewport-height: 100vh;
+}
+.page {
+  width: min(100%, var(--app-viewport-width));
+  max-width: 100%;
+}
+.track-img,
+#rankingSection img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+}
  </style>
 </head>
 <body>
@@ -2683,6 +2698,43 @@ let swipeCurrentX = 0;
 let isDraggingPage = false;
 let previewPage = null;
 let edgeSwipeLocked = false;
+let swipeViewportWidth = 0;
+let swipeViewportHeight = 0;
+function updateViewportSize() {
+  const viewport = window.visualViewport;
+  swipeViewportWidth = Math.round(
+    viewport?.width ||
+    document.documentElement.clientWidth ||
+    window.innerWidth
+  );
+  swipeViewportHeight = Math.round(
+    viewport?.height ||
+    document.documentElement.clientHeight ||
+    window.innerHeight
+  );
+  // 提供給 CSS 使用
+  document.documentElement.style.setProperty(
+    "--app-viewport-width",
+    `${swipeViewportWidth}px`
+  );
+  document.documentElement.style.setProperty(
+    "--app-viewport-height",
+    `${swipeViewportHeight}px`
+  );
+}
+// 程式開始時先算一次
+updateViewportSize();
+window.addEventListener("resize", updateViewportSize, {
+  passive: true
+});
+window.addEventListener("orientationchange", () => {
+  setTimeout(updateViewportSize, 150);
+});
+window.visualViewport?.addEventListener(
+  "resize",
+  updateViewportSize,
+  { passive: true }
+);
 function clearSwipePreview() {
   if (previewPage) {
     previewPage.classList.remove("swipe-preview");
@@ -5518,8 +5570,57 @@ document
     console.error("loadMaps 失敗：", e);
   });
 }
+async function preLayoutAllPages() {
+  const pages = Array.from(
+    document.querySelectorAll(".page")
+  );
+  const activePage = document.querySelector(".page.active");
+  // 使用目前已保存的手機寬度
+  updateViewportSize();
+  for (const page of pages) {
+    if (page === activePage) {
+      // 目前頁面本來就會正常計算
+      void page.offsetWidth;
+      void page.offsetHeight;
+      continue;
+    }
+    // 暫時讓隱藏頁面參與排版，但不讓使用者看到
+    const oldDisplay = page.style.display;
+    const oldPosition = page.style.position;
+    const oldVisibility = page.style.visibility;
+    const oldPointerEvents = page.style.pointerEvents;
+    const oldTransform = page.style.transform;
+    const oldLeft = page.style.left;
+    const oldTop = page.style.top;
+    page.style.display = "block";
+    page.style.position = "absolute";
+    page.style.visibility = "hidden";
+    page.style.pointerEvents = "none";
+    page.style.transform = "translate3d(-200vw, 0, 0)";
+    page.style.left = "0";
+    page.style.top = "0";
+    // 等瀏覽器完成一次排版
+    await new Promise(resolve => {
+      requestAnimationFrame(() => {
+        void page.offsetWidth;
+        void page.offsetHeight;
+        resolve();
+      });
+    });
+    // 恢復原本狀態
+    page.style.display = oldDisplay;
+    page.style.position = oldPosition;
+    page.style.visibility = oldVisibility;
+    page.style.pointerEvents = oldPointerEvents;
+    page.style.transform = oldTransform;
+    page.style.left = oldLeft;
+    page.style.top = oldTop;
+  }
+}
 async function startAllSystems() {
   try {
+    updateViewportSize();
+    await preLayoutAllPages();
     const blocked = await checkMaintenanceMode();
     if (blocked) {
       finishLoaderProgress();

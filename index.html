@@ -1948,6 +1948,21 @@ body.is-page-swiping .page.swipe-preview {
 body.is-page-swiping .page.swipe-preview {
   box-shadow: none;
 }
+#pageStage {
+  position: relative;
+  width: 100%;
+  min-height: 0;
+  transition: min-height 180ms cubic-bezier(.2, .8, .2, 1);
+  contain: layout;
+}
+body.is-page-swiping #pageStage {
+  overflow: visible;
+}
+.footer-bar,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
  </style>
 </head>
 <body>
@@ -2114,12 +2129,12 @@ body.is-page-swiping .page.swipe-preview {
   確認
 </button>
     <div id="pickScoreHint" class="pick-score-hint admin-only"></div>
-
   <small><br>
     ● 成績格式：MM:SS.xx 或 MM.SS.xx 都可以
   </small>
 </div>
 </div>
+<main id="pageStage">
   <!-- 🏁 成績排行榜-->
 <div id="pageRanking" class="page active">
 <div class="section" id="rankingSection">
@@ -2510,6 +2525,7 @@ body.is-page-swiping .page.swipe-preview {
     </div>
   </div>
   </div>
+</main>
   <!-- ✅ 底部資訊列（左：瀏覽人次｜右：最後更新） -->
   <div class="footer-bar">
     <div>今日瀏覽人次：<span id="todayCount">載入中...</span></div>
@@ -2759,6 +2775,20 @@ function prepareSwipePreview(current, nextPageId, direction) {
   next.classList.add("swipe-preview");
   next.style.transition = "none";
   next.style.opacity = "1";
+  const currentHeight = Math.max(
+  current.scrollHeight,
+  current.offsetHeight
+);
+const nextHeight = Math.max(
+  next.scrollHeight,
+  next.offsetHeight
+);
+if (pageStage) {
+  pageStage.style.transition =
+    "min-height 180ms cubic-bezier(.2,.8,.2,1)";
+  pageStage.style.minHeight =
+    `${Math.max(currentHeight, nextHeight)}px`;
+}
   const startX = direction < 0 ? rect.width + PAGE_GAP : -(rect.width + PAGE_GAP);
   next.style.transform =
     `translate3d(${startX}px, 0, 0)`;
@@ -2812,6 +2842,7 @@ function finishSwipePageChange(current, next, nextPageId) {
   window.scrollTo({top: 0,behavior: "auto"});
   clearSwipeVariables();
   resetSwipeState();
+  releasePageStageHeight(next);
 }
 document.addEventListener("touchstart", (e) => {
   if (e.touches.length !== 1) return;
@@ -2824,6 +2855,7 @@ document.addEventListener("touchstart", (e) => {
   }
   const current = getActivePage();
   if (!current) return;
+  setPageStageHeight(current, false);
   swipeStartX = e.touches[0].clientX;
   swipeStartY = e.touches[0].clientY;
   swipeCurrentX = swipeStartX;
@@ -2930,12 +2962,13 @@ current.style.transform = `translate3d(${direction * (swipePageWidth + PAGE_GAP)
         `translate3d(${previewReturnX}px, 0, 0)`;
     }
     setTimeout(() => {
-      current.style.transition = "";
-      current.style.transform = "";
-      clearSwipePreview();
-      clearSwipeVariables();
-      resetSwipeState();
-    }, SWIPE_DURATION);
+  current.style.transition = "";
+  current.style.transform = "";
+  clearSwipePreview();
+  releasePageStageHeight(current);
+  clearSwipeVariables();
+  resetSwipeState();
+}, SWIPE_DURATION);
   }},{passive: true});
 document.addEventListener("touchcancel", () => {
   const current = swipeCurrentPage;
@@ -2978,6 +3011,40 @@ window.addEventListener("scroll", () => {document.querySelectorAll(".tab-dropdow
     d.classList.remove("open");
   });
 }, { passive: true });
+const pageStage = document.getElementById("pageStage");
+
+function setPageStageHeight(page, animate = true) {
+  if (!pageStage || !page) return;
+
+  const height = Math.max(
+    page.scrollHeight,
+    page.offsetHeight
+  );
+
+  pageStage.style.transition = animate
+    ? "min-height 180ms cubic-bezier(.2,.8,.2,1)"
+    : "none";
+
+  pageStage.style.minHeight = `${height}px`;
+}
+
+function releasePageStageHeight(page) {
+  if (!pageStage || !page) return;
+  requestAnimationFrame(() => {
+    const height = Math.max(
+      page.scrollHeight,
+      page.offsetHeight
+    );
+    pageStage.style.minHeight = `${height}px`;
+    setTimeout(() => {
+      pageStage.style.transition = "none";
+      pageStage.style.minHeight = "";
+      requestAnimationFrame(() => {
+        pageStage.style.transition = "";
+      });
+    }, 190);
+  });
+}
 function showModal(msg, { title = "提示", type = "info", html = false } = {}) {
   uiModalTitle.textContent = title;
   if (html) {

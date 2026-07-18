@@ -2015,6 +2015,16 @@ body.is-page-swiping #pageStage {
   content: "已選擇";
   color: #0b4ea2;
 }
+.team-selected-count {
+  margin: 12px 0 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #eef8ff;
+  color: #074783;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+}
  </style>
 </head>
 <body>
@@ -4114,8 +4124,13 @@ async function initTeamGroupMembersOnce() {
       ${name}
     </label>
   `).join("");
-
-  updateTeamGroupHeight();
+document.querySelectorAll(".team-member-check").forEach(check => {
+  check.addEventListener("change", () => {
+    updateTeamMemberSelectedCount();
+  });
+});
+updateTeamMemberSelectedCount();
+updateTeamGroupHeight();
 }
 
 function randomTeamGroups() {
@@ -4188,6 +4203,17 @@ function updateTeamGroupHeight() {
     requestAnimationFrame(() => {
       panel.style.maxHeight = panel.scrollHeight + "px";
     });
+  }
+}
+function updateTeamMemberSelectedCount() {
+  const selectedCount = document.querySelectorAll(
+    ".team-member-check:checked"
+  ).length;
+  const countText = document.getElementById(
+    "teamGroupSelectedCount"
+  );
+  if (countText) {
+    countText.textContent = `目前選擇 ${selectedCount} 人`;
   }
 }
 async function loadMapsCached() {
@@ -5773,7 +5799,9 @@ document.getElementById("randomTeamGroupBtn")?.addEventListener("click", randomT
 document.getElementById("copyTeamGroupBtn")?.addEventListener("click", copyTeamGroupResult);
 document.getElementById("selectAllTeamMembersBtn")?.addEventListener("click", () => {
 document.querySelectorAll(".team-member-check").forEach(x => x.checked = true);
-  updateTeamGroupHeight();});
+    updateTeamMemberSelectedCount();
+    updateTeamGroupHeight();
+  });
 document.getElementById("openMapHistory")?.addEventListener("click", () => openHistory("map"));
 document.getElementById("openTeamHistory")?.addEventListener("click", () => openHistory("team"));
 document.getElementById("historyCloseX")?.addEventListener("click", () => {
@@ -5800,9 +5828,10 @@ document.getElementById("closeHistoryModal")?.addEventListener("click", () => {
     document.getElementById("historyModal")?.classList.remove("show");
   });
 document.getElementById("clearTeamMembersBtn")?.addEventListener("click", () => {
-    document.querySelectorAll(".team-member-check").forEach(x => x.checked = false);
-    document.getElementById("teamGroupResult").innerHTML = "";
-    lastTeamGroupText = "";
+document.querySelectorAll(".team-member-check").forEach(x => x.checked = false);
+document.getElementById("teamGroupResult").innerHTML = "";
+lastTeamGroupText = "";
+    updateTeamMemberSelectedCount();
     updateTeamGroupHeight();
   });
   const openTeamMemberModalBtn = document.getElementById("openTeamMemberModalBtn");

@@ -2119,18 +2119,6 @@ body.is-page-swiping #pageStage {
     <span>組</span>
   </div>
   <button type="button" id="openTeamMemberModalBtn" class="btn">選擇成員</button>
-  <div class="modal-search-wrap">
-  <input
-    id="teamMemberSearchInput"
-    type="text"
-    placeholder="搜尋成員名稱"
-    autocomplete="off"
-  >
-  <div
-    id="teamMemberSearchSuggest"
-    class="suggest-box modal-search-suggest"
-  ></div>
-</div>
   <span id="openTeamHistory" class="history-link">分組抽籤歷史</span>
   <div class="smword">
     ※ 每組最多 8 人
@@ -6015,6 +6003,17 @@ function startAnnouncementRealtime() {
     <div id="teamMemberModal" class="modal">
   <div class="modal-content">
     <h3>選擇分組成員</h3>
+    <div class="modal-search-wrap">
+  <input
+    id="teamMemberSearchInput"
+    type="text"
+    placeholder="搜尋成員名稱"
+    autocomplete="off">
+  <div
+    id="teamMemberSearchSuggest"
+    class="suggest-box modal-search-suggest"
+  ></div>
+</div>
     <div class="map-btn-row">
       <button type="button" id="confirmTeamMembersBtn" class="btn">確定</button>
       <button type="button" id="selectAllTeamMembersBtn" class="btn">全選</button>

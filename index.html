@@ -1331,26 +1331,51 @@ body.admin-mode {
 .custom-map-item input{
   width:auto;
 }
-.modal{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.5);
-    z-index:9999;
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity .20s ease,
+    background-color .20s ease,
+    visibility 0s linear .20s;
 }
-.modal.show{
-    display:flex;
-    align-items:center;
-    justify-content:center;
+.modal.show {
+  background: rgba(0, 0, 0, .5);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+
+  transition:
+    opacity .22s ease,
+    background-color .22s ease,
+    visibility 0s;
 }
-.modal-content{
-    background:#fff;
-    width:90%;
-    max-width:500px;
-    max-height:80vh;
-    overflow-y:auto;
-    padding:16px;
-    border-radius:12px;
+.modal-content {
+  background: #fff;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 16px;
+  border-radius: 12px;
+  opacity: 0;
+  transform: translateY(18px) scale(.96);
+  transition:
+    opacity .20s ease,
+    transform .24s cubic-bezier(.2, .8, .2, 1);
+  will-change: transform, opacity;
+}
+.modal.show .modal-content {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 .maintenance-row{
     display:flex;

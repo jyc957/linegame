@@ -1962,6 +1962,34 @@ body.is-page-swiping #pageStage {
   position: relative;
   z-index: 1;
 }
+.modal-search-wrap {
+  position: relative;
+  margin: 10px 0 14px;
+}
+.modal-search-wrap input {
+  width: 100%;
+  margin: 0;
+  font-size: 16px;
+}
+.modal-search-suggest {
+  position: relative;
+  z-index: 5;
+  margin-top: 4px;
+}
+.modal-search-suggest .suggest-item.selected {
+  background: #c8ecf7;
+  font-weight: 800;
+}
+.modal-search-suggest .suggest-item::after {
+  content: "點擊選擇";
+  margin-left: auto;
+  font-size: 12px;
+  color: #666;
+}
+.modal-search-suggest .suggest-item.selected::after {
+  content: "已選擇";
+  color: #0b4ea2;
+}
  </style>
 </head>
 <body>
@@ -2091,6 +2119,18 @@ body.is-page-swiping #pageStage {
     <span>組</span>
   </div>
   <button type="button" id="openTeamMemberModalBtn" class="btn">選擇成員</button>
+  <div class="modal-search-wrap">
+  <input
+    id="teamMemberSearchInput"
+    type="text"
+    placeholder="搜尋成員名稱"
+    autocomplete="off"
+  >
+  <div
+    id="teamMemberSearchSuggest"
+    class="suggest-box modal-search-suggest"
+  ></div>
+</div>
   <span id="openTeamHistory" class="history-link">分組抽籤歷史</span>
   <div class="smword">
     ※ 每組最多 8 人
@@ -4679,6 +4719,104 @@ async function initSkillMapSuggest() {
     });
   });
 }
+  function initTeamMemberSearch() {
+  const input = document.getElementById("teamMemberSearchInput");
+  const box = document.getElementById("teamMemberSearchSuggest");
+  if (!input || !box) return;
+  input.addEventListener("input", () => {
+    const keyword = input.value.trim();
+    box.innerHTML = "";
+    if (!keyword) {
+      box.classList.remove("show");
+      return;
+    }
+    const checks = Array.from(
+      document.querySelectorAll(".team-member-check")
+    );
+    const matched = checks
+      .filter(check => fuzzyMatch(keyword, check.value))
+      .slice(0, 30);
+
+    if (!matched.length) {
+      box.classList.remove("show");
+      return;
+    }
+    matched.forEach(check => {
+      const item = document.createElement("div");
+      item.className = "suggest-item";
+      item.textContent = check.value;
+
+      if (check.checked) {
+        item.classList.add("selected");
+      }
+      item.addEventListener("click", () => {
+        check.checked = true;
+        item.classList.add("selected");
+        input.value = "";
+        box.innerHTML = "";
+        box.classList.remove("show");
+        const selectedCount = document.querySelectorAll(
+          ".team-member-check:checked"
+        ).length;
+        const countText = document.getElementById(
+          "teamGroupSelectedCount"
+        );
+        if (countText) {
+          countText.textContent = `目前選擇 ${selectedCount} 人`;
+        }
+        showToast(`已選擇：${check.value}`, {
+          type: "success"
+        });
+      });
+      box.appendChild(item);
+    });
+    box.classList.add("show");
+  });
+}
+  function initCustomMapSearch() {
+  const input = document.getElementById("customMapSearchInput");
+  const box = document.getElementById("customMapSearchSuggest");
+  if (!input || !box) return;
+  input.addEventListener("input", () => {
+    const keyword = input.value.trim();
+    box.innerHTML = "";
+    if (!keyword) {
+      box.classList.remove("show");
+      return;
+    }
+    const checks = Array.from(
+      document.querySelectorAll(".custom-map-check")
+    );
+    const matched = checks
+      .filter(check => fuzzyMatch(keyword, check.value))
+      .slice(0, 30);
+    if (!matched.length) {
+      box.classList.remove("show");
+      return;
+    }
+    matched.forEach(check => {
+      const item = document.createElement("div");
+      item.className = "suggest-item";
+      item.textContent = check.value;
+      if (check.checked) {
+        item.classList.add("selected");
+      }
+      item.addEventListener("click", () => {
+        check.checked = true;
+        item.classList.add("selected");
+        input.value = "";
+        box.innerHTML = "";
+        box.classList.remove("show");
+        updateCustomMapSelectedCount();
+        showToast(`已加入圖池：${check.value}`, {
+          type: "success"
+        });
+      });
+      box.appendChild(item);
+    });
+    box.classList.add("show");
+  });
+}
   function clearSkillQuery() {
   document.getElementById("skillMapInput").value = "";
   document.getElementById("skillMinInput").value = "";
@@ -4727,6 +4865,24 @@ suggest.style.display = "";
     .replace(/\s+/g, "")
     .replace(/[\u200B-\u200D\uFEFF]/g, "")
     .toLowerCase();
+}
+    function fuzzyMatch(keyword, text) {
+  const key = normalizeSearchKey(keyword);
+  const target = normalizeSearchKey(text);
+  if (!key) return false;
+  if (target.includes(key)) {
+    return true;
+  }
+  let keyIndex = 0;
+  for (const char of target) {
+    if (char === key[keyIndex]) {
+      keyIndex++;
+      if (keyIndex === key.length) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
     async function jumpToRankingByName(gameName) {
   const key = normalizeNameKey(gameName);
@@ -5717,6 +5873,8 @@ async function startAllSystems() {
     initSkillMapSuggest();
     initOldDataSuggestions();
     initSkillTimeAutoJump();
+    initTeamMemberSearch();
+    initCustomMapSearch();
   } catch (e) {
     console.error("startAllSystems 啟動失敗：", e);
     initPageData();
@@ -5724,6 +5882,8 @@ async function startAllSystems() {
     initSkillMapSuggest();
     initOldDataSuggestions();
     initSkillTimeAutoJump();
+    initTeamMemberSearch();
+    initCustomMapSearch();
   }
 }
 if (document.readyState === "loading") {
@@ -5833,6 +5993,18 @@ function startAnnouncementRealtime() {
 <div id="customMapModal" class="modal">
     <div class="modal-content">
         <h3>選擇地圖</h3>
+      <div class="modal-search-wrap">
+  <input
+    id="customMapSearchInput"
+    type="text"
+    placeholder="搜尋地圖名稱"
+    autocomplete="off"
+  >
+  <div
+    id="customMapSearchSuggest"
+    class="suggest-box modal-search-suggest"
+  ></div>
+</div>
         <div class="map-btn-row">
             <button type="button" id="confirmCustomMapsBtn" class="btn">確定</button>
             <button id="clearAllMapsBtn" class="btn">清空</button></div>

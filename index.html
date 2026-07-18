@@ -2909,8 +2909,8 @@ document.addEventListener("touchend", () => {
   }
   if (shouldChangePage) {
   const direction = diffX < 0 ? -1 : 1;
-    current.style.transform =
-      `translate3d(${direction * swipePageWidth}px, 0, 0)`;
+    const PAGE_GAP = 20;
+current.style.transform = `translate3d(${direction * (swipePageWidth + PAGE_GAP)}px, 0, 0)`;
     previewPage.style.transform =
       "translate3d(0, 0, 0)";
     const completedPreview = previewPage;

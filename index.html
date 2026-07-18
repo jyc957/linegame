@@ -2759,10 +2759,7 @@ function prepareSwipePreview(current, nextPageId, direction) {
   next.style.transition = "none";
   next.style.opacity = "1";
   const PAGE_GAP = 20;
-  const startX =
-    direction < 0
-      ? rect.width
-      : -rect.width;
+  const startX = direction < 0 ? rect.width + PAGE_GAP : -(rect.width + PAGE_GAP);
   next.style.transform =
     `translate3d(${startX}px, 0, 0)`;
   void next.offsetWidth;
@@ -2890,9 +2887,8 @@ document.addEventListener("touchmove", (e) => {
   current.style.transition = "none";
   current.style.transform = `translate3d(${moveX}px, 0, 0)`;
   const PAGE_GAP = 20;
-  const previewX = direction < 0 ? width + moveX : -width + moveX;
+  const previewX = direction < 0 ? width + PAGE_GAP +moveX : -width - PAGE_GAP + moveX;
   previewPage.style.transition = "none";
-  const PAGE_GAP = 20;
   previewPage.style.transform = `translate3d(${previewX}px, 0, 0)`;
 }, {passive: true});
 document.addEventListener("touchend", () => {
@@ -5642,7 +5638,6 @@ document
 }
 async function startAllSystems() {
   try {
-    updateViewportSize();
     const blocked = await checkMaintenanceMode();
     if (blocked) {
       finishLoaderProgress();

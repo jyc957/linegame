@@ -2720,6 +2720,7 @@ let swipeCurrentPage = null;
 let swipeNextPageId = null;
 const SWIPE_TRIGGER = 70;
 const SWIPE_DURATION = 180;
+const PAGE_GAP = 20;
 function getActivePage() {
   return document.querySelector(".page.active");
 }
@@ -2758,7 +2759,6 @@ function prepareSwipePreview(current, nextPageId, direction) {
   next.classList.add("swipe-preview");
   next.style.transition = "none";
   next.style.opacity = "1";
-  const PAGE_GAP = 20;
   const startX = direction < 0 ? rect.width + PAGE_GAP : -(rect.width + PAGE_GAP);
   next.style.transform =
     `translate3d(${startX}px, 0, 0)`;
@@ -2886,7 +2886,6 @@ document.addEventListener("touchmove", (e) => {
   const moveX = Math.max(-width, Math.min(width, diffX));
   current.style.transition = "none";
   current.style.transform = `translate3d(${moveX}px, 0, 0)`;
-  const PAGE_GAP = 20;
   const previewX = direction < 0 ? width + PAGE_GAP +moveX : -width - PAGE_GAP + moveX;
   previewPage.style.transition = "none";
   previewPage.style.transform = `translate3d(${previewX}px, 0, 0)`;
@@ -2899,17 +2898,13 @@ document.addEventListener("touchend", () => {
   const current = swipeCurrentPage;
   const diffX = swipeCurrentX - swipeStartX;
   const shouldChangePage =
-    Math.abs(diffX) >= SWIPE_TRIGGER &&
-    previewPage &&
-    swipeNextPageId;
-  current.style.transition =
-    `transform ${SWIPE_DURATION}ms cubic-bezier(.22,.61,.36,1)`;
+    Math.abs(diffX) >= SWIPE_TRIGGER && previewPage && swipeNextPageId;
+  current.style.transition = `transform ${SWIPE_DURATION}ms cubic-bezier(.22,.61,.36,1)`;
   if (previewPage) {
     previewPage.style.transition = `transform ${SWIPE_DURATION}ms cubic-bezier(.22,.61,.36,1)`;
   }
   if (shouldChangePage) {
   const direction = diffX < 0 ? -1 : 1;
-    const PAGE_GAP = 20;
 current.style.transform = `translate3d(${direction * (swipePageWidth + PAGE_GAP)}px, 0, 0)`;
     previewPage.style.transform =
       "translate3d(0, 0, 0)";
@@ -3014,22 +3009,17 @@ const adminPwdX = document.getElementById("adminPwdX");
 
 function openAdminPasswordModal() {
   if (!adminPwdModal) return;
-
   adminPwdModal.classList.add("open");
   adminPwdModal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
-
   if (adminPwdInput) {
     adminPwdInput.value = "";
     adminPwdInput.focus();
-
-    // ✅ 手機上提高跳出鍵盤成功率
     setTimeout(() => {
       adminPwdInput.focus();
       adminPwdInput.click();
     }, 50);
   }
-
   if (adminPwdHint) {
     adminPwdHint.textContent = "";
     adminPwdHint.classList.remove("error", "ok");

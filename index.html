@@ -4737,12 +4737,14 @@ async function initSkillMapSuggest() {
       if (check.checked) {
         item.classList.add("selected");
       }
-      item.addEventListener("click", () => {
+      item.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
         check.checked = true;
         item.classList.add("selected");
         input.value = "";
         box.innerHTML = "";
         box.classList.remove("show");
+        requestAnimationFrame(() => {input.focus({ preventScroll: true });});
         const selectedCount = document.querySelectorAll(
           ".team-member-check:checked"
         ).length;
@@ -4789,12 +4791,14 @@ async function initSkillMapSuggest() {
       if (check.checked) {
         item.classList.add("selected");
       }
-      item.addEventListener("click", () => {
+      item.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
         check.checked = true;
         item.classList.add("selected");
         input.value = "";
         box.innerHTML = "";
         box.classList.remove("show");
+        requestAnimationFrame(() => {input.focus({ preventScroll: true });});
         updateCustomMapSelectedCount();
         showToast(`已加入圖池：${check.value}`, {
           type: "success"

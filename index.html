@@ -2637,7 +2637,7 @@ function showPage(pageId, btn, options = {}) {
     if (pageId === "pageTraining") initTrainingVideosOnce();
     if (pageId === "pageTeam") initTeamGroupMembersOnce().catch(console.error);
     if (pageId === "pageMapDraw") loadMapsCached().catch(console.error);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "auto" });
     return;
   }
   const newGroup = pageGroup[pageId] ?? currentPageGroup;
@@ -2690,199 +2690,273 @@ function showPage(pageId, btn, options = {}) {
   if (pageId === "pageMapDraw") {
     loadMapsCached().catch(console.error);
   }
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top: 0, behavior: "auto" });
 }
 let swipeStartX = 0;
 let swipeStartY = 0;
 let swipeCurrentX = 0;
 let isDraggingPage = false;
-let previewPage = null;
 let edgeSwipeLocked = false;
-let swipeViewportWidth = 0;
-let swipeViewportHeight = 0;
-function updateViewportSize() {
-  const viewport = window.visualViewport;
-  swipeViewportWidth = Math.round(
-    viewport?.width ||
-    document.documentElement.clientWidth ||
-    window.innerWidth
-  );
-  swipeViewportHeight = Math.round(
-    viewport?.height ||
-    document.documentElement.clientHeight ||
-    window.innerHeight
-  );
-  // 提供給 CSS 使用
-  document.documentElement.style.setProperty(
-    "--app-viewport-width",
-    `${swipeViewportWidth}px`
-  );
-  document.documentElement.style.setProperty(
-    "--app-viewport-height",
-    `${swipeViewportHeight}px`
-  );
+let previewPage = null;
+let swipePageWidth = 0;
+let swipeCurrentPage = null;
+let swipeNextPageId = null;
+const SWIPE_TRIGGER = 70;
+const SWIPE_DURATION = 220;
+function getActivePage() {
+  return document.querySelector(".page.active");
 }
-// 程式開始時先算一次
-updateViewportSize();
-window.addEventListener("resize", updateViewportSize, {
-  passive: true
-});
-window.addEventListener("orientationchange", () => {
-  setTimeout(updateViewportSize, 150);
-});
-window.visualViewport?.addEventListener(
-  "resize",
-  updateViewportSize,
-  { passive: true }
-);
 function clearSwipePreview() {
-  if (previewPage) {
-    previewPage.classList.remove("swipe-preview");
-    previewPage.style.transition = "";
-    previewPage.style.transform = "";
-    previewPage.style.opacity = "";
-    previewPage.style.top = "";
-    previewPage = null;
-  }
+  if (!previewPage) return;
+  previewPage.classList.remove("swipe-preview");
+  previewPage.style.transition = "";
+  previewPage.style.transform = "";
+  previewPage.style.opacity = "";
+  previewPage = null;
 }
-function resetCurrentSwipeStyle(current) {
-  if (!current) return;
-  current.style.transition = "transform .18s ease, opacity .18s ease";
-  current.style.transform = "translateX(0)";
-  current.style.opacity = "1";
+function clearSwipeVariables() {
+  document.documentElement.style.removeProperty("--swipe-page-left");
+  document.documentElement.style.removeProperty("--swipe-page-top");
+  document.documentElement.style.removeProperty("--swipe-page-width");
+}
+function resetSwipeState() {
+  swipeStartX = 0;
+  swipeStartY = 0;
+  swipeCurrentX = 0;
+  isDraggingPage = false;
+  edgeSwipeLocked = false;
+  swipeCurrentPage = null;
+  swipeNextPageId = null;
+  swipePageWidth = 0;
+  document.body.classList.remove("is-page-swiping");
+}
+function prepareSwipePreview(current, nextPageId, direction) {
+  const next = document.getElementById(nextPageId);
+  if (!next) return null;
+  const rect = current.getBoundingClientRect();
+  swipePageWidth = rect.width;
+  document.documentElement.style.setProperty(
+    "--swipe-page-left",
+    `${rect.left}px`
+  );
+  document.documentElement.style.setProperty(
+    "--swipe-page-top",
+    `${rect.top}px`
+  );
+  document.documentElement.style.setProperty(
+    "--swipe-page-width",
+    `${rect.width}px`
+  );
+  next.classList.add("swipe-preview");
+  next.style.transition = "none";
+  const startX = direction < 0
+    ? swipePageWidth
+    : -swipePageWidth;
+  next.style.transform = `translate3d(${startX}px, 0, 0)`;
+  void next.offsetWidth;
+  return next;
+}
+function updateTopTabForPage(pageId) {
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+  const pageButton = document.querySelector(
+    `[onclick*="${pageId}"]`
+  );
+  const topButton =
+    pageButton?.closest(".tab-dropdown")
+      ?.querySelector(":scope > .tab-btn") ||
+    pageButton;
+  topButton?.classList.add("active");
+  document.querySelectorAll(".tab-dropdown").forEach(dropdown => {
+    dropdown.classList.remove("open");
+  });
+}
+function finishSwipePageChange(current, next, nextPageId) {
+  current.classList.remove("active");
+  current.style.display = "none";
+  current.style.transition = "";
+  current.style.transform = "";
+  next.classList.remove("swipe-preview");
+  next.classList.add("active");
+  next.style.display = "";
+  next.style.transition = "";
+  next.style.transform = "";
+  previewPage = null;
+  currentPageGroup =
+    pageGroup[nextPageId] ?? currentPageGroup;
+  updateTopTabForPage(nextPageId);
+  requestAnimationFrame(() => {
+    if (nextPageId === "pageTraining") {
+      initTrainingVideosOnce();
+    }
+    if (nextPageId === "pageTeam") {
+      initTeamGroupMembersOnce().catch(console.error);
+    }
+    if (nextPageId === "pageMapDraw") {
+      loadMapsCached().catch(console.error);
+    }
+  });
+  window.scrollTo({
+    top: 0,
+    behavior: "auto"
+  });
+  clearSwipeVariables();
+  resetSwipeState();
 }
 document.addEventListener("touchstart", (e) => {
   if (e.touches.length !== 1) return;
-  if (e.target.closest("input, textarea, select, button, .modal, .tab-menu")) return;
+  if (
+    e.target.closest(
+      "input, textarea, select, button, video, a, .modal, .tab-menu"
+    )
+  ) {
+    return;
+  }
+  const current = getActivePage();
+  if (!current) return;
   swipeStartX = e.touches[0].clientX;
   swipeStartY = e.touches[0].clientY;
   swipeCurrentX = swipeStartX;
+  swipeCurrentPage = current;
   isDraggingPage = false;
   edgeSwipeLocked = false;
-}, { passive: true });
+  swipeNextPageId = null;
+}, {
+  passive: true
+});
 document.addEventListener("touchmove", (e) => {
-  if (!swipeStartX) return;
+  if (!swipeStartX || !swipeCurrentPage) return;
   if (edgeSwipeLocked) return;
   const x = e.touches[0].clientX;
   const y = e.touches[0].clientY;
   const diffX = x - swipeStartX;
   const diffY = y - swipeStartY;
   if (!isDraggingPage) {
-    if (Math.abs(diffY) > Math.abs(diffX)) return;
-    if (Math.abs(diffX) < 12) return;
+    // 明顯是上下捲動，不啟動換頁
+    if (Math.abs(diffY) > Math.abs(diffX)) {
+      return;
+    }
+    if (Math.abs(diffX) < 10) {
+      return;
+    }
     isDraggingPage = true;
+    document.body.classList.add("is-page-swiping");
   }
   swipeCurrentX = x;
-  const current = document.querySelector(".page.active");
-  if (!current) return;
+  const current = swipeCurrentPage;
   const pages = getSwipePages();
   const index = pages.indexOf(current.id);
-  const isAtFirstPage = index === 0;
-  const isAtLastPage = index === pages.length - 1;
-  if (diffX > 80 && isAtFirstPage) {
-    edgeSwipeLocked = true;
-    showToast("已經是第一頁啦~", { type: "info" });
-    resetCurrentSwipeStyle(current);
-    clearSwipePreview();
-    return;
-  }
-  if (diffX < -80 && isAtLastPage) {
-    edgeSwipeLocked = true;
-    showToast("已經到底啦~ 別頂了🥵", { type: "info" });
-    resetCurrentSwipeStyle(current);
-    clearSwipePreview();
-    return;
-  }
-  let previewId = null;
-  if (diffX < 0 && index < pages.length - 1) {
-    previewId = pages[index + 1];
-  }
-  if (diffX > 0 && index > 0) {
-    previewId = pages[index - 1];
-  }
-  if (previewId) {
-    previewPage = document.getElementById(previewId);
-    if (previewPage && !previewPage.classList.contains("swipe-preview")) {
-      const currentRect = current.getBoundingClientRect();
-      previewPage.classList.add("swipe-preview");
-      previewPage.style.top = `${currentRect.top}px`;
-    }
-  }
-  const move = Math.max(-160, Math.min(160, diffX));
-  current.style.transition = "none";
-  current.style.transform = `translateX(${move}px)`;
-  if (previewPage) {
-    previewPage.style.transition = "none";
-    if (diffX < 0) {
-      previewPage.style.transform = `translateX(calc(-50% + ${window.innerWidth + move}px))`;
-    } else {
-      previewPage.style.transform = `translateX(calc(-50% + ${-window.innerWidth + move}px))`;
-    }
-    previewPage.style.opacity = "1";
-  }
-}, { passive: true });
-document.addEventListener("touchend", () => {
-  if (!swipeStartX) return;
-  const diffX = swipeCurrentX - swipeStartX;
-  const current = document.querySelector(".page.active");
-  if (!current) return;
-  const pages = getSwipePages();
-  const index = pages.indexOf(current.id);
+  if (index < 0) return;
+  const direction = diffX < 0 ? -1 : 1;
   let nextPageId = null;
-  if (!edgeSwipeLocked) {
-    if (diffX < -80 && index < pages.length - 1) {
-      nextPageId = pages[index + 1];
-    }
-    if (diffX > 80 && index > 0) {
-      nextPageId = pages[index - 1];
-    }
+  if (direction < 0 && index < pages.length - 1) {
+    nextPageId = pages[index + 1];
   }
-  current.style.transition = "transform .22s ease";
+  if (direction > 0 && index > 0) {
+    nextPageId = pages[index - 1];
+  }
+  if (!nextPageId) {
+    const resistance = diffX * 0.22;
+    current.style.transition = "none";
+    current.style.transform =
+      `translate3d(${resistance}px, 0, 0)`;
+    return;
+  }
+  if (
+    swipeNextPageId !== nextPageId ||
+    !previewPage
+  ) {
+    clearSwipePreview();
+    swipeNextPageId = nextPageId;
+    previewPage = prepareSwipePreview(
+      current,
+      nextPageId,
+      direction
+    );
+  }
+  if (!previewPage) return;
+  const width = swipePageWidth || current.offsetWidth;
+  const moveX = Math.max(-width, Math.min(width, diffX));
+  current.style.transition = "none";
+  current.style.transform =
+    `translate3d(${moveX}px, 0, 0)`;
+  const previewX = direction < 0
+    ? width + moveX
+    : -width + moveX;
+  previewPage.style.transition = "none";
+  previewPage.style.transform =
+    `translate3d(${previewX}px, 0, 0)`;
+}, {
+  passive: true
+});
+document.addEventListener("touchend", () => {
+  if (!swipeStartX || !swipeCurrentPage) {
+    resetSwipeState();
+    return;
+  }
+  const current = swipeCurrentPage;
+  const diffX = swipeCurrentX - swipeStartX;
+  const shouldChangePage =
+    Math.abs(diffX) >= SWIPE_TRIGGER &&
+    previewPage &&
+    swipeNextPageId;
+  current.style.transition =
+    `transform ${SWIPE_DURATION}ms cubic-bezier(.22,.61,.36,1)`;
   if (previewPage) {
-    previewPage.style.transition = "transform .22s ease";
-    previewPage.style.opacity = "1";
+    previewPage.style.transition =
+      `transform ${SWIPE_DURATION}ms cubic-bezier(.22,.61,.36,1)`;
   }
-  if (nextPageId) {
-    const goNext = diffX < 0;
-    current.style.transform = goNext
-      ? "translateX(-100%)"
-      : "translateX(100%)";
-    if (previewPage) {
-      previewPage.style.transform = "translateX(-50%)";
-    }
+  if (shouldChangePage) {
+  const direction = diffX < 0 ? -1 : 1;
+    current.style.transform =
+      `translate3d(${direction * -swipePageWidth}px, 0, 0)`;
+    previewPage.style.transform =
+      "translate3d(0, 0, 0)";
+    const completedPreview = previewPage;
+    const completedPageId = swipeNextPageId;
     setTimeout(() => {
-      current.style.transition = "";
-      current.style.transform = "";
-
-      showPage(
-        nextPageId,
-        document.querySelector(`[onclick*="${nextPageId}"]`),
-        { instant: true }
+      finishSwipePageChange(
+        current,
+        completedPreview,
+        completedPageId
       );
-
-      clearSwipePreview();
-    }, 220);
-
+   }, SWIPE_DURATION);
   } else {
-    current.style.transform = "translateX(0)";
+    current.style.transform =
+      "translate3d(0, 0, 0)";
     if (previewPage) {
-      const goNext = diffX < 0;
-      previewPage.style.transform = goNext
-        ? `translateX(calc(-50% + ${window.innerWidth}px))`
-        : `translateX(calc(-50% - ${window.innerWidth}px))`;
+      const direction = diffX < 0 ? -1 : 1;
+      const previewReturnX =
+        direction < 0
+          ? swipePageWidth
+          : -swipePageWidth;
+      previewPage.style.transform =
+        `translate3d(${previewReturnX}px, 0, 0)`;
     }
     setTimeout(() => {
       current.style.transition = "";
       current.style.transform = "";
       clearSwipePreview();
-    }, 220);
+      clearSwipeVariables();
+      resetSwipeState();
+    }, SWIPE_DURATION);
   }
-  swipeStartX = 0;
-  swipeStartY = 0;
-  swipeCurrentX = 0;
-  isDraggingPage = false;
-  edgeSwipeLocked = false;
-}, { passive: true });
+}, {
+  passive: true
+});
+document.addEventListener("touchcancel", () => {
+  const current = swipeCurrentPage;
+  if (current) {
+    current.style.transition = "";
+    current.style.transform = "";
+  }
+  clearSwipePreview();
+  clearSwipeVariables();
+  resetSwipeState();
+}, {
+  passive: true
+});
   document.querySelectorAll(".tab-dropdown > .tab-btn").forEach(btn => {
   btn.addEventListener("click", e => {
     e.stopPropagation();
@@ -5570,57 +5644,9 @@ document
     console.error("loadMaps 失敗：", e);
   });
 }
-async function preLayoutAllPages() {
-  const pages = Array.from(
-    document.querySelectorAll(".page")
-  );
-  const activePage = document.querySelector(".page.active");
-  // 使用目前已保存的手機寬度
-  updateViewportSize();
-  for (const page of pages) {
-    if (page === activePage) {
-      // 目前頁面本來就會正常計算
-      void page.offsetWidth;
-      void page.offsetHeight;
-      continue;
-    }
-    // 暫時讓隱藏頁面參與排版，但不讓使用者看到
-    const oldDisplay = page.style.display;
-    const oldPosition = page.style.position;
-    const oldVisibility = page.style.visibility;
-    const oldPointerEvents = page.style.pointerEvents;
-    const oldTransform = page.style.transform;
-    const oldLeft = page.style.left;
-    const oldTop = page.style.top;
-    page.style.display = "block";
-    page.style.position = "absolute";
-    page.style.visibility = "hidden";
-    page.style.pointerEvents = "none";
-    page.style.transform = "translate3d(-200vw, 0, 0)";
-    page.style.left = "0";
-    page.style.top = "0";
-    // 等瀏覽器完成一次排版
-    await new Promise(resolve => {
-      requestAnimationFrame(() => {
-        void page.offsetWidth;
-        void page.offsetHeight;
-        resolve();
-      });
-    });
-    // 恢復原本狀態
-    page.style.display = oldDisplay;
-    page.style.position = oldPosition;
-    page.style.visibility = oldVisibility;
-    page.style.pointerEvents = oldPointerEvents;
-    page.style.transform = oldTransform;
-    page.style.left = oldLeft;
-    page.style.top = oldTop;
-  }
-}
 async function startAllSystems() {
   try {
     updateViewportSize();
-    await preLayoutAllPages();
     const blocked = await checkMaintenanceMode();
     if (blocked) {
       finishLoaderProgress();

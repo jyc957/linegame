@@ -1732,29 +1732,27 @@ input:checked + .slider:before{
 }
 .page.swipe-preview {
   display: block !important;
-  position: absolute !important;
-  left: 0 !important;
+  position: fixed !important;
+  left: var(--swipe-page-left, 0px) !important;
   top: var(--swipe-page-top, 0px) !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  min-height: var(--swipe-page-height, 100vh);
+  width: var(--swipe-page-width, 100%) !important;
+  max-width: none !important;
   margin: 0 !important;
-  background: #70cce1;
   opacity: 1 !important;
+  background: #70cce1;
   z-index: 19;
   pointer-events: none;
   transform: translate3d(0, 0, 0);
+  will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  will-change: transform;
+  contain: layout paint;
 }
 .page.active{
   position:relative;
   z-index:20;
 }
-/* ===== RWD 自適應整理 ===== */
-/* 全站尺寸保護 */
-* {
+*{
   box-sizing: border-box;
 }
 html, body {
@@ -2721,21 +2719,22 @@ let swipePageWidth = 0;
 let swipeCurrentPage = null;
 let swipeNextPageId = null;
 const SWIPE_TRIGGER = 70;
-const SWIPE_DURATION = 220;
+const SWIPE_DURATION = 180;
 function getActivePage() {
   return document.querySelector(".page.active");
 }
 function clearSwipePreview() {
   if (!previewPage) return;
   previewPage.classList.remove("swipe-preview");
-  previewPage.style.transition = "";
+  previewPage.style.transition = `transform ${SWIPE_DURATION}ms cubic-bezier(.2,.8,.2,1)`;
   previewPage.style.transform = "";
   previewPage.style.opacity = "";
   previewPage = null;
 }
 function clearSwipeVariables() {
+  document.documentElement.style.removeProperty("--swipe-page-left");
   document.documentElement.style.removeProperty("--swipe-page-top");
-  document.documentElement.style.removeProperty("--swipe-page-height");
+  document.documentElement.style.removeProperty("--swipe-page-width");
 }
 function resetSwipeState() {
   swipeStartX = 0;
@@ -2751,28 +2750,18 @@ function resetSwipeState() {
 function prepareSwipePreview(current, nextPageId, direction) {
   const next = document.getElementById(nextPageId);
   if (!next) return null;
-  const pageTop = current.offsetTop;
-  const pageWidth = current.offsetWidth;
-  const pageHeight = Math.max(
-    current.offsetHeight,
-    next.scrollHeight,
-    window.innerHeight
-  );
-  swipePageWidth = pageWidth;
-  document.documentElement.style.setProperty(
-    "--swipe-page-top",
-    `${pageTop}px`
-  );
-  document.documentElement.style.setProperty(
-    "--swipe-page-height",
-    `${pageHeight}px`
-  );
+  const rect = current.getBoundingClientRect();
+  swipePageWidth = rect.width;
+  document.documentElement.style.setProperty("--swipe-page-left",`${rect.left}px`);
+  document.documentElement.style.setProperty("--swipe-page-top",`${rect.top}px`);
+  document.documentElement.style.setProperty("--swipe-page-width",`${rect.width}px`);
   next.classList.add("swipe-preview");
   next.style.transition = "none";
   next.style.opacity = "1";
-  const startX = direction < 0
-    ? pageWidth
-    : -pageWidth;
+  const startX =
+    direction < 0
+      ? rect.width
+      : -rect.width;
   next.style.transform =
     `translate3d(${startX}px, 0, 0)`;
   void next.offsetWidth;
@@ -2796,19 +2785,23 @@ function updateTopTabForPage(pageId) {
 }
 function finishSwipePageChange(current, next, nextPageId) {
   current.classList.remove("active");
-  current.style.display = "none";
-  current.style.transition = "";
+  current.style.transition = `transform ${SWIPE_DURATION}ms cubic-bezier(.2,.8,.2,1)`;
   current.style.transform = "";
+  current.style.visibility = "hidden";
+  current.style.pointerEvents = "none";
   next.classList.remove("swipe-preview");
   next.classList.add("active");
-  next.style.display = "";
+  next.style.display = "block";
   next.style.transition = "";
   next.style.transform = "";
+  next.style.opacity = "1";
   previewPage = null;
-  currentPageGroup =
-    pageGroup[nextPageId] ?? currentPageGroup;
+  currentPageGroup = pageGroup[nextPageId] ?? currentPageGroup;
   updateTopTabForPage(nextPageId);
   requestAnimationFrame(() => {
+    current.style.display = "none";
+    current.style.visibility = "";
+    current.style.pointerEvents = "";
     if (nextPageId === "pageTraining") {
       initTrainingVideosOnce();
     }
@@ -2817,12 +2810,8 @@ function finishSwipePageChange(current, next, nextPageId) {
     }
     if (nextPageId === "pageMapDraw") {
       loadMapsCached().catch(console.error);
-    }
-  });
-  window.scrollTo({
-    top: 0,
-    behavior: "auto"
-  });
+    }});
+  window.scrollTo({top: 0,behavior: "auto"});
   clearSwipeVariables();
   resetSwipeState();
 }

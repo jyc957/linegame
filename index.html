@@ -4929,34 +4929,38 @@ suggest.style.display = "";
     async function jumpToRankingByName(gameName) {
   const key = normalizeNameKey(gameName);
   if (!key) return;
-  const panel = document.getElementById("rankingPanel");
-  const btn = document.getElementById("toggleRanking");
-  // 1. 如果目前是收合，先展開
-  let justOpened = false;
-  if (panel && !panel.classList.contains("open")) {
-    panel.classList.add("open");
-    if (btn) btn.textContent = "▲ 收合";
-    justOpened = true;
-  }
-  // 2. 如果剛展開，等動畫和版面撐開
-  if (justOpened) {
-    await new Promise(r => setTimeout(r, 450));
-  }
-  // 3. 再找目標列
-  const rows = Array.from(document.querySelectorAll("#rankingList .rank-row"));
-  const target = rows.find(r => (r.dataset.nameKey || "") === key);
+  const rankingTab = document.querySelector(
+    '[onclick*="pageRanking"]'
+  );
+  showPage("pageRanking", rankingTab);
+  await new Promise(resolve => {
+    setTimeout(resolve, 260);
+  });
+  await new Promise(resolve => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(resolve);
+    });
+  });
+  const rows = Array.from(
+    document.querySelectorAll("#rankingList .rank-row")
+  );
+  const target = rows.find(row => {
+    return row.dataset.nameKey === key;
+  });
   if (!target) {
-    showError("排行榜找不到這個名字（可能排行榜的名字和目前資料不一）");
+    showError(
+      "排行榜找不到這個名字，可能名單與排行榜名字不一致"
+    );
     return;
   }
-  // 4. 先讓瀏覽器完成一次 reflow，再捲動
-  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
   target.scrollIntoView({
     behavior: "smooth",
     block: "center"
   });
   target.classList.add("flash");
-  setTimeout(() => target.classList.remove("flash"), 900);
+  setTimeout(() => {
+    target.classList.remove("flash");
+  }, 1000);
 }
     async function loadAll() {
   try {

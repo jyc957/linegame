@@ -1976,7 +1976,7 @@ body.is-page-swiping .page.swipe-preview {
 #pageStage {
   position: relative;
   width: 100%;
-  min-height: calc(100dvh - 170px);
+  min-height: 0;
   transition: min-height 180ms cubic-bezier(.2, .8, .2, 1);
 }
 body.is-page-swiping #pageStage {
@@ -2587,11 +2587,6 @@ body.is-page-swiping #pageStage {
   </div>
   </div>
 </main>
-  <!-- ✅ 底部資訊列（左：瀏覽人次｜右：最後更新） -->
-  <div class="footer-bar">
-    <div>今日瀏覽人次：<span id="todayCount">載入中...</span></div>
-    <div>版本更新於：<span id="lastUpdateTime">載入中...</span></div>
-  </div>
   <!-- ✅ 自訂提示視窗 -->
 <div id="uiModal" class="ui-modal" aria-hidden="true">
   <div class="ui-modal__backdrop" data-close="1"></div>
@@ -3015,11 +3010,10 @@ current.style.transform = `translate3d(${direction * (swipePageWidth + PAGE_GAP)
     if (previewPage) {
       const direction = diffX < 0 ? -1 : 1;
       const previewReturnX =
-        direction < 0
-          ? swipePageWidth
-          : -swipePageWidth;
-      previewPage.style.transform =
-        `translate3d(${previewReturnX}px, 0, 0)`;
+    direction < 0
+    ? swipePageWidth + PAGE_GAP
+    : -(swipePageWidth + PAGE_GAP);
+      previewPage.style.transform = `translate3d(${previewReturnX}px, 0, 0)`;
     }
     setTimeout(() => {
   current.style.transition = "";
@@ -3090,19 +3084,14 @@ function setPageStageHeight(page, animate = true) {
 
 function releasePageStageHeight(page) {
   if (!pageStage || !page) return;
+
   requestAnimationFrame(() => {
     const height = Math.max(
       page.scrollHeight,
       page.offsetHeight
     );
+    pageStage.style.transition = "min-height 180ms cubic-bezier(.2,.8,.2,1)";
     pageStage.style.minHeight = `${height}px`;
-    setTimeout(() => {
-      pageStage.style.transition = "none";
-      pageStage.style.minHeight = "";
-      requestAnimationFrame(() => {
-        pageStage.style.transition = "";
-      });
-    }, 190);
   });
 }
 function showModal(msg, { title = "提示", type = "info", html = false } = {}) {
@@ -6031,6 +6020,10 @@ function startAnnouncementRealtime() {
 });
   </script>
   <footer class="site-footer">
+    <div class="footer-bar">
+    <div>今日瀏覽人次：<span id="todayCount">載入中...</span></div>
+    <div>版本更新於：<span id="lastUpdateTime">載入中...</span></div>
+  </div>
   <img src="team.png" alt="KP台灣民眾黨" class="footer-logo" id="adminEntry">
   <div class="footer-text">
     KP台灣民眾黨<br>

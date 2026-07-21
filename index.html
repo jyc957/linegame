@@ -2900,7 +2900,6 @@ function finishSwipePageChange(current, next, nextPageId) {
     if (nextPageId === "pageMapDraw") {
       loadMapsCached().catch(console.error);
     }});
-  window.scrollTo({top: 0,behavior: "auto"});
   clearSwipeVariables();
   resetSwipeState();
   releasePageStageHeight(next);

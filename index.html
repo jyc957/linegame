@@ -2021,6 +2021,14 @@ body.is-page-swiping #pageStage {
   font-weight: 800;
   text-align: center;
 }
+#pageScoreInput {
+  min-height: 0 !important;
+  height: auto !important;
+}
+#pageScoreInput .section {
+  min-height: 0 !important;
+  height: auto !important;
+}
  </style>
 </head>
 <body>
@@ -2711,6 +2719,9 @@ function showPage(pageId, btn, options = {}) {
       p.style.transition = "";
       p.style.transform = "";
       p.style.opacity = "";
+      p.style.height = "";
+      p.style.minHeight = "";
+      p.style.bottom = "";
     });
     next.classList.add("active");
     next.style.display = "";
@@ -2875,6 +2886,10 @@ function finishSwipePageChange(current, next, nextPageId) {
   next.style.transition = "";
   next.style.transform = "";
   next.style.opacity = "1";
+  next.style.top = "";
+  next.style.bottom = "";
+  next.style.height = "";
+  next.style.minHeight = "";
   previewPage = null;
   currentPageGroup = pageGroup[nextPageId] ?? currentPageGroup;
   updateTopTabForPage(nextPageId);

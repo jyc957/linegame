@@ -3240,6 +3240,10 @@ teamGroupPanel?.classList.toggle("show", on);
   loadAll().catch(console.error);
   loadRanking().catch(console.error);
   if (on) {
+    showPage(
+        "pageScoreInput",
+        document.querySelector('[onclick*="pageScoreInput"]')
+    );
     showSuccess("已進入管理員模式");
   } else {
     showInfo("已退出管理員模式");

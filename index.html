@@ -3943,10 +3943,30 @@ showModal(msg, {
     
 let cachedMaps = null;
 let customMapPoolInited = false;
+const CUSTOM_MAP_POOL_KEY = "customMapPoolSelected";
+function getSavedCustomMapPool() {
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem(CUSTOM_MAP_POOL_KEY) || "[]"
+    );
+    return Array.isArray(saved) ? saved : [];
+  } catch (e) {
+    console.error("讀取自訂圖池失敗：", e);
+    return [];
+  }
+}
+function saveCustomMapPool() {
+  const selected = Array.from(
+    document.querySelectorAll(".custom-map-check:checked")
+  ).map(check => check.value);
 
+  localStorage.setItem(
+    CUSTOM_MAP_POOL_KEY,
+    JSON.stringify(selected)
+  );
+}
 async function initCustomMapPoolOnce() {
   if (customMapPoolInited) return;
-  customMapPoolInited = true;
   const list = document.getElementById("customMapList");
   if (!list) return;
   const maps = await loadMapsCached();
@@ -3959,11 +3979,21 @@ async function initCustomMapPoolOnce() {
       ${m.name}
     </label>
   `).join("");
+  const savedMaps = getSavedCustomMapPool();
+  const savedKeys = new Set(
+    savedMaps.map(name => normalizeSearchKey(name))
+  );
   document.querySelectorAll(".custom-map-check").forEach(check => {
-  check.addEventListener("change", updateCustomMapSelectedCount);
-});
-
-updateCustomMapSelectedCount();
+    check.checked = savedKeys.has(
+      normalizeSearchKey(check.value)
+    );
+    check.addEventListener("change", () => {
+      updateCustomMapSelectedCount();
+      saveCustomMapPool();
+    });
+  });
+  customMapPoolInited = true;
+  updateCustomMapSelectedCount();
 }
 function updateCustomMapSelectedCount() {
   const count = document.querySelectorAll(".custom-map-check:checked").length;
@@ -4790,6 +4820,7 @@ async function initSkillMapSuggest() {
         box.classList.remove("show");
         requestAnimationFrame(() => {input.focus({ preventScroll: true });});
         updateCustomMapSelectedCount();
+        saveCustomMapPool();
         showToast(`已加入圖池：${check.value}`, {
           type: "success"
         });
@@ -5592,6 +5623,7 @@ document.getElementById("clearAllMapsBtn")
   .querySelectorAll(".custom-map-check")
   .forEach(x => x.checked = false);
   updateCustomMapSelectedCount();
+  saveCustomMapPool();
 });
 const drawMapBtn = document.getElementById("drawMapBtn");
 const mapToggleBtn = document.getElementById("toggleMapPanel");
@@ -5633,12 +5665,18 @@ if (!Number.isInteger(count) || count <= 0) {
       showModal?.("沒有地圖資料", { type: "error" });
       return;
     }
-    // ✅ 高難度模式：每張都要 >= 3★（關鍵在這裡）
+    
     let pool = maps;
-const checkedMaps = Array.from(
-  document.querySelectorAll(".custom-map-check:checked")
-)
-.map(x => normalizeSearchKey(x.value));
+    let checkedMaps;
+if (customMapPoolInited) {
+  checkedMaps = Array.from(
+    document.querySelectorAll(".custom-map-check:checked")
+  ).map(x => normalizeSearchKey(x.value));
+}
+else {
+  checkedMaps = getSavedCustomMapPool()
+    .map(name => normalizeSearchKey(name));
+}
     const availableCount =
   checkedMaps.length > 0
     ? checkedMaps.length

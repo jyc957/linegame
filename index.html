@@ -2177,9 +2177,8 @@ body.is-page-swiping #pageStage {
       <button onclick="saveRecord()">儲存</button>
       <button onclick="searchRecords()">查詢</button>
       <button onclick="clearInputs()">清除</button>
-      <button class="admin-only" onclick="comparePlayerAndRanking()">
-  比對名單/排行榜差異
-</button>
+      <button class="admin-only" onclick="comparePlayerAndRanking()">比對名單/排行榜差異</button>
+      <button type="button" class="admin-only" onclick="copyAllGameNames()">📋 複製所有遊戲名字</button>
       <small class="hide-in-admin"><br>
         ● 儲存：新增一筆新資料<br>
         ● 查詢：可輸入部分文字做模糊搜尋<br>
@@ -3064,6 +3063,40 @@ function showModal(msg, { title = "提示", type = "info", html = false } = {}) 
   document.body.style.overflow = "hidden";
   setTimeout(() => uiModalOk.focus(), 0);
 }
+async function copyAllGameNames() {
+  try {
+    const snap = await getDocs(colRef);
+    const names = [];
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const name = String(d.gameName || "").trim();
+      if (name) {
+        names.push(name);
+      }
+    });
+    if (!names.length) {
+      showInfo("目前名單裡沒有遊戲名字");
+      return;
+    }  
+    const uniqueNames = [...new Set(names)];
+    uniqueNames.sort((a, b) =>
+      normalizeNameKey(a).localeCompare(
+        normalizeNameKey(b),
+        "zh-Hant"
+      )
+    );
+    const text = uniqueNames.join("\n");
+    await navigator.clipboard.writeText(text);
+    showSuccess(
+      `已複製 ${uniqueNames.length} 個遊戲名字`
+    );
+  } catch (e) {
+    console.error("複製名單失敗：", e);
+    showError("複製名單失敗");
+  }
+}
+window.copyAllGameNames = copyAllGameNames;
+    
 const adminPwdModal = document.getElementById("adminPwdModal");
 const adminPwdInput = document.getElementById("adminPwdInput");
 const adminPwdHint = document.getElementById("adminPwdHint");

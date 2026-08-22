@@ -1961,6 +1961,54 @@ body.is-page-swiping #pageStage {
   min-height: 0 !important;
   height: auto !important;
 }
+/* ===== 輸出資料 ===== */
+.export-format-box {
+  margin-top: 16px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #eef8ff;
+}
+.export-format-title {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 900;
+  color: #074783;
+}
+.export-format-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  font-size: 16px;
+}
+.export-format-option input[type="radio"] {
+  width: auto;
+  margin: 0;
+}
+.export-member-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 15px;
+}
+.export-member-item input {
+  width: auto;
+  margin: 0;
+  flex: 0 0 auto;
+}
+.export-member-info {
+  min-width: 0;
+}
+.export-member-game {
+  font-weight: 800;
+}
+.export-member-line {
+  margin-top: 2px;
+  color: #666;
+  font-size: 13px;
+}
  </style>
 </head>
 <body>
@@ -1993,13 +2041,12 @@ body.is-page-swiping #pageStage {
 </div>
 
 <h1>🍀KP台灣民眾黨 黨部系統🍀</h1>
-<div class="tab-bar">
-  <button class="tab-btn active" onclick="showPage('pageRanking', this)">🏆 排行榜</button>
-  <div class="tab-dropdown">
+<div class="tab-dropdown">
   <button class="tab-btn" type="button">👥 名單</button>
   <div class="tab-menu">
     <button onclick="showPage('pageAdd', this)">新增 / 查詢資料</button>
     <button onclick="showPage('pageEdit', this)">更改資料</button>
+    <button class="admin-only" onclick="showPage('pageExportData', this)">輸出資料</button>
   </div>
 </div>
   <div class="tab-dropdown admin-only">
@@ -2178,7 +2225,6 @@ body.is-page-swiping #pageStage {
       <button onclick="searchRecords()">查詢</button>
       <button onclick="clearInputs()">清除</button>
       <button class="admin-only" onclick="comparePlayerAndRanking()">比對名單/排行榜差異</button>
-      <button type="button" class="admin-only" onclick="copyAllGameNames()">📋 複製所有遊戲名字</button>
       <small class="hide-in-admin"><br>
         ● 儲存：新增一筆新資料<br>
         ● 查詢：可輸入部分文字做模糊搜尋<br>
@@ -2226,7 +2272,60 @@ body.is-page-swiping #pageStage {
     </div>
   </div>
   </div>
-
+ <!-- ===== 輸出資料 ===== -->
+<div id="pageExportData" class="page">
+  <div class="section admin-only" id="exportDataPanel">
+    <h2>輸出資料</h2>
+    <button
+      type="button"
+      id="openExportMemberModalBtn"
+      class="btn"
+    >
+      👥 選擇輸出成員
+    </button>
+    <div
+      id="exportSelectedCount"
+      class="smword"
+      style="margin-top:8px;"
+    >
+      目前選擇 0 人
+    </div>
+    <div class="export-format-box">
+      <div class="export-format-title">
+        輸出內容：
+      </div>
+      <label class="export-format-option">
+        <input
+          type="radio"
+          name="exportFormat"
+          value="game"
+          checked
+        >
+        遊戲名字
+      </label>
+      <label class="export-format-option">
+        <input
+          type="radio"
+          name="exportFormat"
+          value="line"
+        >
+        LINE 名字
+      </label>
+      <label class="export-format-option">
+        <input
+          type="radio"
+          name="exportFormat"
+          value="both"
+        >
+        遊戲名字 + LINE 名字
+      </label>
+    </div>
+    <button type="button" id="copyExportDataBtn" class="btn">📋 複製資料</button>
+    <div class="smword" style="margin-top:8px;">
+      ※「遊戲名字 + LINE 名字」可直接貼到 Google 試算表，會自動分成兩欄
+    </div>
+  </div>
+</div>
   <div id="pageLineQuery" class="page">
   <div class="section" id="lineQuerySection">
   <div class="top-bar">
@@ -2607,26 +2706,28 @@ const pageGroup = {
   pageRanking: 0,
   pageAdd: 1,
   pageEdit: 2,
-  pageAdminAnnouncement: 3,
-  pageTeam: 4,
-  pageScoreInput: 5,
-  pageLineQuery: 6,
-  pageMapDraw: 7,
-  pageTraining: 8
+  pageExportData: 3,
+  pageAdminAnnouncement: 4,
+  pageTeam: 5,
+  pageScoreInput: 6,
+  pageLineQuery: 7,
+  pageMapDraw: 8,
+  pageTraining: 9
 };
 function getSwipePages() {
   if (isAdminMode) {
     return [
-  "pageRanking",
-  "pageAdd",
-  "pageEdit",
-  "pageAdminAnnouncement",
-  "pageTeam",
-  "pageScoreInput",
-  "pageLineQuery",
-  "pageMapDraw",
-  "pageTraining"
-];
+      "pageRanking",
+      "pageAdd",
+      "pageEdit",
+      "pageExportData",
+      "pageAdminAnnouncement",
+      "pageTeam",
+      "pageScoreInput",
+      "pageLineQuery",
+      "pageMapDraw",
+      "pageTraining"
+    ];
   }
   return [
     "pageRanking",
@@ -2724,6 +2825,7 @@ function showPage(pageId, btn, options = {}) {
   }
   window.scrollTo({ top: 0, behavior: "auto" });
 }
+
 let swipeStartX = 0;
 let swipeStartY = 0;
 let swipeCurrentX = 0;
@@ -3063,40 +3165,265 @@ function showModal(msg, { title = "提示", type = "info", html = false } = {}) 
   document.body.style.overflow = "hidden";
   setTimeout(() => uiModalOk.focus(), 0);
 }
-async function copyAllGameNames() {
-  try {
-    const snap = await getDocs(colRef);
-    const names = [];
-    snap.forEach(docSnap => {
-      const d = docSnap.data();
-      const name = String(d.gameName || "").trim();
-      if (name) {
-        names.push(name);
-      }
+
+let exportMembersInited = false;
+let exportMembersData = [];
+
+async function initExportMembersOnce() {
+  if (exportMembersInited) return;
+  const list =
+    document.getElementById("exportMemberList");
+  if (!list) return;
+  const snap = await getDocs(colRef);
+  exportMembersData = [];
+  snap.forEach(docSnap => {
+    const d = docSnap.data();
+    const gameName =
+      String(d.gameName || "").trim();
+    const lineId =
+      String(d.lineId || "").trim();
+    if (!gameName && !lineId) return;
+    exportMembersData.push({
+      id: docSnap.id,
+      gameName,
+      lineId
     });
-    if (!names.length) {
-      showInfo("目前名單裡沒有遊戲名字");
-      return;
-    }  
-    const uniqueNames = [...new Set(names)];
-    uniqueNames.sort((a, b) =>
-      normalizeNameKey(a).localeCompare(
-        normalizeNameKey(b),
+  });
+  exportMembersData.sort((a, b) =>
+    normalizeNameKey(a.gameName)
+      .localeCompare(
+        normalizeNameKey(b.gameName),
         "zh-Hant"
-      )
+      ));
+  list.innerHTML = "";
+  exportMembersData.forEach(
+    (member, index) => {
+      const label =
+        document.createElement("label");
+      label.className =
+        "export-member-item";
+      const check =
+        document.createElement("input");
+      check.type = "checkbox";
+      check.className =
+        "export-member-check";
+      check.dataset.index =
+        String(index);
+      const info =
+        document.createElement("div");
+      info.className =
+        "export-member-info";
+      const game =
+        document.createElement("div");
+      game.className =
+        "export-member-game";
+      game.textContent =
+        member.gameName || "無遊戲名字";
+      const line =
+        document.createElement("div");
+      line.className =
+        "export-member-line";
+      line.textContent =
+        `LINE：${member.lineId || "無"}`;
+      info.appendChild(game);
+      info.appendChild(line);
+      label.appendChild(check);
+      label.appendChild(info);
+      list.appendChild(label);
+      check.addEventListener(
+        "change",
+        updateExportSelectedCount
+      );});
+  exportMembersInited = true;
+  updateExportSelectedCount();
+  initExportMemberSearch();
+}
+  function updateExportSelectedCount() {
+  const count =
+    document.querySelectorAll(
+      ".export-member-check:checked"
+    ).length;
+  const text =
+    `目前選擇 ${count} 人`;
+  const outside =
+    document.getElementById(
+      "exportSelectedCount"
     );
-    const text = uniqueNames.join("\n");
-    await navigator.clipboard.writeText(text);
-    showSuccess(
-      `已複製 ${uniqueNames.length} 個遊戲名字`
+  const modal =
+    document.getElementById(
+      "exportModalSelectedCount"
     );
-  } catch (e) {
-    console.error("複製名單失敗：", e);
-    showError("複製名單失敗");
+  if (outside) {
+    outside.textContent = text;
+  }
+  if (modal) {
+    modal.textContent = text;
   }
 }
-window.copyAllGameNames = copyAllGameNames;
-    
+    function initExportMemberSearch() {
+  const input =
+    document.getElementById(
+      "exportMemberSearchInput"
+    );
+  const box =
+    document.getElementById(
+      "exportMemberSearchSuggest"
+    );
+  if (!input || !box) return;
+  if (input.dataset.inited === "1") {
+    return;
+  }
+  input.dataset.inited = "1";
+  input.addEventListener("input", () => {
+    const keyword =
+      input.value.trim();
+    box.innerHTML = "";
+    if (!keyword) {
+      box.classList.remove("show");
+      return;
+    }
+    const checks =
+      Array.from(
+        document.querySelectorAll(
+          ".export-member-check"
+        )
+      );
+    const matched =
+      checks
+        .filter(check => {
+          const index =
+            Number(check.dataset.index);
+          const member =
+            exportMembersData[index];
+          if (!member) return false;
+          return (
+            fuzzyMatch(
+              keyword,
+              member.gameName
+            ) ||
+            fuzzyMatch(
+              keyword,
+              member.lineId
+            ));})
+        .slice(0, 30);
+    if (!matched.length) {
+      box.classList.remove("show");
+     return;
+
+    }
+    matched.forEach(check => {
+      const index =
+        Number(check.dataset.index);
+      const member =
+        exportMembersData[index];
+      if (!member) return;
+      const item =
+        document.createElement("div");
+      item.className =
+        "suggest-item";
+      if (check.checked) {
+        item.classList.add("selected");
+      }
+      item.textContent =
+        `${member.gameName} ｜ ${member.lineId}`;
+      item.addEventListener(
+        "pointerdown",
+        e => {
+          e.preventDefault();
+          check.checked = true;
+          updateExportSelectedCount();
+          input.value = "";
+          box.innerHTML = "";
+          box.classList.remove("show");
+          requestAnimationFrame(() => {
+            input.focus({
+              preventScroll: true
+            });
+          });
+          showToast(
+            `已選擇：${member.gameName}`,
+            {
+              type: "success"
+            });});
+      box.appendChild(item);
+    });
+    box.classList.add("show");
+  });
+}
+  async function copySelectedExportData() {
+  const checked =
+    Array.from(
+      document.querySelectorAll(
+        ".export-member-check:checked"
+      )
+    );
+  if (!checked.length) {
+    showInfo(
+      "請先選擇至少一位成員"
+    );
+    return;
+  }
+  const format =
+    document.querySelector(
+      'input[name="exportFormat"]:checked'
+    )?.value || "game";
+  const members =
+    checked
+      .map(check => {
+        const index =
+          Number(check.dataset.index);
+        return exportMembersData[index];
+      })
+      .filter(Boolean);
+  let text = "";
+  if (format === "game") {
+    text =
+      members
+        .map(m => m.gameName)
+        .filter(Boolean)
+        .join("\n");
+  }
+  else if (format === "line") {
+    text =
+      members
+        .map(m => m.lineId)
+        .filter(Boolean)
+        .join("\n");
+  }
+  else if (format === "both") {
+    text =
+      members
+        .map(m =>
+          `${m.gameName}\t${m.lineId}`
+        )
+        .join("\n");
+  }
+  if (!text.trim()) {
+    showInfo(
+      "選擇的成員沒有可輸出的資料"
+    );
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(
+      text
+    );
+    const formatName = {
+      game: "遊戲名字",
+      line: "LINE 名字",
+      both: "遊戲名字 + LINE 名字"
+    };
+    showSuccess(
+      `已複製 ${members.length} 人的${formatName[format]}`
+    );
+  } catch (e) {
+    console.error(
+      "複製輸出資料失敗：",
+      e
+    );
+    showError(
+      "複製失敗"
+    );}}
 const adminPwdModal = document.getElementById("adminPwdModal");
 const adminPwdInput = document.getElementById("adminPwdInput");
 const adminPwdHint = document.getElementById("adminPwdHint");
@@ -3196,10 +3523,11 @@ teamGroupPanel?.classList.toggle("show", on);
   if (!on) {
   isPickScoreTargetMode = false;
   const adminOnlyPages = [
-    "pageAdminAnnouncement",
-    "pageTeam",
-    "pageScoreInput"
-  ];
+  "pageAdminAnnouncement",
+  "pageTeam",
+  "pageScoreInput",
+  "pageExportData"
+];
   const currentPage = document.querySelector(".page.active");
 
   if (currentPage && adminOnlyPages.includes(currentPage.id)) {
@@ -5849,25 +6177,99 @@ lastTeamGroupText = "";
     updateTeamMemberSelectedCount();
     updateTeamGroupHeight();
   });
-  const openTeamMemberModalBtn = document.getElementById("openTeamMemberModalBtn");
+const openTeamMemberModalBtn = document.getElementById("openTeamMemberModalBtn");
 const teamMemberModal = document.getElementById("teamMemberModal");
-
+const exportMemberModal = document.getElementById("exportMemberModal");
+document.getElementById("openExportMemberModalBtn")?.addEventListener("click",
+    async () => {
+      await initExportMembersOnce();
+      exportMemberModal
+        ?.classList.add("show");
+      updateExportSelectedCount();
+      setTimeout(() => {
+        document
+          .getElementById(
+            "exportMemberSearchInput"
+          )
+          ?.focus();
+      }, 120);
+    }
+  );
+document
+  .getElementById(
+    "confirmExportMembersBtn"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+      exportMemberModal
+        ?.classList.remove("show");
+      updateExportSelectedCount();
+    }
+  );
+document
+  .getElementById(
+    "selectAllExportMembersBtn"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+      document
+        .querySelectorAll(
+          ".export-member-check"
+        )
+        .forEach(check => {
+          check.checked = true;
+        });
+      updateExportSelectedCount();
+    }
+  );
+document
+  .getElementById(
+    "clearExportMembersBtn"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+      document
+        .querySelectorAll(
+          ".export-member-check"
+        )
+        .forEach(check => {
+          check.checked = false;
+        });
+      updateExportSelectedCount();
+    });
+document
+  .getElementById(
+    "copyExportDataBtn"
+  )
+  ?.addEventListener(
+    "click",
+    copySelectedExportData
+  );
+exportMemberModal
+  ?.addEventListener(
+    "click",
+    e => {
+      if (
+        e.target === exportMemberModal
+      ) {
+        exportMemberModal
+          .classList.remove("show");
+      }});
 openTeamMemberModalBtn?.addEventListener("click", async () => {
   await initTeamGroupMembersOnce();
   teamMemberModal?.classList.add("show");
 });
-
 document
   .getElementById("confirmTeamMembersBtn")
   ?.addEventListener("click", () => {
     teamMemberModal?.classList.remove("show");
-
     const selectedCount = document.querySelectorAll(".team-member-check:checked").length;
     const countText = document.getElementById("teamGroupSelectedCount");
     if (countText) countText.textContent = `目前選擇 ${selectedCount} 人`;
-
     updateTeamGroupHeight();
-// ✅ 等整個頁面元件都準備好後，再做初始化
 });
     window.saveRecord = saveRecord;
     window.searchRecords = searchRecords;
@@ -6097,6 +6499,31 @@ function startAnnouncementRealtime() {
       <button type="button" id="clearTeamMembersBtn" class="btn">清空</button>
     </div>
     <div id="teamMemberList"></div>
+  </div>
+</div>
+  <!-- ===== 選擇輸出成員 ===== -->
+<div id="exportMemberModal" class="modal">
+  <div class="modal-content">
+    <h3>選擇輸出成員</h3>
+    <div class="modal-search-wrap">
+      <input
+        id="exportMemberSearchInput"
+        type="text"
+        placeholder="搜尋遊戲名字或 LINE 名字"
+        autocomplete="off"
+      >
+      <div
+        id="exportMemberSearchSuggest"
+        class="suggest-box modal-search-suggest"
+      ></div>
+    </div>
+    <div id="exportModalSelectedCount" class="team-selected-count">目前選擇 0 人</div>
+    <div class="map-btn-row">
+      <button type="button" id="confirmExportMembersBtn" class="btn">確定</button>
+      <button type="button" id="selectAllExportMembersBtn" class="btn">全選</button>
+      <button type="button" id="clearExportMembersBtn" class="btn">清空</button>
+    </div>
+    <div id="exportMemberList"></div>
   </div>
 </div>
   <div id="historyModal" class="modal">

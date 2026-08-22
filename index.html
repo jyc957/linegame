@@ -2035,28 +2035,28 @@ body.is-page-swiping #pageStage {
     <div id="loaderBarInner" class="loader-bar-inner"></div>
   </div>
 </div>
-
 <div class="top-logo-wrap">
   <img src="rush.png" class="top-logo">
 </div>
-
 <h1>🍀KP台灣民眾黨 黨部系統🍀</h1>
-<div class="tab-dropdown">
-  <button class="tab-btn" type="button">👥 名單</button>
-  <div class="tab-menu">
-    <button onclick="showPage('pageAdd', this)">新增 / 查詢資料</button>
-    <button onclick="showPage('pageEdit', this)">更改資料</button>
-    <button class="admin-only" onclick="showPage('pageExportData', this)">輸出資料</button>
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showPage('pageRanking', this)">🏆 排行榜</button>
+  <div class="tab-dropdown">
+    <button class="tab-btn" type="button">👥 名單</button>
+    <div class="tab-menu">
+      <button onclick="showPage('pageAdd', this)">新增 / 查詢資料</button>
+      <button onclick="showPage('pageEdit', this)">更改資料</button>
+      <button class="admin-only" onclick="showPage('pageExportData', this)">輸出資料</button>
+    </div>
   </div>
-</div>
   <div class="tab-dropdown admin-only">
-  <button class="tab-btn" type="button">⚙️ 管理</button>
-  <div class="tab-menu">
-    <button onclick="showPage('pageAdminAnnouncement', this)">公告設定 / 維修模式</button>
-    <button onclick="showPage('pageTeam', this)">隊伍隨機分組</button>
-    <button onclick="showPage('pageScoreInput', this)">黨員成績輸入</button>
+    <button class="tab-btn" type="button">⚙️ 管理</button>
+    <div class="tab-menu">
+      <button onclick="showPage('pageAdminAnnouncement', this)">公告設定 / 維修模式</button>
+      <button onclick="showPage('pageTeam', this)">隊伍隨機分組</button>
+      <button onclick="showPage('pageScoreInput', this)">黨員成績輸入</button>
+    </div>
   </div>
-</div>
   <div class="tab-dropdown">
     <button class="tab-btn" type="button">🗺 地圖</button>
     <div class="tab-menu">

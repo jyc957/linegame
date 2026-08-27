@@ -2041,6 +2041,26 @@ body.is-page-swiping #pageStage {
   color: #666;
   font-size: 13px;
 }
+.export-action-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.export-action-row .btn {
+  margin-top: 0;
+  flex: 0 1 auto;
+}
+@media (max-width: 480px) {
+  .export-action-row {
+    gap: 8px;
+  }
+  .export-action-row .btn {
+    padding-left: 12px;
+    padding-right: 12px;
+    white-space: nowrap;
+  }
+}
  </style>
 </head>
 <body>
@@ -2304,7 +2324,7 @@ body.is-page-swiping #pageStage {
     </div>
   </div>
   </div>
- <!-- ===== 輸出資料 ===== -->
+
 <div id="pageExportData" class="page">
   <div class="section admin-only" id="exportDataPanel">
     <h2>輸出資料</h2>
@@ -2352,10 +2372,10 @@ body.is-page-swiping #pageStage {
         遊戲名字 + LINE 名字
       </label>
     </div>
-    <button type="button" id="copyExportDataBtn" class="btn">📋 複製資料</button>
-    <div class="smword" style="margin-top:8px;">
-      ※「遊戲名字 + LINE 名字」可直接貼到 Google 試算表，會自動分成兩欄
-    </div>
+    <div class="export-action-row">
+  <button type="button" id="copyExportDataBtn" class="btn">📋 複製資料</button>
+  <button type="button" id="downloadExportDataBtn" class="btn">📊 輸出成試算表</button>
+</div>
   </div>
 </div>
   <div id="pageLineQuery" class="page">
@@ -3456,6 +3476,111 @@ async function initExportMembersOnce() {
     showError(
       "複製失敗"
     );}}
+
+  function csvEscape(value) {
+  const text = String(value ?? "");
+  return `"${text.replace(/"/g, '""')}"`;
+}
+function downloadSelectedExportData() {
+  const checked = Array.from(
+    document.querySelectorAll(
+      ".export-member-check:checked"
+    )
+  );
+  if (!checked.length) {
+    showInfo("請先選擇至少一位成員");
+    return;
+  }
+  const format = document.querySelector(
+    'input[name="exportFormat"]:checked'
+  )?.value || "game";
+  const members = checked
+    .map(check => {
+      const index =
+        Number(check.dataset.index);
+      return exportMembersData[index];
+    })
+    .filter(Boolean);
+  let rows = [];
+  let filename = "";
+  if (format === "game") {
+    rows.push([
+      "遊戲名字"
+    ]);
+    members.forEach(member => {
+      rows.push([
+        member.gameName || ""
+      ]);
+    });
+    filename = "遊戲名單";
+  }
+  else if (format === "line") {
+    rows.push([
+      "LINE 名字"
+    ]);
+    members.forEach(member => {
+      rows.push([
+        member.lineId || ""
+      ]);
+    });
+    filename = "LINE名單";
+  }
+  else if (format === "both") {
+    rows.push([
+      "遊戲名字",
+      "LINE 名字"
+    ]);
+    members.forEach(member => {
+      rows.push([
+        member.gameName || "",
+        member.lineId || ""
+      ]);
+    });
+    filename = "遊戲名字_LINE名字";
+  }
+  const csvText =
+    "\uFEFF" +
+    rows
+      .map(row =>
+        row.map(csvEscape).join(",")
+      )
+      .join("\r\n");
+  const blob = new Blob(
+    [csvText],
+    {
+      type:
+        "text/csv;charset=utf-8;"
+    }
+  );
+  const url =
+    URL.createObjectURL(blob);
+  const now =
+    new Date();
+  const dateText =
+    [
+      now.getFullYear(),
+      String(
+        now.getMonth() + 1
+      ).padStart(2, "0"),
+      String(
+        now.getDate()
+      ).padStart(2, "0")
+    ].join("-");
+  const a =
+    document.createElement("a");
+  a.href = url;
+  a.download =
+    `${filename}_${dateText}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
+  showSuccess(
+    `已輸出 ${members.length} 人的試算表`
+  );
+}
 const adminPwdModal = document.getElementById("adminPwdModal");
 const adminPwdInput = document.getElementById("adminPwdInput");
 const adminPwdHint = document.getElementById("adminPwdHint");
@@ -6045,12 +6170,10 @@ if (!Number.isInteger(count) || count <= 0) {
     }
     const hell = document.getElementById("hardMode")?.checked;
     const shuffleOrder = document.getElementById("shuffleOrder")?.checked;
-    // 🔥 地獄/高難度規則：無上限 + 總和不小於 3X
     if (hell) {
       maxSum = Infinity;
       minSum = 3 * count;
     }
-    // 這裡你原本就有再顯示一次 loading（我保留）
     showMapLoading?.(true);
     await sleep(50);
     const maps = await loadMaps();
@@ -6058,7 +6181,6 @@ if (!Number.isInteger(count) || count <= 0) {
       showModal?.("沒有地圖資料", { type: "error" });
       return;
     }
-    
     let pool = maps;
     let checkedMaps;
 if (customMapPoolInited) {
@@ -6106,7 +6228,6 @@ if (checkedMaps.length > 0) {
         const d = parseInt(m.difficulty, 10);
         return Number.isFinite(d) && d >= 3;
       });
-      // 防呆：符合 3★以上的圖池不足
       if (pool.length < count) {
         showModal?.(
           `高難度模式下，符合「3★以上」的地圖只有 ${pool.length} 張，無法抽 ${count} 張`,
@@ -6115,12 +6236,9 @@ if (checkedMaps.length > 0) {
         return;
       }
     }
-    // ✅ 用 pool 來抽（不是 maps）
     const result = drawRandomMapsWithLimit(pool, count, maxSum, minSum);
     const picked = result.picked || [];
-    // 關掉載入中（只有 skip=true 才會曾經顯示打開，但關掉多關一次沒差）
     showMapLoading?.(false);
-    // 顯示
     if (skip) {
   renderMapResult(picked, { count });
 } else if (count === 1) {
@@ -6133,11 +6251,9 @@ if (checkedMaps.length > 0) {
     console.error(err);
     showModal?.("抽取失敗，請稍後再試", { type: "error" });
   } finally {
-    // 保險：避免任何情況卡在載入中
     showMapLoading?.(false);
   }
 });
-      // ===== 地圖抽籤：重製結果 =====
 const resetMapBtn = document.getElementById("resetMapBtn");
 function resetMapResultUI(){
   const box = document.getElementById("mapResult");
@@ -6145,15 +6261,12 @@ function resetMapResultUI(){
 }
 resetMapBtn?.addEventListener("click", () => {
   resetMapResultUI();
-  // showToast("已清空抽籤結果");
 });
 const adminEntry = document.getElementById("adminEntry");
 adminEntry?.addEventListener("click", () => {
   if (isAdminMode) {
-    // 已經是管理員 → 直接退出
     setAdminMode(false);
   } else {
-    // 還不是 → 要求輸入密碼
     askAdminPassword();
   }
 });
@@ -6279,6 +6392,15 @@ document
   ?.addEventListener(
     "click",
     copySelectedExportData
+  );
+    
+document
+  .getElementById(
+    "downloadExportDataBtn"
+  )
+  ?.addEventListener(
+    "click",
+    downloadSelectedExportData
   );
 exportMemberModal
   ?.addEventListener(
